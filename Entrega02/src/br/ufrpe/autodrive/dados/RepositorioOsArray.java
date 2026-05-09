@@ -1,5 +1,5 @@
 package br.ufrpe.autodrive.dados;
 
-public class RepositorioOsArray {
+public class RepositorioOsArray implements IRepositorioOS {
 
 }
