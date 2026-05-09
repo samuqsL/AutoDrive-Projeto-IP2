@@ -1,5 +1,5 @@
 package br.ufrpe.autodrive.dados;
 
-public class RepositorioVendasArray {
+public class RepositorioVendasArray implements IRepositorioVendas {
 
 }
