@@ -51,31 +51,31 @@ public class Venda {
   
       if (!cliente.validarCnhCliente()) {
           System.out.println("Cliente sem CNH válida");
-          return; //encerrar metodo antes da hora, para impedir da venda (se CNH DO CLIENTE for INVÁLIDA)
+          return false; //encerrar metodo antes da hora, para impedir da venda (se CNH DO CLIENTE for INVÁLIDA)
       }
   
       if (veiculo.getStatus() == StatusVeiculo.VENDIDO) {
           System.out.println("Veículo já vendido");
-          return; //encerrar metodo antes da hora, para impedir da venda (se tiver VENDIDO)!
+          return false; //encerrar metodo antes da hora, para impedir da venda (se tiver VENDIDO)!
       }
       
       if (veiculo.getStatus() == StatusVeiculo.RESERVADO){
         System.out.println("Veiculo já reservado");
-        return; //encerrar metodo antes da hora, para impedir da venda (SE tiver RESERVADO)!
+        return false; //encerrar metodo antes da hora, para impedir da venda (SE tiver RESERVADO)!
       }
 
       if (veiculo.getStatus() == StatusVeiculo.EM_MANUTENCAO){
         System.out.println("Veiculo em manutenção");
-        return; //encerrar metodo antes da hora, para impedir da venda (SE tiver EM_MANUTENCAO)!
+        return false; //encerrar metodo antes da hora, para impedir da venda (SE tiver EM_MANUTENCAO)!
       }
     
       if (veiculo.getRenavam() == null || veiculo.getRenavam().isEmpty()){
         System.out.println("Veículo com pendência de Documentação!");
-        return; //encerrar metodo antes da hora, para impedir da venda (SE RENAVAM tiver VAZIO)!
+        return false; //encerrar metodo antes da hora, para impedir da venda (SE RENAVAM tiver VAZIO)!
       }
       if (entrada < ENTRADA_MINIMA) {
         System.out.println("Entrada inferior ao mínimo");
-        return; //encerrar metodo antes da hora, para impedir da venda (SE ENTRADA < ENTRADA MINIMA)
+        return false; //encerrar metodo antes da hora, para impedir da venda (SE ENTRADA < ENTRADA MINIMA)
       }
   
       double precoBase = veiculo.getPreco(); // Variavel local do metodo realizarVenda(), o "precoBase" é o preco do veiculo da venda!
@@ -92,6 +92,8 @@ public class Venda {
       System.out.println("Venda realizada");
       System.out.println("Imposto: " + imposto);
       System.out.println("Comissão: " + comissao);
+      
+    return true;
   }
   
   //Metodo 2 (Calcular Comissao)
