@@ -1,26 +1,24 @@
+package br.ufrpe.autodrive.negocio;
+
+import br.ufrpe.autodrive.dados.IRepositorioVendas;
+
 public class GerenciadorVenda implements IGerenciadorVenda {
-    private IRepositorioVendas repoVendas; // O repositório único vindo do Main
+    private IRepositorioVendas repoV; // Conforme seu UML: image_68b498.png
 
     public GerenciadorVenda(IRepositorioVendas repo) {
-        this.repoVendas = repo;
+        this.repoV = repo;
     }
 
     @Override
-    public boolean efetuarVenda(Cliente c, Vendedor v, Veiculo veic, double entrada) {
-        try {
-            // 1. Tenta criar o objeto (valida entrada < 0 no setEntrada)
-            Venda novaVenda = new Venda(c, v, veic, entrada);
-
-            // 2. Executa a lógica de negócio (CNH, Status do Veículo, etc.)
-            if (novaVenda.realizarVenda()) { 
-                // 3. Se a regra de negócio permitiu, salva no "banco" (Array)
-                this.repoVendas.adicionarVenda(novaVenda);
-                return true; 
-            }
-        } catch (IllegalArgumentException e) {
-            // Aqui capturamos o erro do construtor/setter (ex: entrada negativa)
-            System.out.println("Erro de validação: " + e.getMessage());
+    public boolean efetuarVenda(double valor) {
+        // Exemplo de regra de negócio: Venda não pode ser valor zero ou negativo
+        if (valor > 0) {
+            // Se a lógica passar, ele mandaria salvar no repositório
+            // Venda v = new Venda(valor);
+            // repoV.salvar(v);
+            return true; // Retorna SUCESSO para a Tela
         }
-        return false; // Se chegou aqui, a venda falhou por algum motivo
+        
+        return false; // Retorna FALHA para a Tela
     }
 }
