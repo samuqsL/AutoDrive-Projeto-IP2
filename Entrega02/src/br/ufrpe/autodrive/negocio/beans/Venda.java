@@ -58,12 +58,10 @@ public class Venda {
       }
       
       if (veiculo.getStatus() == StatusVeiculo.RESERVADO){
-        System.out.println("Veiculo já reservado");
         return false; //encerrar metodo antes da hora(retorna false), para impedir da venda (SE tiver RESERVADO)!
       }
 
       if (veiculo.getStatus() == StatusVeiculo.EM_MANUTENCAO){
-        System.out.println("Veiculo em manutenção");
         return false; //encerrar metodo antes da hora(retorna false), para impedir da venda (SE tiver EM_MANUTENCAO)!
       }
     
