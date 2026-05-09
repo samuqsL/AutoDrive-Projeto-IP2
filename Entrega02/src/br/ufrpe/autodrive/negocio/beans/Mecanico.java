@@ -1,4 +1,4 @@
-package model;
+package br.ufrpe.autodrive.negocio.beans;
 
 public class Mecanico {
     private String nome;

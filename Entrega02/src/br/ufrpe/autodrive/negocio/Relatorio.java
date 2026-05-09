@@ -1,4 +1,6 @@
-package model;
+package br.ufrpe.autodrive.negocio;
+
+import br.ufrpe.autodrive.negocio.beans.*; //Import das classes beans (models)
 
 import java.util.ArrayList;
 import java.time.LocalDate;

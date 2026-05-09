@@ -5,7 +5,7 @@
 // [?] duvida
 // [A] aviso
 
-package model;
+package br.ufrpe.autodrive.negocio.beans;
 
 //classe mae de "VeiculoNovo" e "VeiculoSeminovo"
 public class Veiculo {

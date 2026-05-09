@@ -1,4 +1,4 @@
-package model;
+package br.ufrpe.autodrive.negocio.beans;
 //classe filha de "Veiculos"
 public class VeiculoNovo extends Veiculo {
 	//construtor
