@@ -17,4 +17,8 @@ package br.ufrpe.autodrive.gui;
 
 public class TelaRelatorio {
 
+ //exibir() é Metodo pra todas as classes! (painelzinho com opções(1, 2, ..., 0[sair]) 
+ //Fiz um na classe "TelaVenda" --- se quiserem uma referência.
+ public void exibir(){//Metodo//}
+
 }
