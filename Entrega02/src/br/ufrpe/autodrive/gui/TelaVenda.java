@@ -30,20 +30,22 @@ public class TelaVenda {
 
     public void BotaoRealizarVenda() {
         Scanner sc = new Scanner(System.in);
-        System.out.println("Iniciando venda...");
-        
-        // Simulação de entrada de dados
-        System.out.print("Informe o valor da venda: ");
-        double valor = sc.nextDouble();
-
-        // 1. CHAMA O GERENCIADOR (Lógica) e 2. RECEBE O BOOLEAN
-        boolean sucesso = control.efetuarVenda(valor); 
-
-        // 3. DECIDE A MENSAGEM (Responsabilidade da Tela)
+        System.out.println("\n--- INICIANDO VENDA ---");
+    
+        // Captura de dados simplificada para a interface
+        System.out.print("CPF do Cliente: ");
+        String cpfCliente = sc.nextLine();
+    
+        System.out.print("Valor da Entrada: ");
+        double entrada = sc.nextDouble();
+    
+        // O "control" (GerenciadorVenda) processa a lógica complexa
+        boolean sucesso = control.efetuarVenda(cpfCliente, entrada); 
+    
         if (sucesso) {
             System.out.println(">>> SUCESSO: Venda concluída com sucesso!");
         } else {
-            System.out.println(">>> ERRO: Falha ao realizar venda (Verifique o valor).");
+            System.out.println(">>> ERRO: Falha ao realizar venda (Verifique os dados ou entrada).");
         }
     }
 
