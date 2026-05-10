@@ -16,33 +16,14 @@ public class Notificacao {
         this.cliente = cliente;
         this.veiculo = veiculo;
     }
+    public Cliente getCliente() { return cliente; }
+    public Veiculo getVeiculo() { return veiculo; }
+    public double getQuilometragem() { return quilometragem; }
 
     // REQ10: revisão preventiva por tempo/km
     public boolean gerarAlerta() {
         int proxima = revisaoNumero + 1;
         // É mais intuitivo: "A quilometragem é maior ou igual ao alvo da próxima?"
         return (quilometragem >= proxima * 10000) || (mesesUso >= proxima * 12);
-    }
-    
-
-    public void notificarCliente() {
-        if (cliente == null || veiculo == null) {
-        System.out.println("Erro: Falha ao enviar notificação. Dados incompletos.");
-        return;
-        }
-
-        // Se não houver necessidade de revisão, encerra o método
-        if (!gerarAlerta()) {
-            return;
-        }
-        revisaoNumero++;
-        
-        System.out.println("ENVIANDO NOTIFICAÇÃO...");
-        System.out.println("Cliente: " + cliente.getNome());
-        System.out.println("Veículo: " + veiculo.getModelo());
-        System.out.println("Data: " + data);
-        System.out.println("KM atual: " + quilometragem);
-        System.out.println("Mensagem: Revisão preventiva necessária.");
-
     }
 }
