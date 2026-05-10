@@ -11,6 +11,7 @@ public interface IGerenciadorVenda {
      * @return true se passar em todas as regras de negócio e for salva, false caso contrário.
      */
     boolean efetuarVenda(Cliente c, Vendedor v, Veiculo veic, double entrada);
+    List<Notificacao> listarAlertasRevisao();
 
     // Você também pode adicionar outros métodos que a TelaVenda vai precisar
     // void cancelarVenda(String id);
