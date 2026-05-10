@@ -1,24 +1,44 @@
 package br.ufrpe.autodrive.negocio;
 
 import br.ufrpe.autodrive.dados.IRepositorioVendas;
+import br.ufrpe.autodrive.beans.Venda; // Importe sua classe de bean
 
 public class GerenciadorVenda implements IGerenciadorVenda {
-    private IRepositorioVendas repoV; // Conforme seu UML: image_68b498.png
+    private IRepositorioVendas repoV;
 
     public GerenciadorVenda(IRepositorioVendas repo) {
         this.repoV = repo;
     }
 
     @Override
-    public boolean efetuarVenda(double valor) {
-        // Exemplo de regra de negócio: Venda não pode ser valor zero ou negativo
-        if (valor > 0) {
-            // Se a lógica passar, ele mandaria salvar no repositório
-            // Venda v = new Venda(valor);
-            // repoV.salvar(v);
-            return true; // Retorna SUCESSO para a Tela
+    public boolean efetuarVenda(Venda venda) {
+        // 1. Aplica as regras de negócio (as validações que você fez nos prints)
+        if (venda != null && venda.getValorTotal() > 0) {
+            
+            // 2. CHAMA O REPOSITÓRIO para salvar (Método do seu UML de Dados)
+            this.repoV.adicionarVenda(venda); 
+            return true; 
         }
-        
-        return false; // Retorna FALHA para a Tela
+        return false;
+    }
+
+    // ADICIONE ESTES PARA BATER COM O REPOSITÓRIO:
+
+    @Override
+    public void adicionarVenda(Venda venda) {
+        // O Gerenciador recebe a venda da Tela e manda o Repositorio salvar
+        this.repoV.adicionarVenda(venda);
+    }
+    
+    @Override
+    public void procurarVenda(String cpf) {
+        // O Gerenciador repassa a busca por CPF para o Repositorio
+        this.repoV.procurarVenda(cpf);
+    }
+    
+    @Override
+    public void removerVenda() {
+        // O Gerenciador solicita a exclusão ao Repositorio
+        this.repoV.removerVenda();
     }
 }
