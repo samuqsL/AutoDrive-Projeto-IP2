@@ -2,6 +2,9 @@ package br.ufrpe.autodrive.gui;
 
 import java.util.Scanner;
 import br.ufrpe.autodrive.negocio.IGerenciadorVenda;
+import br.ufrpe.autodrive.negocio.beans.Notificacao;
+import java.util.Scanner;
+import java.util.List;
 
 public class TelaVenda {
     private IGerenciadorVenda control; 
