@@ -13,7 +13,7 @@ public class OrdemServico {
     private Cliente cliente;
     private Veiculo veiculo;
 
-    private List<Pecas> listaPecas;
+    private List<Pecas> listaPec
     private List<MaoDeObra> listaServicos;
 
     public OrdemServico() {
