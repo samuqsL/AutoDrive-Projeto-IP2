@@ -41,12 +41,4 @@ public class RepositorioVendasArray implements IRepositorioVendas {
     public List<Venda> listarTodasVendas() {
         return new ArrayList<>(ListaDeVendas);
     }
-
-    // Método para ajudar o Gerenciador a achar um carro sem precisar de outro repo
-    @Override
-    public Veiculo procurarVeiculoDisponivel() {
-        // Para testes, você pode retornar um veículo fixo ou 
-        // buscar em uma lista de veículos se você a tiver aqui
-        return null; 
-    }
 }
