@@ -36,46 +36,37 @@ public class TelaTestDrive {
         while (opcao != 0) {
             System.out.println("\n--- TELA DE TEST-DRIVE ---");
             System.out.println("1 - Agendar Test-Drive");
-            System.out.println("0 - Sair (Voltar ao Menu Principal)");
+            System.out.println("0 - Sair");
             System.out.print("Escolha uma opção: ");
 
             try {
                 opcao = Integer.parseInt(scanner.nextLine());
-
                 switch (opcao) {
-                    case 1:
-                        BotaoAgendarTestDrive(scanner);
-                        break;
-                    case 0:
-                        System.out.println("Retornando ao Menu Principal...");
-                        break;
-                    default:
-                        System.out.println("Opção inválida! Escolha 1 ou 0.");
+                    case 1: BotaoAgendarTestDrive(scanner); break;
+                    case 0: System.out.println("Saindo..."); break;
+                    default: System.out.println("Opção inválida!");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Entrada inválida! Por favor, digite um número.");
+                System.out.println("Digite um número válido!");
             }
         }
     }
 
     private void BotaoAgendarTestDrive(Scanner scanner) {
-        System.out.println("\n--- AGENDAR TEST-DRIVE ---");
-
-        System.out.print("Digite o CPF do Cliente: ");
+        System.out.println("\n--- NOVO AGENDAMENTO ---");
+        System.out.print("CPF do Cliente: ");
         String cpf = scanner.nextLine();
-
-        System.out.print("Digite o Chassi do Veículo: ");
+        System.out.print("Chassi do Veículo: ");
         String chassi = scanner.nextLine();
 
-        Cliente clienteSelecionado = new Cliente(); 
-        Veiculo veiculoSelecionado = null; 
+        // Aqui você buscaria os objetos reais via Fachada
+        Cliente c = new Cliente(); 
+        Veiculo v = null; 
 
-        boolean sucesso = this.control.agendarTestDrive(clienteSelecionado, veiculoSelecionado);
-
-        if (sucesso) {
-            System.out.println("Sucesso: Test-drive agendado com sucesso!");
+        if (this.control.agendarTestDrive(c, v)) {
+            System.out.println("SUCESSO: Agendamento realizado!");
         } else {
-            System.out.println("Erro: Não foi possível agendar o test-drive. Verifique se o cliente possui CNH válida e se o veículo está disponível.");
+            System.out.println("ERRO: CNH inválida ou veículo indisponível.");
         }
     }
 }
