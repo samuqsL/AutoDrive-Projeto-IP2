@@ -1,52 +1,28 @@
 package br.ufrpe.autodrive.negocio.beans;
 
-public class Cliente {
+public class Cliente extends Pessoa { // 1. Herança
+    // 2. APAGUEI nome, cpf e telefone daqui! Deixei só o que é do Cliente.
+    private String cnh;
+    private String email;
 
-  private String nome;
-  private String cpf;
-  private String cnh;
-  private String email;
-  private String telefone;
+    public Cliente() { super(); }
 
-  //Construtor default (sem valores - precisa settar atributos posteriormente!)
-  public Cliente() {}
+    public Cliente (String nome, String cpf, String cnh, String email, String telefone){
+        // 3. Envia os dados comuns para a classe mãe
+        super(nome, cpf, telefone); 
+        this.cnh = cnh;
+        this.email = email;
+    }
 
-  //Construtor 1 (Principal)
-  public Cliente (String nome, String cpf, String cnh, String email, String telefone){
-    this.nome = nome;
-    this.cpf = cpf;
-    this.cnh = cnh;
-    this.email = email;
-    this.telefone = telefone;
-  }
-  //Construtor 2 (overloading[simplificando] --> direciona pro construtor principal)
-   public Cliente (String nome, String cpf, String cnh){
-     this(nome, cpf, cnh, null, null);
-   }
+    // O overloading continua igual, ele chama o construtor de cima!
+    public Cliente (String nome, String cpf, String cnh){
+        this(nome, cpf, cnh, null, null);
+    }
 
-  //getters (pegar valor)
-  public String getNome() {return this.nome;}
-  public String getCpf() {return this.cpf;}
-  public String getCnh() {return this.cnh;}
-  public String getEmail() {return this.email;}
-  public String getTelefone() {return this.telefone;}
-  //setters (alterar valor)
-  public void setNome(String nome) {this.nome = nome;}
-  public void setCpf(String cpf) {this.cpf = cpf;}
-  public void setCnh(String cnh) {this.cnh = cnh;}
-  public void setEmail(String email) {this.email = email;}
-  public void setTelefone(String telefone) {this.telefone = telefone;}
-
-  // ------ //
+    // os getters e setters de Nome, CPF e Telefone (já estão na Pessoa)
+    
+    public String getCnh() { return cnh; }
+    public void setCnh(String cnh) { this.cnh = cnh; }
   
-  //Metodo 1 (atualizar informações do cliente, apenas atributos alteravéis)
-  public void atualizarCadastro(String nome, String cnh, String email, String telefone){
-    setNome(nome);
-    setCnh(cnh);
-    setEmail(email);
-    setTelefone(telefone);
-  }
-  public boolean validarCnhCliente() {
-    return this.cnh != null && !this.cnh.isEmpty();
-}
+    // ... restante dos métodos específicos ...
 }
