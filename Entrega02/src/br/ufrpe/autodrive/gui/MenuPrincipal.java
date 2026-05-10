@@ -37,7 +37,9 @@ public class MenuPrincipal {
 
         switch(op) {
             case 1:
-                this.abrirTelaVenda(); // Chama o método que você já criou
+                this.abrirTelaVenda(); // Chama o método que você já criou!
+                // Quando o código chegar aqui, significa que a TelaVenda fechou.
+                System.out.println("\n--- Retornando ao Menu Principal ---");
                 break;
             case 2:
                 this.abrirTelaOficina();
