@@ -1,5 +1,10 @@
 package br.ufrpe.autodrive.negocio;
 
-public interface IGerenciadorTestDrive {
+import br.ufrpe.autodrive.negocio.beans.Cliente;
+import br.ufrpe.autodrive.negocio.beans.Veiculo;
 
+public interface IGerenciadorTestDrive {
+    
+    boolean agendarTestDrive(Cliente cliente, Veiculo veiculo);
+    
 }
