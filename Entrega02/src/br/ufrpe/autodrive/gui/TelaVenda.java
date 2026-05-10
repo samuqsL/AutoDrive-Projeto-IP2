@@ -16,7 +16,7 @@ public class TelaVenda {
         int op = -1;
 
         while (op != 0) {
-            System.out.println("\n--- MÓDULO DE VENDAS ---");
+            System.out.println("\n--- TELA DE VENDAS ---");
             System.out.println("1. Realizar Nova Venda");
             System.out.println("2. Verificar Necessidade de Reparo (Alertas)"); // OPÇÃO NOVA
             System.out.println("0. Voltar ao Menu");
