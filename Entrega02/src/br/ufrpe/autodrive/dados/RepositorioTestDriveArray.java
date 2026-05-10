@@ -4,11 +4,11 @@ import br.ufrpe.autodrive.negocio.beans.TestDrive;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RepositorioTestDrive implements IRepositorioTD {
+public class RepositorioTestDriveArray implements IRepositorioTD {
 
     private List<TestDrive> testDrives;
 
-    public RepositorioTestDrive() {
+    public RepositorioTestDriveArray() {
         this.testDrives = new ArrayList<>();
     }
 
