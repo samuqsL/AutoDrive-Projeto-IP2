@@ -26,22 +26,22 @@ public class GerenciadorVenda implements IGerenciadorVenda {
     public List<Notificacao> listarAlertasRevisao() {
         List<Notificacao> filtrados = new ArrayList<>();
         
-        // Supondo que seu repositório tenha um método para listar tudo
-        // repoV é o IRepositorioVendas que você já tem na classe!
-        for (Venda v : repoV.listarTodasVendas()) { 
-            
-            // Criamos a Notificacao com os dados da Venda atual
+        // Pegamos a lista real do repositório
+        List<Venda> todasAsVendas = repoV.listarTodasVendas(); 
+    
+        for (Venda v : todasAsVendas) { 
+            // USANDO INFORMAÇÕES REAIS DA VENDA:
             Notificacao n = new Notificacao(
-                v.getVeiculo().getKm(), 
-                0, // revisaoNumero inicial
-                "10/05/2026", 
-                12, // mesesUso (exemplo)
+                v.getVeiculo().getQuilometragem(), // Pega a KM atual do carro vendido
+                0,                                 // Começa na revisão 0
+                v.getDataVenda().toString(),       // Pega a data real da venda
+                v.calcularMesesUso(),              // Método na Venda que calcula meses até hoje
                 v.getCliente(), 
                 v.getVeiculo()
             );
     
-            // Se a lógica da Bean disser que precisa, adicionamos na lista
-            if (n.deveGerarAlerta()) {
+            // O Gerenciador usa a lógica da Bean
+            if (n.gerarAlerta()) {
                 filtrados.add(n);
             }
         }
