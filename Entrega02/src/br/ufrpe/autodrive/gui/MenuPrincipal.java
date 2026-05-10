@@ -64,16 +64,16 @@ public class MenuPrincipal {
 
     public void abrirTelaOficina() {
         TelaOficina telaO = new TelaOficina(this.gOficina);
-        telaO.exibir();
+        telaO.exibir(); // Método na TelaOficina que inicia a interação
     }
 
     public void abrirTelaRelatorio() {
         TelaRelatorio telaR = new TelaRelatorio(this.gRelatorio);
-        telaR.exibir();
+        telaR.exibir(); // Método na TelaRelatorio que inicia a interação
     }
 
     public void abrirTelaTestDrive() {
         TelaTestDrive TelaT = new TelaTestDrive(this.gTestDrive);
-        TelaT.exibir();
+        TelaT.exibir(); // Método na TelaTestDrive que inicia a interação
     }
 }
