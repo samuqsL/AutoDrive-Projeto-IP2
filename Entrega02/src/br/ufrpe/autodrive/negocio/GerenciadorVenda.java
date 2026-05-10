@@ -1,23 +1,30 @@
 package br.ufrpe.autodrive.negocio;
 
 import br.ufrpe.autodrive.dados.IRepositorioVendas;
-import br.ufrpe.autodrive.beans.Venda; // Importe sua classe de bean
+import br.ufrpe.autodrive.dados.IRepositorioClientes;
+import br.ufrpe.autodrive.negocio.beans.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GerenciadorVenda implements IGerenciadorVenda {
     private IRepositorioVendas repoV;
+    private IRepositorioClientes repoC;
 
-    public GerenciadorVenda(IRepositorioVendas repo) {
-        this.repoV = repo;
+    public GerenciadorVenda(IRepositorioVendas repoV, IRepositorioClientes repoC) {
+        this.repoV = repoV;
+        this.repoC = repoC;
     }
 
     @Override
-    public boolean efetuarVenda(Venda venda) {
-        // 1. Aplica as regras de negócio (as validações que você fez nos prints)
-        if (venda != null && venda.getValorTotal() > 0) {
-            
-            // 2. CHAMA O REPOSITÓRIO para salvar (Método do seu UML de Dados)
-            this.repoV.adicionarVenda(venda); 
-            return true; 
+    public boolean efetuarVenda(Cliente c, Vendedor v, Veiculo veic, double entrada) {
+        // 1. O Gerenciador usa o construtor da Venda (Negócio)
+        Venda novaVenda = new Venda(c, v, veic, entrada);
+
+        // 2. Chama o método de negócio da classe Venda
+        if (novaVenda.realizarVenda()) {
+            // 3. Se a lógica de negócio passar, salva no repositório
+            this.repoV.adicionarVenda(novaVenda);
+            return true;
         }
         return false;
     }
@@ -25,22 +32,19 @@ public class GerenciadorVenda implements IGerenciadorVenda {
     @Override
     public List<Notificacao> listarAlertasRevisao() {
         List<Notificacao> filtrados = new ArrayList<>();
-        
-        // Pegamos a lista real do repositório
-        List<Venda> todasAsVendas = repoV.listarTodasVendas(); 
-    
-        for (Venda v : todasAsVendas) { 
-            // USANDO INFORMAÇÕES REAIS DA VENDA:
+        List<Venda> todasAsVendas = repoV.listarTodasVendas();
+
+        for (Venda v : todasAsVendas) {
+            // Cria a notificação com os dados da venda salva
             Notificacao n = new Notificacao(
-                v.getVeiculo().getQuilometragem(), // Pega a KM atual do carro vendido
-                0,                                 // Começa na revisão 0
-                v.getDataVenda().toString(),       // Pega a data real da venda
-                v.calcularMesesUso(),              // Método na Venda que calcula meses até hoje
-                v.getCliente(), 
+                v.getVeiculo().getQuilometragem(),
+                0,
+                v.getDataVenda().toString(),
+                v.calcularMesesUso(),
+                v.getCliente(),
                 v.getVeiculo()
             );
-    
-            // O Gerenciador usa a lógica da Bean
+
             if (n.gerarAlerta()) {
                 filtrados.add(n);
             }
@@ -48,23 +52,19 @@ public class GerenciadorVenda implements IGerenciadorVenda {
         return filtrados;
     }
 
-    // ADICIONANDO ESTES PARA BATER COM O REPOSITÓRIO:
-
+    // Métodos de repasse para o Repositório
     @Override
     public void adicionarVenda(Venda venda) {
-        // O Gerenciador recebe a venda da Tela e manda o Repositorio salvar
         this.repoV.adicionarVenda(venda);
     }
-    
+
     @Override
     public void procurarVenda(String cpf) {
-        // O Gerenciador repassa a busca por CPF para o Repositorio
         this.repoV.procurarVenda(cpf);
     }
-    
+
     @Override
     public void removerVenda() {
-        // O Gerenciador solicita a exclusão ao Repositorio
         this.repoV.removerVenda();
     }
 }
