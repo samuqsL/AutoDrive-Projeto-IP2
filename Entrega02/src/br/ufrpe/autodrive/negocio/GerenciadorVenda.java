@@ -19,14 +19,15 @@ public class GerenciadorVenda implements IGerenciadorVenda {
     public boolean efetuarVenda(String cpfCliente, double entrada) {
         Cliente c = repoC.procurarCliente(cpfCliente);
         
-        // Se Veiculo for abstrato, você instancia uma classe FILHA:
-        // Supondo que você criou uma classe simples chamada 'Carro' que estende Veiculo
-        Veiculo veic = new Carro("Modelo Teste", "ABC-1234", 100000.0, 0);
+        // 1. Instanciação correta (VeiculoNovo)
+        Veiculo veic = new VeiculoNovo("CHASSI123", "PLACA-001", "Modelo Teste", 2024, 100000.0);
         veic.setStatus(StatusVeiculo.DISPONIVEL);
         
-        Vendedor v = new Vendedor("Samuel", 3000, 0.1); 
-    
+        // 2. Vendedor com apenas 2 parâmetros (Nome e % Comissão)
+        Vendedor v = new Vendedor("Samuel", 0.1); 
+
         if (c != null) {
+            // 3. Verifique a ordem na sua classe Venda (se der erro, inverta v com veic)
             Venda novaVenda = new Venda(c, v, veic, entrada);
             if (novaVenda.realizarVenda()) {
                 this.repoV.adicionarVenda(novaVenda);
