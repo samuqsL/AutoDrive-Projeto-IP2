@@ -17,8 +17,6 @@
 package br.ufrpe.autodrive.gui;
 
 import br.ufrpe.autodrive.negocio.IGerenciadorTestDrive;
-import br.ufrpe.autodrive.negocio.beans.Cliente;
-import br.ufrpe.autodrive.negocio.beans.Veiculo;
 import java.util.Scanner;
 
 public class TelaTestDrive {
