@@ -1,24 +1,68 @@
-/**
- * ORIENTAÇÃO DE IMPLEMENTAÇÃO (PADRÃO GUI):
- * * 1. MÉTODO exibir(): Deve conter um loop (while) que mantém a tela ativa 
- * até que o usuário digite '0'. Use um switch/case para ler as opções.
- 
- * * 2. LÓGICA DE NAVEGAÇÃO: Ao escolher '0', o loop deve encerrar. Isso fará 
- * com que o método termine e o controle retorne automaticamente para o MenuPrincipal.
- 
- * * 3. MÉTODOS "BOTAO": As opções do switch devem chamar os métodos específicos 
- * da classe (ex: BotaoRealizarVenda).
- 
- * * 4. FLUXO DE DADOS: O método da tela lê os dados (Scanner) -> Chama o Gerenciador 
- * (Control) -> Recebe um boolean -> A tela decide qual mensagem exibir (if/else).
- * * NOTA: Nenhuma lógica de negócio ou print deve existir fora das classes GUI.
- */
 package br.ufrpe.autodrive.gui;
 
+import java.util.Scanner;
+import java.util.List;
+import br.ufrpe.autodrive.negocio.IGerenciadorRelatorio;
+import br.ufrpe.autodrive.negocio.beans.Venda;
+import br.ufrpe.autodrive.negocio.beans.OrdemServico;
+
 public class TelaRelatorio {
+    private IGerenciadorRelatorio control;
 
- //exibir() é Metodo pra todas as classes! (painelzinho com opções(1, 2, ..., 0[sair]) 
- //Fiz um na classe "TelaVenda" --- se quiserem uma referência.
- public void exibir(){//Metodo//}
+    public TelaRelatorio(IGerenciadorRelatorio control) {
+        this.control = control;
+    }
 
+    public void exibir() {
+        Scanner leitor = new Scanner(System.in);
+        int op = -1;
+
+        while (op != 0) {
+            System.out.println("\n--- SISTEMA DE RELATÓRIOS ---");
+            System.out.println("1. Relatório Geral de Vendas");
+            System.out.println("2. Relatório Geral de Oficina (OS)");
+            System.out.println("0. Voltar");
+            System.out.print("Escolha: ");
+
+            if (leitor.hasNextInt()) {
+                op = leitor.nextInt();
+            } else {
+                leitor.next(); 
+                continue;
+            }
+
+            if (op == 1) this.botaoRelatorioVendas();
+            if (op == 2) this.botaoRelatorioOS();
+        }
+    }
+
+    public void botaoRelatorioVendas() {
+        List<Venda> vendas = control.gerarRelatorioVendas();
+        
+        System.out.println("\n--- Relatório Geral de Vendas ---");
+        
+        
+        if (vendas == null || vendas.size() == 0) {
+            System.out.println("Nenhuma venda cadastrada no sistema.");
+        } else {
+            for (Venda v : vendas) {
+                System.out.println("Venda: R$ " + v.getValorTotal() + " | Data: " + v.getDataVenda());
+            }
+        }
+    }
+
+    public void botaoRelatorioOS() {
+        List<OrdemServico> ordens = control.gerarRelatorioOS();
+        
+        System.out.println("\n--- Relatório Geral da Oficina ---");
+        
+        
+        if (ordens == null || ordens.size() == 0) {
+            System.out.println("Nenhuma Ordem de Serviço encontrada.");
+        } else {
+            for (OrdemServico os : ordens) {
+                System.out.println("OS Nº: " + os.getNumero() + " | Status: " + os.getStatus());
+            }
+        }
+    }
 }
