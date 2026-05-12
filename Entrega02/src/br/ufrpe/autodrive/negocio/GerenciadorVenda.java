@@ -8,7 +8,7 @@ import java.util.List;
 
 public class GerenciadorVenda implements IGerenciadorVenda {
     private IRepositorioVendas repoV;
-    private IRepositorioClientes repoC; // Agora ele tem acesso aos clientes também
+    private IRepositorioClientes repoC;
 
     public GerenciadorVenda(IRepositorioVendas repoV, IRepositorioClientes repoC) {
         this.repoV = repoV;
@@ -27,7 +27,6 @@ public class GerenciadorVenda implements IGerenciadorVenda {
         Vendedor v = new Vendedor("Samuel", 0.1); 
 
         if (c != null) {
-            // 3. Verifique a ordem na sua classe Venda (se der erro, inverta v com veic)
             Venda novaVenda = new Venda(c, v, veic, entrada);
             if (novaVenda.realizarVenda()) {
                 this.repoV.adicionarVenda(novaVenda);
