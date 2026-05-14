@@ -4,6 +4,7 @@ import br.ufrpe.autodrive.negocio.beans.Cliente;
 
 public interface IRepositorioClientes {
     void adicionarCliente(Cliente cliente);
-    Cliente procurarCliente(String cpf); // Mudei para retornar Cliente para o Gerenciador usar
+    Cliente procurarCliente(String cpf);
     void removerCliente(Cliente cliente);
+    List<Cliente> listarClientes();
 }
