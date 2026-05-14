@@ -21,4 +21,14 @@ public class RepositorioTestDriveArray implements IRepositorioTD {
     public List<TestDrive> listarTestDrives() {
         return this.testDrives;
     }
+
+    @Override
+    public TestDrive procurarTestDrive(String chassi) {
+        for (TestDrive td : testDrives) {
+            if (td.getVeiculo().getChassi().equals(chassi)) {
+                return td;
+            }
+        }
+        return null;
+    }
 }
