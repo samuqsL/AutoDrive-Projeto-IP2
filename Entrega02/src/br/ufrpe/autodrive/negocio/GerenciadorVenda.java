@@ -6,13 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GerenciadorVenda implements IGerenciadorVenda {
-    // --- 1. ATRIBUTOS (Agora com todos os repositórios necessários) ---
+    
     private IRepositorioVendas repoV;
     private IRepositorioClientes repoC;
     private IRepositorioVendedores repoVend;
     private IRepositorioVeiculos repoVeic;
 
-    // --- 2. CONSTRUTOR (Recebendo as novas dependências) ---
     public GerenciadorVenda(IRepositorioVendas repoV, IRepositorioClientes repoC, 
                             IRepositorioVendedores repoVend, IRepositorioVeiculos repoVeic) {
         this.repoV = repoV;
@@ -21,36 +20,34 @@ public class GerenciadorVenda implements IGerenciadorVenda {
         this.repoVeic = repoVeic;
     }
 
-    // --- 3. EFETUAR VENDA (Agora 100% dinâmico) ---
     @Override
-    public boolean efetuarVenda(String cpfCliente, String chassi, String nomeVendedor, double entrada) {
-        // Busca os objetos reais nos repositórios em vez de instanciar fixo
+    public boolean efetuarVenda(int numero, String cpfCliente, String chassi, String nomeVendedor, double entrada) {
         Cliente c = repoC.procurarCliente(cpfCliente);
         Vendedor v = repoVend.procurarVendedor(nomeVendedor);
         Veiculo veic = repoVeic.procurarVeiculo(chassi);
 
-        // Validação: Todos os envolvidos precisam existir e o carro deve estar disponível
-        if (c != null && v != null && veic != null) {
-            if (veic.getStatus() == StatusVeiculo.DISPONIVEL) {
-                
-                Venda novaVenda = new Venda(c, v, veic, entrada);
-                
-                // O realizarVenda() processa comissão e data
-                if (novaVenda.realizarVenda()) {
-                    this.repoV.adicionarVenda(novaVenda);
-                    return true;
-                }
+        // AJUSTE: Mudei para procurarVenda(numero)
+        if (c != null && v != null && veic != null && repoV.procurarVenda(numero) == null) {
+            
+            Venda novaVenda = new Venda(numero, c, v, veic, entrada);
+            
+            if (novaVenda.realizarVenda()) {
+                this.repoV.adicionarVenda(novaVenda); // Bate com IRepositorio
+                return true;
             }
         }
         return false;
     }
-    
-    // --- OS DEMAIS PERMANECEM IGUAIS (Apenas verifique os nomes dos métodos no repoV) ---
+
+    @Override
+    public Venda procurarVenda(int numero) {
+        // AJUSTE: Mudei para procurarVenda(numero)
+        return this.repoV.procurarVenda(numero);
+    }
     
     @Override
     public List<Notificacao> listarAlertasRevisao() {
         List<Notificacao> filtrados = new ArrayList<>();
-        // Verifique se no seu IRepositorioVendas o nome é listarTodasVendas() ou listarVendas()
         List<Venda> todasAsVendas = repoV.listarTodasVendas(); 
 
         for (Venda v : todasAsVendas) {
@@ -69,14 +66,10 @@ public class GerenciadorVenda implements IGerenciadorVenda {
         }
         return filtrados;
     }
-
+    
     @Override
-    public Venda procurarVenda(String cpf) {
-        return this.repoV.procurarVenda(cpf);
-    }
-
-    @Override
-    public void removerVenda() {
-        this.repoV.removerVenda();
+    public void removerVenda(int numero) {
+        // Ajuste: Sincronizado com a interface do repositório
+        this.repoV.removerVenda(numero);
     }
 }
