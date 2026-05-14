@@ -30,10 +30,19 @@ public class RepositorioVendasArray implements IRepositorioVendas {
         return null;
     }
 
+   // No RepositorioVendasArray
     @Override
-    public void removerVenda() {
-        if (!ListaDeVendas.isEmpty()) {
-            this.ListaDeVendas.remove(ListaDeVendas.size() - 1);
+    public void removerVenda(int numero) {
+        Venda alvo = null;
+        for (Venda v : ListaDeVendas) {
+            // Supondo que adicionou getNumero() em Venda
+            if (v.getNumero() == numero) { 
+                alvo = v;
+                break;
+            }
+        }
+        if (alvo != null) {
+            this.ListaDeVendas.remove(alvo);
         }
     }
 
