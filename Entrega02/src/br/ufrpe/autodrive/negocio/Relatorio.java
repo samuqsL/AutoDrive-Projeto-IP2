@@ -1,4 +1,7 @@
-package br.ufrpe.autodrive.negocio.beans;
+package br.ufrpe.autodrive.negocio;
+
+import br.ufrpe.autodrive.negocio.beans.Venda;
+import br.ufrpe.autodrive.negocio.beans.OrdemServico;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +16,10 @@ public class Relatorio {
         this.listaOs = (ordens != null) ? new ArrayList<>(ordens) : new ArrayList<>();
     }
 
-    // Filtros para o REQ09
+    public List<Venda> getListaVendas() { return listaVendas; }
+    public List<OrdemServico> getListaOs() { return listaOs; }
+
+    // Filtra vendas por nome do vendedor (ignora maiúsculas/minúsculas)
     public List<Venda> filtrarPorVendedor(String nomeVendedor) {
         List<Venda> filtradas = new ArrayList<>();
         for (Venda v : listaVendas) {
@@ -24,6 +30,7 @@ public class Relatorio {
         return filtradas;
     }
 
+    // Filtra vendas entre duas datas
     public List<Venda> filtrarPorPeriodo(LocalDate inicio, LocalDate fim) {
         List<Venda> filtradas = new ArrayList<>();
         for (Venda v : listaVendas) {
@@ -35,21 +42,14 @@ public class Relatorio {
         return filtradas;
     }
 
-    // Cálculos para o REQ11
-    public double[] calcularLucratividadeOficina() {
-        double lucroPecas = 0;
-        double totalServicos = 0;
-    
+    public double[] calcularLucratividade() {
+        double receitaPecas = 0;
+        double receitaServicos = 0;
+
         for (OrdemServico os : listaOs) {
-            os.calcularTotal(); 
-            
-            for (Pecas p : os.getListaPecas()) {
-                lucroPecas += p.custoPecas();
-            }
-            for (MaoDeObra m : os.getListaServicos()) {
-                totalServicos += m.calcularCusto();
-            }
+            receitaPecas += os.getValorPecas(); 
+            receitaServicos += os.getValorMaoDeObra();
         }
-        return new double[]{lucroPecas, totalServicos};
+        return new double[]{receitaPecas, receitaServicos};
     }
 }
