@@ -8,7 +8,7 @@
 package br.ufrpe.autodrive.negocio.beans;
 
 //classe mae de "VeiculoNovo" e "VeiculoSeminovo"
-abstract class Veiculo {
+public abstract class Veiculo {
 	//atributos
 	private String chassi;
 	private String renavam;
