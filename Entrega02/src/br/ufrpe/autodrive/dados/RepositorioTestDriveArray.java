@@ -19,7 +19,7 @@ public class RepositorioTestDriveArray implements IRepositorioTD {
 
     @Override
     public List<TestDrive> listarTestDrives() {
-        return this.testDrives;
+        return new ArrayList<TestDrive>(this.testDrives);
     }
 
     @Override
@@ -30,5 +30,13 @@ public class RepositorioTestDriveArray implements IRepositorioTD {
             }
         }
         return null;
+    }
+
+    @Override
+    public void removerTestDrive(String chassi) {
+        TestDrive tdEncontrado = procurarTestDrive(chassi);
+        if (tdEncontrado != null) {
+            this.testDrives.remove(tdEncontrado);
+        }
     }
 }
