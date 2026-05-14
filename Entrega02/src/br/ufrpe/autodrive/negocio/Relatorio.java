@@ -36,16 +36,20 @@ public class Relatorio {
     }
 
     // Cálculos para o REQ11
-    public double[] calcularLucratividade() {
-        double pecas = 0;
-        double servicos = 0;
+    public double[] calcularLucratividadeOficina() {
+        double lucroPecas = 0;
+        double totalServicos = 0;
+    
         for (OrdemServico os : listaOs) {
-            for (Pecas p : os.getListaPecas()) pecas += p.custoPecas();
-            for (MaoDeObra m : os.getListaServicos()) servicos += m.calcularCusto();
+            os.calcularTotal(); 
+            
+            for (Pecas p : os.getListaPecas()) {
+                lucroPecas += p.custoPecas();
+            }
+            for (MaoDeObra m : os.getListaServicos()) {
+                totalServicos += m.calcularCusto();
+            }
         }
-        return new double[]{pecas, servicos};
+        return new double[]{lucroPecas, totalServicos};
     }
-
-    public List<Venda> getListaVendas() { return new ArrayList<>(listaVendas); }
-    public List<OrdemServico> getListaOs() { return new ArrayList<>(listaOs); }
 }
