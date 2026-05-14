@@ -1,13 +1,20 @@
 package br.ufrpe.autodrive.negocio;
 
-import br.ufrpe.autodrive.negocio.beans.Notificacao;
-import br.ufrpe.autodrive.negocio.beans.Venda;
 import java.util.List;
+import br.ufrpe.autodrive.negocio.beans.Venda;
+import br.ufrpe.autodrive.negocio.beans.Notificacao;
 
 public interface IGerenciadorVenda {
-    // Agora recebe o nome do vendedor para buscá-lo no repositório
-    boolean efetuarVenda(String cpfCliente, String nomeVendedor, double entrada);
+
+    // 1. Efetuar Venda: Agora recebe o numero da venda e as Strings para busca
+    boolean efetuarVenda(int numero, String cpfCliente, String chassi, String nomeVendedor, double entrada);
+
+    // 2. Listar Alertas: Retorna a lista de notificações para a TelaVenda
     List<Notificacao> listarAlertasRevisao();
-    Venda procurarVenda(String cpf);
-    void removerVenda();
+
+    // 3. Procurar: Ajustado para buscar pelo número único
+    Venda procurarVenda(int numero);
+
+    // 4. Remover: Ajustado para remover por número (identificador único)
+    void removerVenda(int numero);
 }
