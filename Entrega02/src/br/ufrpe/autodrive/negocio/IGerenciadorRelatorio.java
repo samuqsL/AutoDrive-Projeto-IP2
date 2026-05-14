@@ -1,11 +1,8 @@
 package br.ufrpe.autodrive.negocio;
 
-import br.ufrpe.autodrive.negocio.beans.Relatorio;
+import br.ufrpe.autodrive.negocio.Relatorio;
 
 public interface IGerenciadorRelatorio {
-    /**
-     * Captura os dados dos repositórios de Vendas e OS 
-     * e os encapsula em um objeto Relatorio para processamento.
-     */
-    Relatorio gerarDadosRelatorio();
+    // Método que a Tela vai chamar para obter o "pacote" de dados
+    public Relatorio gerarDadosRelatorio();
 }
