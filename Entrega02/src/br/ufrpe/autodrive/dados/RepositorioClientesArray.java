@@ -1,6 +1,7 @@
 package br.ufrpe.autodrive.dados;
 
 import br.ufrpe.autodrive.negocio.beans.Cliente;
+import java.util.List;
 import java.util.ArrayList;
 
 public class RepositorioClientesArray implements IRepositorioClientes {
