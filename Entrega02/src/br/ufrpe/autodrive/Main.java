@@ -6,27 +6,34 @@ import br.ufrpe.autodrive.negocio.*;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
-        // 1. Instanciar os Repositórios (Persistência)
-        IRepositorioVendas repoVendas = new RepositorioVendas(); // Supondo que o nome seja este
-        IRepositorioOS repoOS = new RepositorioOS();
-        // Adicione outros repositórios conforme sua necessidade (Clientes, Veiculos, etc)
+	public static void main(String[] args) {
+	    // 1. REPOSITÓRIOS (Nomes exatos das classes de dados)
+	    IRepositorioVendas rv = new RepositorioVendasArray(); 
+	    IRepositorioOS rs = new RepositorioOsArray();
+	    IRepositorioClientes rc = new RepositorioClientesArray();
+	    IRepositorioVendedores rVend = new RepositorioVendedoresArray();
+	    IRepositorioVeiculos rVeic = new RepositorioVeiculosArray();
+	    
+	    // CORREÇÃO AQUI: O nome correto!
+	    IRepositorioTD rTd = new RepositorioTestDriveArray(); //
 
-        // 2. Instanciar os Gerenciadores (Negócio)
-        // Passamos os repositórios para que os gerenciadores saibam onde salvar/buscar
-        IGerenciadorVenda gVenda = new GerenciadorVenda(repoVendas);
-        IGerenciadorOficina gOficina = new GerenciadorOficina(repoOS);
-        IGerenciadorRelatorio gRelatorio = new GerenciadorRelatorio(repoVendas, repoOS);
-        IGerenciadorTestDrive gTestDrive = new GerenciadorTestDrive(); 
+	    // 2. GERENCIADORES
+	    
+	    // Venda: precisa de 4 repositórios
+	    IGerenciadorVenda gv = new GerenciadorVenda(rv, rc, rVend, rVeic);
 
-        // 3. Instanciar o Menu Principal (GUI)
-        // O Menu recebe todos os gerenciadores para distribuir para as telas filhas
-        MenuPrincipal menu = new MenuPrincipal(gVenda, gOficina, gRelatorio, gTestDrive);
+	    // Oficina: precisa de 3 repositórios
+	    IGerenciadorOficina go = new GerenciadorOficina(rs, rc, rVeic);
 
-        // 4. Iniciar o Sistema
-        System.out.println("SISTEMA AUTO DRIVE INICIALIZADO COM SUCESSO!");
-        menu.exibirMenu();
-        
-        System.out.println("Sistema encerrado. Até logo!");
-    }
+	    // Relatorio: precisa de 2 repositórios
+	    IGerenciadorRelatorio gr = new GerenciadorRelatorio(rv, rs);
+
+	    // TestDrive: precisa de 3 repositórios
+	    IGerenciadorTestDrive gt = new GerenciadorTestDrive(rTd, rc, rVeic);
+
+	    // 3. INICIALIZAÇÃO DA INTERFACE
+	    MenuPrincipal menu = new MenuPrincipal(gv, go, gr, gt);
+	    System.out.println("SISTEMA AUTO DRIVE INICIALIZADO!");
+	    menu.exibirMenu();
+	}
 }
