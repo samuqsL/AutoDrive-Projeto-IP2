@@ -1,43 +1,55 @@
 package br.ufrpe.autodrive;
 
 import br.ufrpe.autodrive.dados.*;
-import br.ufrpe.autodrive.gui.MenuPrincipal;
 import br.ufrpe.autodrive.negocio.*;
-import java.util.Scanner;
+import br.ufrpe.autodrive.negocio.beans.*; // Importa Cliente, Veiculo, Vendedor...
+import br.ufrpe.autodrive.gui.ScreenManager;
+import javafx.application.Application;
+import javafx.stage.Stage;
 
-public class Main {
-	public static void main(String[] args) {
-	    // 1. REPOSITÓRIOS (Nomes exatos das classes de dados)
-	    IRepositorioVendas rv = new RepositorioVendasArray(); 
-	    IRepositorioOS rs = new RepositorioOsArray();
-	    IRepositorioClientes rc = new RepositorioClientesArray();
-	    IRepositorioVendedores rVend = new RepositorioVendedoresArray();
-	    IRepositorioVeiculos rVeic = new RepositorioVeiculosArray();
-	    IRepositorioTD rTd = new RepositorioTestDriveArray();
-	    
-	    //2. Instancias de Cliente, Veiculo, Vendedor, Mecanico etc (Fundamentais para Telas/Gerenciadores)
-	    /*
-	    *
-	    *                          (ADICIONAR)
-	    *
-	    */
+public class Main extends Application {
 
-	    // 3. GERENCIADORES
-	    // Venda: precisa de 4 repositórios
-	    IGerenciadorVenda gv = new GerenciadorVenda(rv, rc, rVend, rVeic);
+    // 🟢 O MÉTODO START É O VERDADEIRO INICIALIZADOR DO SEU SISTEMA VISUAL
+    @Override
+    public void start(Stage primaryStage) {
+        // Passo 1: Criar os repositórios normais em memória
+        IRepositorioVendas repoVendas = new RepositorioVendasArray();
+        IRepositorioClientes repoClientes = new RepositorioClientesArray();
+        IRepositorioVeiculos repoVeiculos = new RepositorioVeiculosArray();
+        IRepositorioVendedores repoVendedores = new RepositorioVendedoresArray();
+        IRepositorioOS repoOS = new RepositorioOsArray();
+        IRepositorioTD repoTestDrive = new RepositorioTestDriveArray();
+        
+        // Passo 2: Instanciar e guardar os objetos de teste (Popular as listas)
+        Cliente c1 = new Cliente("123.456.789-00", "Samuel Silva");
+        repoClientes.adicionarCliente(c1);
+        
+        Veiculo v1 = new Veiculo("93X82KAA", "Chevrolet Onix", 75000.00);
+        repoVeiculos.adicionarVeiculo(v1); 
+        
+        Vendedor vend1 = new Vendedor("Artur M.", "111.222.333-44");
+        repoVendedores.adicionarVendedor(vend1);
+        
+        System.out.println("-> [Main] Objetos de teste adicionados com sucesso antes das telas abrirem!");
 
-	    // Oficina: precisa de 3 repositórios
-	    IGerenciadorOficina go = new GerenciadorOficina(rs, rc, rVeic);
+        // Passo 3: Criar os Gerenciadores passando as listas preenchidas
+        IGerenciadorVenda gVenda = new GerenciadorVenda(repoVendas, repoClientes, repoVendedores, repoVeiculos);
+        IGerenciadorOficina gOficina = new GerenciadorOficina(repoOS, repoVeiculos, repoClientes);
+        IGerenciadorRelatorio gRelatorio = new GerenciadorRelatorio(repoVendas);
+        IGerenciadorTestDrive gTestDrive = new GerenciadorTestDrive(repoTestDrive, repoVeiculos, repoClientes);
+        
+        // Passo 4: Configurar o palco principal na central de telas (ScreenManager)
+        ScreenManager.getInstance().setMainStage(primaryStage);
+        
+        // Passo 5: Injetar as regras de negócio em todas as telas carregadas
+        ScreenManager.getInstance().injetarGerenciadoresNasTelas(gVenda, gOficina, gRelatorio, gTestDrive); 
+        
+        // Passo 6: Mostrar o Menu Principal dentro da janela de 1024x768
+        ScreenManager.getInstance().showMenuPrincipal();
+    }
 
-	    // Relatorio: precisa de 2 repositórios
-	    IGerenciadorRelatorio gr = new GerenciadorRelatorio(rv, rs);
-
-	    // TestDrive: precisa de 3 repositórios
-	    IGerenciadorTestDrive gt = new GerenciadorTestDrive(rTd, rc, rVeic);
-
-	    // 3. INICIALIZAÇÃO DA INTERFACE (criar interfaces gráficas (GUI), Utilizando JavaFX: (MENUPRINCIPAL e TELAS - (*alterações*)
-	    MenuPrincipal menu = new MenuPrincipal(gv, go, gr, gt);
-	    System.out.println("SISTEMA AUTO DRIVE INICIALIZADO!");
-	    menu.exibirMenu();
-	}
+    // ⚠️ O MÉTODO MAIN APENAS DA A PARTIDA NO MOTOR GRÁFICO
+    public static void main(String[] args) {
+        launch(args); // <- Ele congela aqui, chama o start() lá de cima, e só descongela quando o app fechar!
+    }
 }
