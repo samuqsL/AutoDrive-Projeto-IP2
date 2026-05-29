@@ -1,14 +1,14 @@
 package br.ufrpe.autodrive.gui;
 
+import java.util.List;
+
 import br.ufrpe.autodrive.negocio.IGerenciadorVenda;
 import br.ufrpe.autodrive.negocio.beans.Notificacao;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.Pane; // Ou VBox/AnchorPane dependendo do container usado no seu FXML
-import java.util.List;
+import javafx.scene.layout.VBox;
 
 public class TelaVenda {
 
@@ -17,8 +17,8 @@ public class TelaVenda {
     // =========================================================================
     
     // Gerenciadores de Layout (Painéis Invisíveis/Visíveis)
-    @FXML private Pane painelMenuVendas;
-    @FXML private Pane painelFormulario;
+    @FXML private VBox painelMenuVendas;
+    @FXML private VBox painelFormulario;
 
     // Campos de Entrada de Dados (Inputs)
     @FXML private TextField txtNumero;
