@@ -1,6 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
-   </BorderPane>
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.MenuPrincipal">
+   <top>
+      <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="66.0" prefWidth="400.0" text="AutoDrive - Menu Principal" textFill="#1511c2" underline="true" BorderPane.alignment="CENTER">
+         <font>
+            <Font name="System Bold Italic" size="25.0" />
+         </font>
+      </Label>
+   </top>
+   <left>
+      <VBox prefHeight="277.0" prefWidth="128.0" BorderPane.alignment="CENTER" />
+   </left>
+   <right>
+      <VBox prefHeight="277.0" prefWidth="128.0" BorderPane.alignment="CENTER" />
+   </right>
+   <center>
+      <AnchorPane prefHeight="250.0" prefWidth="159.0" BorderPane.alignment="CENTER">
+         <children>
+            <VBox alignment="CENTER" layoutX="12.0" layoutY="27.0" AnchorPane.bottomAnchor="27.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="27.0">
+               <children>
+                  <Button mnemonicParsing="false" onAction="#tratarBotaoVenda" prefHeight="40.0" prefWidth="120.0" text="Tela de Venda">
+                     <VBox.margin>
+                        <Insets bottom="20.0" />
+                     </VBox.margin>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#tratarBotaoOficina" prefHeight="40.0" prefWidth="120.0" text="Tela da Oficina">
+                     <VBox.margin>
+                        <Insets bottom="20.0" />
+                     </VBox.margin>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#tratarBotaoTestDrive" prefHeight="40.0" prefWidth="120.0" text="Tela TestDrive">
+                     <VBox.margin>
+                        <Insets bottom="20.0" />
+                     </VBox.margin>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#tratarBotaoRelatorio" prefHeight="40.0" prefWidth="120.0" text="Tela de Relatorios" />
+               </children>
+            </VBox>
+         </children>
+      </AnchorPane>
+   </center>
+   <bottom>
+      <VBox alignment="CENTER" focusTraversable="true" prefHeight="66.0" prefWidth="400.0" BorderPane.alignment="CENTER">
+         <children>
+            <Button alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#tratarBotaoSair" prefHeight="26.0" prefWidth="211.0" text="Sair" textFill="#ff0505" underline="true">
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Button>
+         </children>
+      </VBox>
+   </bottom>
+</BorderPane>
