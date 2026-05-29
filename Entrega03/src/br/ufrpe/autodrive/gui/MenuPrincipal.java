@@ -1,83 +1,71 @@
 package br.ufrpe.autodrive.gui;
 
-import br.ufrpe.autodrive.negocio.*; // Importa as Interfaces
-import java.util.Scanner;
+import br.ufrpe.autodrive.negocio.*; // Importa as Interfaces do seu Negócio
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
 public class MenuPrincipal {
-    // O Menu guarda os gerenciadores que recebeu do Main
+
+    // 1. ATRIBUTOS: Mantemos os gerenciadores que guardam as regras do negócio
     private IGerenciadorVenda gVenda;
     private IGerenciadorOficina gOficina;
     private IGerenciadorRelatorio gRelatorio;
     private IGerenciadorTestDrive gTestDrive;
 
-    public MenuPrincipal(IGerenciadorVenda gV, IGerenciadorOficina gO, IGerenciadorRelatorio gR, IGerenciadorTestDrive gT) {
+    // 2. CONSTRUTOR PADRÃO VAZIO
+    public MenuPrincipal() {
+    }
+
+    /*
+     * 3. MÉTODO DE INJEÇÃO (Substitui o construtor antigo com parâmetros)
+     * Como o JavaFX cria a classe usando o construtor vazio acima, usamos este método
+     * para que a classe 'Main' possa nos passar os gerenciadores logo após a tela abrir.
+     */
+    public void injetarGerenciadores(IGerenciadorVenda gV, IGerenciadorOficina gO, IGerenciadorRelatorio gR, IGerenciadorTestDrive gT) {
         this.gVenda = gV;
         this.gOficina = gO;
         this.gRelatorio = gR;
         this.gTestDrive = gT;
+        System.out.println("-> [MenuPrincipal] Gerenciadores de negócio injetados com sucesso!");
     }
 
-    public void exibirMenu() {
-        Scanner leitor = new Scanner(System.in); // Para ler a opção
-        int op = -1; 
-    
-        // O loop deve continuar enquanto o usuário não escolher "Sair" (ex: 0)
-        while (op != 0) {
-            System.out.println("------------------------------------");
-            System.out.println("-       OPÇÕES DO AUTODRIVE        -");
-            System.out.println("------------------------------------");
-            System.out.println("( 1 ) TELA DE VENDAS");
-            System.out.println("( 2 ) TELA DA OFICINA");
-            System.out.println("( 3 ) TELA DO TESTDRIVE");
-            System.out.println("( 4 ) TELA DE RELATÓRIOS");
-            System.out.println("( 0 ) SAIR");
-            System.out.print("Escolha uma opção: ");
-            
-            op = leitor.nextInt(); // Lê a opção do usuário
-    
-            switch(op) {
-                case 1:
-                    this.abrirTelaVenda(); // Chama o método que você já criou!
-                    // Quando o código chegar aqui, significa que a TelaVenda fechou.
-                    System.out.println("\n--- Retornando ao Menu Principal ---");
-                    break;
-                case 2:
-                    this.abrirTelaOficina();
-                    break;
-                case 3:
-                    this.abrirTelaTestDrive();
-                    break;
-                case 4:
-                    this.abrirTelaRelatorio();
-                    break;
-                case 0:
-                    System.out.println("Saindo do sistema...");
-                    break;
-                default:
-                    System.out.println("Opção inválida! Tente novamente.");
-            }
-        }
-        leitor.close();
-    }
-    // Métodos baseados no seu UML (image_81c45f.png)
-    public void abrirTelaVenda() {
-        // Cria a tela e passa o gerenciador específico para ela
-        TelaVenda telaV = new TelaVenda(this.gVenda);
-        telaV.exibir(); // Método na TelaVenda que inicia a interação
+    /*
+     * 4. MÉTODOS DOS BOTÕES (@FXML)
+     * Substituem o antigo loop 'while' e o 'switch-case'. Agora, cada método acorda
+     * apenas quando o botão correspondente for clicado fisicamente na tela.
+     */
+
+    @FXML
+    public void tratarBotaoVenda() {
+        System.out.println("-> [MenuPrincipal] Botão Tela de Venda clicado!");
+        // Altera a janela atual de forma suave usando seu ScreenManager central
+        ScreenManager.getInstance().showTelaVenda();
     }
 
-    public void abrirTelaOficina() {
-        TelaOficina telaO = new TelaOficina(this.gOficina);
-        telaO.exibir(); // Método na TelaOficina que inicia a interação
+    @FXML
+    public void tratarBotaoOficina() {
+        System.out.println("-> [MenuPrincipal] Botão Tela da Oficina clicado!");
+        // (O processo aqui dentro será idêntico ao do botão de venda, mudando para o FXML da Oficina)
     }
 
-    public void abrirTelaRelatorio() {
-        TelaRelatorio telaR = new TelaRelatorio(this.gRelatorio);
-        telaR.exibir(); // Método na TelaRelatorio que inicia a interação
+    @FXML
+    public void tratarBotaoTestDrive() {
+        System.out.println("-> [MenuPrincipal] Botão Tela TestDrive clicado!");
+        // (O processo aqui dentro será idêntico, mudando para o FXML do TestDrive)
     }
 
-    public void abrirTelaTestDrive() {
-        TelaTestDrive TelaT = new TelaTestDrive(this.gTestDrive);
-        TelaT.exibir(); // Método na TelaTestDrive que inicia a interação
+    @FXML
+    public void tratarBotaoRelatorio() {
+        System.out.println("-> [MenuPrincipal] Botão Tela de Relatórios clicado!");
+        // (O processo aqui dentro será idêntico, mudando para o FXML de Relatórios)
+    }
+
+    @FXML
+    public void tratarBotaoSair() {
+        System.out.println("-> [MenuPrincipal] Fechando o sistema AutoDrive com segurança...");
+        System.exit(0); // Fecha a aplicação instantaneamente
     }
 }
