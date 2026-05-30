@@ -61,6 +61,7 @@ public class MenuPrincipal {
     public void tratarBotaoRelatorio() {
         System.out.println("-> [MenuPrincipal] Botão Tela de Relatórios clicado!");
         // (O processo aqui dentro será idêntico, mudando para o FXML de Relatórios)
+        ScreenManager.getInstance().showTelaRelatorio();
     }
 
     @FXML
