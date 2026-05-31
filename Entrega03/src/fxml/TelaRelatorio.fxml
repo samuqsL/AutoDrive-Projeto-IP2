@@ -29,32 +29,7 @@
                   <Button mnemonicParsing="false" onAction="#voltarParaMenu" prefWidth="150.0" text="Sair" />
                </children>
             </VBox>
-            <VBox fx:id="painelFormulario" alignment="TOP_CENTER" managed="false" spacing="8.0" visible="false">
-               <children>
-                  <Label style="-fx-font-weight: bold;" text="Efetuar Nova Venda" />
-                  <VBox alignment="CENTER_LEFT" maxWidth="280.0" spacing="2.0">
-                     <children>
-                        <Label text="Número da Venda:" />
-                        <TextField fx:id="txtNumero" />
-                        <Label text="CPF do Cliente:" />
-                        <TextField fx:id="txtCpf" />
-                        <Label text="Chassi do Veículo:" />
-                        <TextField fx:id="txtChassi" />
-                        <Label text="Nome do Vendedor:" />
-                        <TextField fx:id="txtVendedor" />
-                        <Label text="Valor de Entrada:" />
-                        <TextField fx:id="txtEntrada" />
-                     </children>
-                  </VBox>
-                  <Label fx:id="lblStatus" alignment="CENTER" maxWidth="300.0" wrapText="true" />
-                  <VBox alignment="CENTER" spacing="5.0">
-                     <children>
-                        <Button mnemonicParsing="false" onAction="#botaoConfirmarVenda" prefWidth="180.0" text="Confirmar" />
-                        <Button mnemonicParsing="false" onAction="#acaoVoltarMenuVendas" prefWidth="180.0" text="Voltar" />
-                     </children>
-                  </VBox>
-               </children>
-            </VBox>
+
          </children>
       </StackPane>
    </children>
