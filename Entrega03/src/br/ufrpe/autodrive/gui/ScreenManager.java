@@ -47,9 +47,9 @@ public class ScreenManager {
             this.controllerVenda = loaderVenda.getController();
 
             // C. Carrega Tela de Oficina (Yuri) - Descomente quando criarem o FXML e o controller
-            //FXMLLoader loaderOficina = new FXMLLoader(getClass().getResource("/fxml/TelaOficina.fxml"));
-            //this.cenaOficina = new Scene(loaderOficina.load());
-            //this.controllerOficina = loaderOficina.getController();
+            FXMLLoader loaderOficina = new FXMLLoader(getClass().getResource("/fxml/TelaOficina.fxml"));
+            this.cenaOficina = new Scene(loaderOficina.load());
+            this.controllerOficina = loaderOficina.getController();
 
             // D. Carrega Tela de Relatórios (Otávio) - Descomente quando criarem o FXML e o controller
             FXMLLoader loaderRelatorio = new FXMLLoader(getClass().getResource("/fxml/TelaRelatorio.fxml"));
@@ -92,9 +92,9 @@ public class ScreenManager {
         }
         
         // Injeta na oficina do Yuri
-        //if (this.controllerOficina != null) {
-        //    this.controllerOficina.injetarGerenciador(gO);
-        //}
+        if (this.controllerOficina != null) {
+            this.controllerOficina.injetarGerenciador(gO);
+        }
         // Injeta nos relatórios do Otávio
         if (this.controllerRelatorio != null) {
             this.controllerRelatorio.injetarGerenciador(gR);
