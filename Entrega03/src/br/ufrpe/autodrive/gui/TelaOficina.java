@@ -1,66 +1,85 @@
 package br.ufrpe.autodrive.gui;
 
-import java.util.Scanner;
+import javafx.fxml.FXML;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import br.ufrpe.autodrive.negocio.IGerenciadorOficina;
 
 public class TelaOficina {
+    
     private IGerenciadorOficina control;
 
-    public TelaOficina(IGerenciadorOficina control) {
+    @FXML private TextField txtNumeroOS;
+    @FXML private TextField txtData;
+    @FXML private TextField txtCpf;
+    @FXML private TextField txtChassi;
+    @FXML private TextField txtFinalizarOS;
+    @FXML private Label lblMensagem;
+
+    public TelaOficina() {}
+
+    public void injetarGerenciador(IGerenciadorOficina control) {
         this.control = control;
     }
 
-    public void exibir() {
-        Scanner leitor = new Scanner(System.in);
-        int op = -1;
+    @FXML
+    private void botaoAbrirOS() {
+        try {
+            int numero = Integer.parseInt(txtNumeroOS.getText().trim());
+            String data = txtData.getText().trim();
+            String cpf = txtCpf.getText().trim();
+            String chassi = txtChassi.getText().trim();
 
-        while (op != 0) {
-            System.out.println("\n--- OFICINA AUTO DRIVE ---");
-            System.out.println("1. Abrir Ordem de Serviço");
-            System.out.println("2. Finalizar Ordem de Serviço");
-            System.out.println("0. Voltar ao Menu Principal");
-            System.out.print("Escolha: ");
-
-            try {
-                op = Integer.parseInt(leitor.nextLine());
-                switch (op) {
-                    case 1 -> botaoAbrirOS(leitor);
-                    case 2 -> botaoFinalizarOS(leitor);
-                    case 0 -> System.out.println("Saindo da Oficina...");
-                    default -> System.out.println("Opção inválida!");
-                }
-            } catch (Exception e) {
-                System.out.println("Erro: Digite apenas números.");
-                op = -1;
+            if (data.isEmpty() || cpf.isEmpty() || chassi.isEmpty()) {
+                lblMensagem.setText("X Erro: Todos os campos são obrigatórios.");
+                lblMensagem.setStyle("-fx-text-fill: red;");
+                return;
             }
+
+            if (control.abrirOS(numero, data, cpf, chassi)) {
+                lblMensagem.setText("✓ Sucesso: OS " + numero + " aberta e Veículo em manutenção.");
+                lblMensagem.setStyle("-fx-text-fill: green;");
+                limparCamposCadastro();
+            } else {
+                lblMensagem.setText("X Erro: Dados inválidos ou OS já existente.");
+                lblMensagem.setStyle("-fx-text-fill: red;");
+            }
+        } catch (NumberFormatException e) {
+            lblMensagem.setText("X Erro: O número da OS deve ser um valor numérico inteiro.");
+            lblMensagem.setStyle("-fx-text-fill: red;");
         }
     }
 
-    private void botaoAbrirOS(Scanner leitor) {
-        System.out.print("Digite o número da OS: ");
-        int numero = Integer.parseInt(leitor.nextLine());
-        System.out.print("Data (dd/mm/aaaa): ");
-        String data = leitor.nextLine();
-        System.out.print("CPF do Cliente: ");
-        String cpf = leitor.nextLine();
-        System.out.print("Chassi do Veículo: ");
-        String chassi = leitor.nextLine();
+    @FXML
+    private void botaoFinalizarOS() {
+        try {
+            int numero = Integer.parseInt(txtFinalizarOS.getText().trim());
 
-        if (control.abrirOS(numero, data, cpf, chassi)) {
-            System.out.println("✓ Sucesso: OS aberta e Veículo em manutenção.");
-        } else {
-            System.out.println("X Erro: Dados inválidos ou OS já existente.");
+            if (control.finalizarServico(numero)) {
+                lblMensagem.setText("✓ Sucesso: OS " + numero + " finalizada e Veículo disponível.");
+                lblMensagem.setStyle("-fx-text-fill: green;");
+                txtFinalizarOS.clear();
+            } else {
+                lblMensagem.setText("X Erro: OS não paga ou falta óleo na revisão.");
+                lblMensagem.setStyle("-fx-text-fill: red;");
+            }
+        } catch (NumberFormatException e) {
+            lblMensagem.setText("X Erro: Digite um número de OS válido.");
+            lblMensagem.setStyle("-fx-text-fill: red;");
         }
     }
 
-    private void botaoFinalizarOS(Scanner leitor) {
-        System.out.print("Digite o número da OS para finalizar: ");
-        int numero = Integer.parseInt(leitor.nextLine());
+    @FXML
+    private void botaoVoltar() {
+        lblMensagem.setText("Pronto para operar");
+        lblMensagem.setStyle("-fx-text-fill: #7f8c8d;");
+        ScreenManager.getInstance().showMenuPrincipal();
+    }
 
-        if (control.finalizarServico(numero)) {
-            System.out.println("✓ Sucesso: OS finalizada e Veículo disponível.");
-        } else {
-            System.out.println("X Erro: OS não paga ou falta óleo na revisão.");
-        }
+    private void limparCamposCadastro() {
+        txtNumeroOS.clear();
+        txtData.clear();
+        txtCpf.clear();
+        txtChassi.clear();
     }
 }
