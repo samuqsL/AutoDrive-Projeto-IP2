@@ -4,6 +4,7 @@ import br.ufrpe.autodrive.dados.*;
 import br.ufrpe.autodrive.negocio.beans.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDateTime;
 
 public class GerenciadorVenda implements IGerenciadorVenda {
     
@@ -19,7 +20,8 @@ public class GerenciadorVenda implements IGerenciadorVenda {
         this.repoVend = repoVend;
         this.repoVeic = repoVeic;
     }
-
+    
+    // 🟢 Efetuar Venda sem data settada (automatico: estabelece data atual)
     @Override
     public boolean efetuarVenda(int numero, String cpfCliente, String chassi, String nomeVendedor, double entrada) {
         Cliente c = repoC.procurarCliente(cpfCliente);
@@ -33,6 +35,27 @@ public class GerenciadorVenda implements IGerenciadorVenda {
             
             if (novaVenda.realizarVenda()) {
                 this.repoV.adicionarVenda(novaVenda); // Bate com IRepositorio
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    // 🟢 Efetuar Venda com data settada (data definida no construtor):
+    @Override
+    public boolean efetuarVenda(int numero, String cpfCliente, String chassi, String nomeVendedor, double entrada, LocalDateTime dataDigitada) {
+        Cliente c = repoC.procurarCliente(cpfCliente);
+        Vendedor v = repoVend.procurarVendedor(nomeVendedor);
+        Veiculo veic = repoVeic.procurarVeiculo(chassi);
+
+        if (c != null && v != null && veic != null && repoV.procurarVenda(numero) == null) {
+            Venda novaVenda = new Venda(numero, c, v, veic, entrada);
+            
+            // Injeta a data escolhida na tela antes de processar as regras
+            novaVenda.setDataVenda(dataDigitada); 
+            
+            if (novaVenda.realizarVenda()) {
+                this.repoV.adicionarVenda(novaVenda);
                 return true;
             }
         }
