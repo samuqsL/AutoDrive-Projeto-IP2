@@ -75,24 +75,37 @@ public class Main extends Application {
         gVenda.efetuarVenda(503, "123.456.789-00", "CHASSIREP3", "Artur M.", 15000.00, 
             java.time.LocalDateTime.of(2026, 5, 20, 16, 45));
         
-        // Instanciando Ordens de Serviço usando o construtor correto (incluindo string de data)
+        // --- 3.4. MASSA DE TESTES EXCLUSIVA PARA A OFICINA (YURI) ---
+
+        Mecanico mecanicoOficina = new Mecanico("Pedro Mecânico", 500.0, true);
+
+        // 1. Instanciando a Ordem de Serviço Aberta
         OrdemServico os1 = new OrdemServico(901, "31/05/2026", c1, vAlerta);
-        
-        // Usando instanciação vazia + setters para evitar erros de assinatura com Peças
+
+        // 2. Adicionando Peças - CORRIGIDO: O nome DEVE ser exatamente "oleo" para passar no validarItensObrigatorios()
         Pecas peca1 = new Pecas();
-        peca1.setNome("Oleo Motor");
+        peca1.setNome("oleo"); // 🟢 Antes estava "Oleo Motor" e o sistema barrava!
         peca1.setPreco(250.00);
         peca1.setQuantidade(1);
         os1.getListaPecas().add(peca1);
-        
-        // Usando instanciação vazia + setters para evitar erros de assinatura com Mão de Obra
+
+        // 3. Adicionando Mão de Obra
         MaoDeObra servico1 = new MaoDeObra();
         servico1.setDescricao("Troca de Pastilhas");
         servico1.setValor(150.00);
+        servico1.setHoras(2.0);
+        servico1.setMecanico(mecanicoOficina);
         os1.getListaServicos().add(servico1);
-        
-        // Salvando no repositório de OS com o método correto (.salvar)
+
+        // 4. CORRIGIDO: Forçando o pagamento da OS para cumprir a Regra 1
+        os1.marcarComoPago(); // 🟢 Agora o status passa para PAGA e permite finalizar!
+
+        // 5. Salvando no repositório de OS
         repoOS.salvar(os1);
+
+        // Caso de teste auxiliar para a Abertura de OS na Interface
+        VeiculoNovo vOficinaDisponivel = new VeiculoNovo("CHASSIOFICINA", "RENOF001", "Volkswagen Polo", 2026, 89000.00);
+        repoVeiculos.adicionarVeiculo(vOficinaDisponivel);
 
         System.out.println("-> [Main] Todos os erros corrigidos! Casos de teste integrados e prontos.");
         
