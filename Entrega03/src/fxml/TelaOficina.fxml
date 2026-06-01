@@ -8,9 +8,9 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.layout.ColumnConstraints?>
 
-<VBox alignment="TOP_CENTER" spacing="20.0" prefHeight="768.0" prefWidth="1024.0" style="-fx-background-color: #f4f4f4;"
-      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.TelaOficina">
+<VBox alignment="TOP_CENTER" spacing="20.0" prefHeight="768.0" prefWidth="1024.0" style="-fx-background-color: #f4f4f4;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://fxml.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.TelaOficina">
     <padding>
         <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
     </padding>
@@ -36,17 +36,22 @@
             </Label>
             
             <GridPane vgap="10.0" hgap="10.0">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="130.0" prefWidth="130.0" />
+                    <ColumnConstraints hgrow="ALWAYS" />
+                </columnConstraints>
+                
                 <Label text="Número da OS:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                <TextField fx:id="txtNumeroOS" promptText="Ex: 101" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <TextField fx:id="txtNumeroOS" promptText="Ex: 101" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
                 
                 <Label text="Data (dd/mm/aaaa):" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                <TextField fx:id="txtData" promptText="Ex: 31/05/2026" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <TextField fx:id="txtData" promptText="Ex: 31/05/2026" GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
                 
                 <Label text="CPF do Cliente:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                <TextField fx:id="txtCpf" promptText="Apenas números" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                <TextField fx:id="txtCpf" promptText="Apenas números" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
                 
                 <Label text="Chassi do Veículo:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                <TextField fx:id="txtChassi" promptText="Código do chassi" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                <TextField fx:id="txtChassi" promptText="Código do chassi" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
             </GridPane>
             
             <Button mnemonicParsing="false" onAction="#botaoAbrirOS" text="Abrir OS" maxWidth="Infinity" style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold;"/>
@@ -60,8 +65,13 @@
             </Label>
             
             <GridPane vgap="10.0" hgap="10.0">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="110.0" prefWidth="110.0" />
+                    <ColumnConstraints hgrow="ALWAYS" />
+                </columnConstraints>
+                
                 <Label text="Número da OS:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                <TextField fx:id="txtFinalizarOS" promptText="Ex: 101" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <TextField fx:id="txtFinalizarOS" promptText="Ex: 101" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
             </GridPane>
             
             <Button mnemonicParsing="false" onAction="#botaoFinalizarOS" text="Finalizar Serviço" maxWidth="Infinity" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;"/>
