@@ -49,6 +49,7 @@ public class MenuPrincipal {
     public void tratarBotaoOficina() {
         System.out.println("-> [MenuPrincipal] Botão Tela da Oficina clicado!");
         // (O processo aqui dentro será idêntico ao do botão de venda, mudando para o FXML da Oficina)
+        ScreenManager.getInstance().showTelaOficina();
     }
 
     @FXML
