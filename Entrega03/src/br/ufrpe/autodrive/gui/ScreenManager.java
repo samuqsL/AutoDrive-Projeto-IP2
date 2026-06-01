@@ -21,8 +21,8 @@ public class ScreenManager {
     // 2. OS CONTROLLERS (Guardamos a referência para injetar as regras de negócio neles)
     private MenuPrincipal controllerMenu;
     private TelaVenda controllerVenda;
-    // private TelaOficina controllerOficina;     // Descomente quando Yuri criar a classe
-    private TelaRelatorio controllerRelatorio; 
+    private TelaOficina controllerOficina;     // Descomente quando Yuri criar a classe
+    private TelaRelatorio controllerRelatorio;
     // private TelaTestDrive controllerTestDrive; // Descomente quando Artur criar a classe
 
     // Padrão Singleton do ScreenManager
@@ -50,17 +50,19 @@ public class ScreenManager {
             FXMLLoader loaderOficina = new FXMLLoader(getClass().getResource("/fxml/TelaOficina.fxml"));
             this.cenaOficina = new Scene(loaderOficina.load());
             this.controllerOficina = loaderOficina.getController();
-
-            // D. Carrega Tela de Relatórios (Otávio) - Descomente quando criarem o FXML e o controller
+		
+            
+            // D. Carrega Tela de Relatórios (Otávio)
             FXMLLoader loaderRelatorio = new FXMLLoader(getClass().getResource("/fxml/TelaRelatorio.fxml"));
             this.cenaRelatorio = new Scene(loaderRelatorio.load());
             this.controllerRelatorio = loaderRelatorio.getController();
-
-            // E. Carrega Tela de Test Drive (Artur) - Descomente quando criarem o FXML e o controller
-            //FXMLLoader loaderTD = new FXMLLoader(getClass().getResource("/fxml/TelaTestDrive.fxml"));
-            //this.cenaTestDrive = new Scene(loaderTD.load());
-            //this.controllerTestDrive = loaderTD.getController();
             
+			/*
+            // E. Carrega Tela de Test Drive (Artur) - Descomente quando criarem o FXML e o controller
+            FXMLLoader loaderTD = new FXMLLoader(getClass().getResource("/fxml/TelaTestDrive.fxml"));
+            this.cenaTestDrive = new Scene(loaderTD.load());
+            this.controllerTestDrive = loaderTD.getController();
+            */
             
         } catch (IOException e) {
             System.out.println("❌ [ScreenManager] Erro crítico ao carregar arquivos FXML. Verifique caminhos ou nomes!");
@@ -95,15 +97,17 @@ public class ScreenManager {
         if (this.controllerOficina != null) {
             this.controllerOficina.injetarGerenciador(gO);
         }
+ 
         // Injeta nos relatórios do Otávio
         if (this.controllerRelatorio != null) {
             this.controllerRelatorio.injetarGerenciador(gR);
         }
+        /*
         // Injeta no test drive do Artur
-        //if (this.controllerTestDrive != null) {
-        //    this.controllerTestDrive.injetarGerenciador(gT);
-        //}
-        
+        if (this.controllerTestDrive != null) {
+            this.controllerTestDrive.injetarGerenciador(gT);
+        }
+        */
         System.out.println("-> [ScreenManager] Gerenciadores injetados com sucesso nos Controllers!");
     }
     
