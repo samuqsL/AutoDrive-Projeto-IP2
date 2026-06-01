@@ -56,6 +56,7 @@ public class MenuPrincipal {
     public void tratarBotaoTestDrive() {
         System.out.println("-> [MenuPrincipal] Botão Tela TestDrive clicado!");
         // (O processo aqui dentro será idêntico, mudando para o FXML do TestDrive)
+        ScreenManager.getInstance().showTelaTestDrive();
     }
 
     @FXML
