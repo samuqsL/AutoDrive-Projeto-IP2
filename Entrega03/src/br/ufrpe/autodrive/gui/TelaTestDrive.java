@@ -1,51 +1,87 @@
 package br.ufrpe.autodrive.gui;
 
 import br.ufrpe.autodrive.negocio.IGerenciadorTestDrive;
-import java.util.Scanner;
+import javafx.fxml.FXML;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.paint.Color;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 
 public class TelaTestDrive {
 
+    @FXML private TextField txtCpf;
+    @FXML private TextField txtChassi;
+    
+    @FXML private DatePicker datePickerData;
+    @FXML private TextField txtHora;
+    
+    @FXML private Label lblMensagem;
+
     private IGerenciadorTestDrive control;
 
-    public TelaTestDrive(IGerenciadorTestDrive control) {
-        this.control = control;
+    public void injetarGerenciador(IGerenciadorTestDrive gT) {
+        this.control = gT;
     }
 
-    public void exibir() {
-        Scanner scanner = new Scanner(System.in);
-        int opcao = -1;
+    @FXML
+    public void tratarBotaoAgendar() {
+        String cpf = txtCpf.getText();
+        String chassi = txtChassi.getText();
+        LocalDate dataEscolhida = datePickerData.getValue();
+        String horaDigitada = txtHora.getText();
 
-        while (opcao != 0) {
-            System.out.println("\n--- TELA DE TEST-DRIVE ---");
-            System.out.println("1 - Agendar Test-Drive");
-            System.out.println("0 - Sair");
-            System.out.print("Escolha uma opção: ");
+        lblMensagem.setText("");
 
-            try {
-                opcao = Integer.parseInt(scanner.nextLine());
-                switch (opcao) {
-                    case 1: BotaoAgendarTestDrive(scanner); break;
-                    case 0: System.out.println("Saindo..."); break;
-                    default: System.out.println("Opção inválida!");
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Digite um número válido!");
-            }
+        // 1. Valida se a pessoa não deixou nada em branco
+        if (cpf.isEmpty() || chassi.isEmpty() || dataEscolhida == null || horaDigitada.isEmpty()) {
+            lblMensagem.setTextFill(Color.RED);
+            lblMensagem.setText("Por favor, preencha todos os campos!");
+            return;
         }
-    }
 
-    private void BotaoAgendarTestDrive(Scanner scanner) {
-        System.out.println("\n--- NOVO AGENDAMENTO ---");
-        System.out.print("CPF do Cliente: ");
-        String cpf = scanner.nextLine();
-        System.out.print("Chassi do Veículo: ");
-        String chassi = scanner.nextLine();
-    
-        // Chama o gerenciador passando apenas o que foi digitado
-        if (this.control.agendarTestDrive(cpf, chassi)) {
-            System.out.println(">>> SUCESSO: Agendamento realizado!");
+        LocalDateTime dataHoraFinal;
+
+        // 2. Tenta converter a hora digitada para o formato certo
+        try {
+            LocalTime hora = LocalTime.parse(horaDigitada); // Tenta ler o "14:30"
+            dataHoraFinal = LocalDateTime.of(dataEscolhida, hora); // Junta o dia com a hora
+        } catch (DateTimeParseException e) {
+            lblMensagem.setTextFill(Color.RED);
+            lblMensagem.setText("Erro: Digite a hora no formato HH:mm (Ex: 14:30)");
+            return; // Interrompe para a pessoa corrigir
+        }
+
+        // 3. Chama o NOVO método do Gerenciador, passando a data e hora!
+        boolean sucesso = control.agendarTestDrive(cpf, chassi, dataHoraFinal);
+
+        if (sucesso) {
+            lblMensagem.setTextFill(Color.GREEN);
+            lblMensagem.setText(">>> SUCESSO: Agendamento realizado!");
+            
+            // Limpa tudo pra deixar pronto pro próximo agendamento
+            txtCpf.clear();
+            txtChassi.clear();
+            datePickerData.setValue(null);
+            txtHora.clear();
         } else {
-            System.out.println(">>> ERRO: Cliente não encontrado, Chassi inválido ou CNH insuficiente.");
+            lblMensagem.setTextFill(Color.RED);
+            lblMensagem.setText(">>> ERRO: Cliente, Chassi ou CNH inválidos.");
         }
+    }
+
+    @FXML
+    public void tratarBotaoVoltar() {
+        txtCpf.clear();
+        txtChassi.clear();
+        datePickerData.setValue(null);
+        txtHora.clear();
+        lblMensagem.setText("");
+        
+        ScreenManager.getInstance().showMenuPrincipal();
     }
 }
