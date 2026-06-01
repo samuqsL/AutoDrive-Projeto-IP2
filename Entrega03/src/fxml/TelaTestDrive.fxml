@@ -1,6 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.BorderPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
-   </BorderPane>
+<VBox alignment="CENTER" spacing="15.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.TelaTestDriveController">
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+   
+   <Label text="Agendar Test-Drive">
+      <font>
+         <Font name="System Bold" size="24.0" />
+      </font>
+   </Label>
+   
+   <VBox spacing="5.0">
+      <Label text="CPF do Cliente:" />
+      <TextField fx:id="txtCpf" promptText="Digite o CPF" />
+   </VBox>
+   
+   <VBox spacing="5.0">
+      <Label text="Chassi do Veículo:" />
+      <TextField fx:id="txtChassi" promptText="Digite o Chassi" />
+   </VBox>
+
+   <VBox spacing="5.0">
+      <Label text="Data do Test-Drive:" />
+      <DatePicker fx:id="datePickerData" promptText="Selecione a data" />
+   </VBox>
+
+   <VBox spacing="5.0">
+      <Label text="Hora (HH:mm):" />
+      <TextField fx:id="txtHora" promptText="Ex: 14:30" />
+   </VBox>
+   <Button mnemonicParsing="false" onAction="#tratarBotaoAgendar" text="Confirmar Agendamento" />
+   
+   <Label fx:id="lblMensagem" text="" textFill="#e10b0b">
+      <font>
+         <Font name="System Bold" size="14.0" />
+      </font>
+   </Label>
+   
+   <Button mnemonicParsing="false" onAction="#tratarBotaoVoltar" text="Voltar ao Menu" />
+
+</VBox>
