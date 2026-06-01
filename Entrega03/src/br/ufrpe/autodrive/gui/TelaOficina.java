@@ -23,8 +23,14 @@ public class TelaOficina {
     }
 
     @FXML
-    private void botaoAbrirOS() {
+    public void botaoAbrirOS() { 
         try {
+            if (txtNumeroOS.getText().trim().isEmpty()) {
+                lblMensagem.setText("X Erro: O número da OS é obrigatório.");
+                lblMensagem.setStyle("-fx-text-fill: red;");
+                return;
+            }
+            
             int numero = Integer.parseInt(txtNumeroOS.getText().trim());
             String data = txtData.getText().trim();
             String cpf = txtCpf.getText().trim();
@@ -36,7 +42,7 @@ public class TelaOficina {
                 return;
             }
 
-            if (control.abrirOS(numero, data, cpf, chassi)) {
+            if (control != null && control.abrirOS(numero, data, cpf, chassi)) {
                 lblMensagem.setText("✓ Sucesso: OS " + numero + " aberta e Veículo em manutenção.");
                 lblMensagem.setStyle("-fx-text-fill: green;");
                 limparCamposCadastro();
@@ -51,16 +57,22 @@ public class TelaOficina {
     }
 
     @FXML
-    private void botaoFinalizarOS() {
+    public void botaoFinalizarOS() { 
         try {
+            if (txtFinalizarOS.getText().trim().isEmpty()) {
+                lblMensagem.setText("X Erro: Digite o número da OS para finalizar.");
+                lblMensagem.setStyle("-fx-text-fill: red;");
+                return;
+            }
+
             int numero = Integer.parseInt(txtFinalizarOS.getText().trim());
 
-            if (control.finalizarServico(numero)) {
+            if (control != null && control.finalizarServico(numero)) {
                 lblMensagem.setText("✓ Sucesso: OS " + numero + " finalizada e Veículo disponível.");
                 lblMensagem.setStyle("-fx-text-fill: green;");
                 txtFinalizarOS.clear();
             } else {
-                lblMensagem.setText("X Erro: OS não paga ou falta óleo na revisão.");
+                lblMensagem.setText("X Erro: OS não encontrada ou requisitos não preenchidos.");
                 lblMensagem.setStyle("-fx-text-fill: red;");
             }
         } catch (NumberFormatException e) {
@@ -70,9 +82,9 @@ public class TelaOficina {
     }
 
     @FXML
-    private void botaoVoltar() {
-        lblMensagem.setText("Pronto para operar");
-        lblMensagem.setStyle("-fx-text-fill: #7f8c8d;");
+    public void botaoVoltar() { 
+        // 🟢 CORREÇÃO: Limpa todos os campos e labels ANTES de ir para o menu
+        limparTudo(); 
         ScreenManager.getInstance().showMenuPrincipal();
     }
 
@@ -81,5 +93,13 @@ public class TelaOficina {
         txtData.clear();
         txtCpf.clear();
         txtChassi.clear();
+    }
+
+    // 🟢 NOVO MÉTODO: Faz uma limpeza completa em todos os quadrantes da tela
+    private void limparTudo() {
+        limparCamposCadastro();      // Limpa os 4 campos da esquerda
+        txtFinalizarOS.clear();      // Limpa o campo da direita
+        lblMensagem.setText("Pronto para operar"); // Reseta o texto padrão
+        lblMensagem.setStyle("-fx-text-fill: #7f8c8d;"); // Reseta a cor cinza estável
     }
 }
