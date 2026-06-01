@@ -9,7 +9,8 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="TOP_CENTER" spacing="20.0" prefHeight="768.0" prefWidth="1024.0" style="-fx-background-color: #f4f4f4;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://fxml.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.TelaOficina">
+<VBox alignment="TOP_CENTER" spacing="20.0" prefHeight="768.0" prefWidth="1024.0" style="-fx-background-color: #f4f4f4;"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.TelaOficina">
     <padding>
         <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
     </padding>
@@ -36,7 +37,7 @@
             
             <GridPane vgap="10.0" hgap="10.0">
                 <Label text="Número da OS:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                <TextField fx:id="txtNumeroOS" promptText="Ex: 101" GridPane.rowIndex="0" GridPane.columnIndex="1" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="txtNumeroOS" promptText="Ex: 101" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
                 
                 <Label text="Data (dd/mm/aaaa):" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                 <TextField fx:id="txtData" promptText="Ex: 31/05/2026" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
