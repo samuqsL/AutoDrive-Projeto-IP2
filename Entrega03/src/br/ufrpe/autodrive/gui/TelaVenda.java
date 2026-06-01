@@ -26,6 +26,7 @@ public class TelaVenda {
     @FXML private TextField txtChassi;
     @FXML private TextField txtVendedor;
     @FXML private TextField txtEntrada;
+    @FXML private javafx.scene.control.DatePicker dpDataVenda;
 
     // Componentes de Saída de Dados (Feedbacks para o usuário)
     @FXML private Label lblStatus;
@@ -105,9 +106,16 @@ public class TelaVenda {
                 lblStatus.setStyle("-fx-text-fill: red;");
                 return;
             }
+            
+            //3. NOVO: Captura a data escolhida (Se não escolher, assume a data/hora atual)
+            java.time.LocalDateTime dataVenda = java.time.LocalDateTime.now();
+            if (dpDataVenda != null && dpDataVenda.getValue() != null) {
+                // Converte LocalDate para LocalDateTime no início do dia (00:00)
+                dataVenda = dpDataVenda.getValue().atStartOfDay(); 
+            }
 
-            // 3. Comunicação direta com a regra de negócio igual à entrega 02
-            boolean sucesso = control.efetuarVenda(numero, cpfCliente, chassi, nomeVendedor, entrada);
+            //4. ALTERADO: Agora chama a sobrecarga passando a variável "dataVenda" no final
+            boolean sucesso = control.efetuarVenda(numero, cpfCliente, chassi, nomeVendedor, entrada, dataVenda);
 
             if (sucesso) {
                 lblStatus.setText("✅ SUCESSO: Venda registrada na base de dados!");
@@ -162,9 +170,9 @@ public class TelaVenda {
         ScreenManager.getInstance().showMenuPrincipal();
     }
     
-    /**
+    /*
      * Método auxiliar de limpeza de interface
-     */
+    */
     private void limparCamposFormulario() {
         txtNumero.clear();
         txtCpf.clear();
@@ -172,5 +180,8 @@ public class TelaVenda {
         txtVendedor.clear();
         txtEntrada.clear();
         lblStatus.setText("");
+        if (dpDataVenda != null) {
+            dpDataVenda.setValue(null);
+        }
     }
 }
