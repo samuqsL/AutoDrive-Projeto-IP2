@@ -30,7 +30,7 @@ public class TestDrive {
             return false;
         }
 
-        if (veiculo == null || veiculo.getStatus() == StatusVeiculo.EM_MANUTENCAO) {
+        if (veiculo == null || veiculo.getStatus() == StatusVeiculo.EM_MANUTENCAO || veiculo.getStatus() == StatusVeiculo.VENDIDO) {
             return false;
         }
 
