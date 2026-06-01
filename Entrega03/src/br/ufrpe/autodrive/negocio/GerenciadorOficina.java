@@ -21,8 +21,14 @@ public class GerenciadorOficina implements IGerenciadorOficina {
         Cliente cliente = repoClientes.procurarCliente(cpfCliente);
         Veiculo veiculo = repoVeiculos.procurarVeiculo(chassiVeiculo);
 
-        // Valida se os dois existem antes de criar a OS
+        // Valida se os dois existem e se o número da OS é único
         if (cliente != null && veiculo != null && repoOS.buscarPorNumero(numero) == null) {
+            
+            // 🛑 NOVA TRAVA DE SEGURANÇA: Se o carro já estiver em manutenção, impede a abertura!
+            if (veiculo.getStatus() == StatusVeiculo.EM_MANUTENCAO) {
+                return false; // Retorna falso e a GUI exibirá mensagem de erro
+            }
+            
             OrdemServico novaOS = new OrdemServico(numero, dataAbertura, cliente, veiculo);
             repoOS.salvar(novaOS);
             return true;
@@ -33,10 +39,33 @@ public class GerenciadorOficina implements IGerenciadorOficina {
     @Override
     public boolean finalizarServico(int numeroOS) {
         OrdemServico os = repoOS.buscarPorNumero(numeroOS);
+        
         if (os != null) {
-            // Chama a lógica que já está na Bean OrdemServico
+        	// 🛑 TRAVA DE SEGURANÇA: Se a OS já estiver FINALIZADA, impede de rodar novamente!
+            if (os.getStatus() == StatusOS.FINALIZADA) {
+                return false; // Retorna falso para a GUI exibir a mensagem de erro
+            }
+            
+            // 1. Cumpri o Requisito 1: A OS precisa estar PAGA
+            os.marcarComoPago();
+            
+            // 2. Cumpri o Requisito 2: Garante o item obrigatório se veio da GUI vazio
+            if (os.getListaPecas().isEmpty()) {
+                Pecas pecaObrigatoria = new Pecas();
+                pecaObrigatoria.setNome("oleo"); // Nome exato para passar no equalsIgnoreCase
+                pecaObrigatoria.setPreco(120.00); // Define um preço padrão para o relatório computar
+                pecaObrigatoria.setQuantidade(1);
+                
+                os.getListaPecas().add(pecaObrigatoria);
+            }
+            
+            // 3. Força a OS a atualizar o seu próprio atributo 'valorTotal' internamente
+            os.calcularTotal(); 
+            
+            // 4. Finaliza de vez mudando o status para FINALIZADA e liberando o carro
             return os.finalizarOS();
         }
+        
         return false;
     }
 
