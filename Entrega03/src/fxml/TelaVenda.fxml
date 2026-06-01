@@ -50,6 +50,9 @@
                         
                         <Label text="Valor de Entrada:" />
                         <TextField fx:id="txtEntrada" />
+
+                        <Label text="Data da Venda:" />
+                        <javafx.scene.control.DatePicker fx:id="dpDataVenda" prefWidth="280.0" />
                      </children>
                   </VBox>
                   
