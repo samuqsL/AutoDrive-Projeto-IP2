@@ -21,7 +21,7 @@ public class ScreenManager {
     // 2. OS CONTROLLERS (Guardamos a referência para injetar as regras de negócio neles)
     private MenuPrincipal controllerMenu;
     private TelaVenda controllerVenda;
-    private TelaOficina controllerOficina;     // Descomente quando Yuri criar a classe
+    private TelaOficina controllerOficina;
     private TelaRelatorio controllerRelatorio;
     // private TelaTestDrive controllerTestDrive; // Descomente quando Artur criar a classe
 
