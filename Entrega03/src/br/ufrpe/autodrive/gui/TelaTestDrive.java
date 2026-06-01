@@ -16,10 +16,8 @@ public class TelaTestDrive {
 
     @FXML private TextField txtCpf;
     @FXML private TextField txtChassi;
-    
     @FXML private DatePicker datePickerData;
     @FXML private TextField txtHora;
-    
     @FXML private Label lblMensagem;
 
     private IGerenciadorTestDrive control;
@@ -30,10 +28,11 @@ public class TelaTestDrive {
 
     @FXML
     public void tratarBotaoAgendar() {
-        String cpf = txtCpf.getText();
-        String chassi = txtChassi.getText();
+        // 🟢 Correção: Removendo espaços em branco com trim() nas strings de entrada
+        String cpf = txtCpf.getText() != null ? txtCpf.getText().trim() : "";
+        String chassi = txtChassi.getText() != null ? txtChassi.getText().trim() : "";
         LocalDate dataEscolhida = datePickerData.getValue();
-        String horaDigitada = txtHora.getText();
+        String horaDigitada = txtHora.getText() != null ? txtHora.getText().trim() : "";
 
         lblMensagem.setText("");
 
@@ -53,35 +52,34 @@ public class TelaTestDrive {
         } catch (DateTimeParseException e) {
             lblMensagem.setTextFill(Color.RED);
             lblMensagem.setText("Erro: Digite a hora no formato HH:mm (Ex: 14:30)");
-            return; // Interrompe para a pessoa corrigir
+            return; 
         }
 
-        // 3. Chama o NOVO método do Gerenciador, passando a data e hora!
+        // 3. Chama o método do Gerenciador passando a data customizada
         boolean sucesso = control.agendarTestDrive(cpf, chassi, dataHoraFinal);
 
         if (sucesso) {
             lblMensagem.setTextFill(Color.GREEN);
             lblMensagem.setText(">>> SUCESSO: Agendamento realizado!");
-            
-            // Limpa tudo pra deixar pronto pro próximo agendamento
-            txtCpf.clear();
-            txtChassi.clear();
-            datePickerData.setValue(null);
-            txtHora.clear();
+            limparCampos();
         } else {
             lblMensagem.setTextFill(Color.RED);
-            lblMensagem.setText(">>> ERRO: Cliente, Chassi ou CNH inválidos.");
+            lblMensagem.setText(">>> ERRO: Cliente, Chassi ou CNH inválidos, ou carro em manutenção.");
         }
     }
 
     @FXML
     public void tratarBotaoVoltar() {
+        limparCampos();
+        lblMensagem.setText("");
+        ScreenManager.getInstance().showMenuPrincipal();
+    }
+
+    // Método auxiliar para reaproveitar a limpeza de campos
+    private void limparCampos() {
         txtCpf.clear();
         txtChassi.clear();
         datePickerData.setValue(null);
         txtHora.clear();
-        lblMensagem.setText("");
-        
-        ScreenManager.getInstance().showMenuPrincipal();
     }
 }
