@@ -23,7 +23,7 @@ public class ScreenManager {
     private TelaVenda controllerVenda;
     private TelaOficina controllerOficina;
     private TelaRelatorio controllerRelatorio;
-    // private TelaTestDrive controllerTestDrive; // Descomente quando Artur criar a classe
+    private TelaTestDrive controllerTestDrive;
 
     // Padrão Singleton do ScreenManager
     public static ScreenManager getInstance() {
@@ -57,12 +57,11 @@ public class ScreenManager {
             this.cenaRelatorio = new Scene(loaderRelatorio.load());
             this.controllerRelatorio = loaderRelatorio.getController();
             
-			/*
+		
             // E. Carrega Tela de Test Drive (Artur) - Descomente quando criarem o FXML e o controller
             FXMLLoader loaderTD = new FXMLLoader(getClass().getResource("/fxml/TelaTestDrive.fxml"));
             this.cenaTestDrive = new Scene(loaderTD.load());
             this.controllerTestDrive = loaderTD.getController();
-            */
             
         } catch (IOException e) {
             System.out.println("❌ [ScreenManager] Erro crítico ao carregar arquivos FXML. Verifique caminhos ou nomes!");
@@ -102,12 +101,12 @@ public class ScreenManager {
         if (this.controllerRelatorio != null) {
             this.controllerRelatorio.injetarGerenciador(gR);
         }
-        /*
+        
         // Injeta no test drive do Artur
         if (this.controllerTestDrive != null) {
             this.controllerTestDrive.injetarGerenciador(gT);
         }
-        */
+        
         System.out.println("-> [ScreenManager] Gerenciadores injetados com sucesso nos Controllers!");
     }
     
