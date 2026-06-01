@@ -7,7 +7,9 @@ import br.ufrpe.autodrive.negocio.beans.OrdemServico;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextInputDialog; 
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.layout.VBox;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -15,11 +17,13 @@ import java.util.Optional;
 
 public class TelaRelatorio {
 
+    public VBox painelMenuRelatorios;
     private IGerenciadorRelatorio control;
     private DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     
     @FXML private TextArea txtAreaConsole;
+
 
     public void injetarGerenciador(IGerenciadorRelatorio gR) {
         this.control = gR;
@@ -120,6 +124,7 @@ public class TelaRelatorio {
 
     @FXML
     public void voltarParaMenu() {
+        limparCamposConsole();
         ScreenManager.getInstance().showMenuPrincipal();
     }
 
@@ -137,5 +142,12 @@ public class TelaRelatorio {
             }
         }
         txtAreaConsole.setText(sb.toString());
+    }
+    /**
+     * Método auxiliar de limpeza de interface
+     */
+    private void limparCamposConsole() {
+        txtAreaConsole.clear();
+
     }
 }
