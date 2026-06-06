@@ -4,6 +4,10 @@ package br.ufrpe.autodrive.negocio.beans;
  * Classe Mecanico - Agora herdando de Pessoa
  */
 public class Mecanico extends Pessoa {
+	
+	// Apenas adiciona o ID específico de versão para o Mecanico (Serialization/Persistence)
+	private static final long serialVersionUID = 1L;
+	
     // 1. Removido o atributo 'nome' (agora vem de Pessoa)
     private Double bonus;
     private boolean disponivel;
