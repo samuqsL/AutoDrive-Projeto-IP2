@@ -21,37 +21,52 @@ public class GerenciadorVenda implements IGerenciadorVenda {
         this.repoVeic = repoVeic;
     }
     
-    // 🟢 Efetuar Venda sem data settada (automatico: estabelece data atual)
+    // Novas pontes para coletar os dados do estoque e popular os ComboBoxes
+    @Override
+    public List<Cliente> listarTodosClientes() {
+        return this.repoC.listarClientes();
+    }
+
+    @Override
+    public List<Veiculo> listarTodosVeiculos() {
+        return this.repoVeic.listarTodos();
+    }
+
+    @Override
+    public List<Vendedor> listarTodosVendedores() {
+        return this.repoVend.listarTodos();
+    }
+    
+    @Override
+    public List<Venda> listarTodasVendas() {
+        return this.repoV.listarTodasVendas();
+    }
+    
     @Override
     public boolean efetuarVenda(int numero, String cpfCliente, String chassi, String nomeVendedor, double entrada) {
         Cliente c = repoC.procurarCliente(cpfCliente);
         Vendedor v = repoVend.procurarVendedor(nomeVendedor);
         Veiculo veic = repoVeic.procurarVeiculo(chassi);
 
-        // AJUSTE: Mudei para procurarVenda(numero)
-        if (c != null && v != null && veic != null && repoV.procurarVenda(numero) == null) {
-            
-            Venda novaVenda = new Venda(numero, c, v, veic, entrada);
-            
+        if (c != null && v != null && veic != null) {
+            // Usa o construtor automático com UUID
+            Venda novaVenda = new Venda(c, v, veic, entrada);
             if (novaVenda.realizarVenda()) {
-                this.repoV.adicionarVenda(novaVenda); // Bate com IRepositorio
+                this.repoV.adicionarVenda(novaVenda);
                 return true;
             }
         }
         return false;
     }
     
-    // 🟢 Efetuar Venda com data settada (data definida no construtor):
     @Override
     public boolean efetuarVenda(int numero, String cpfCliente, String chassi, String nomeVendedor, double entrada, LocalDateTime dataDigitada) {
         Cliente c = repoC.procurarCliente(cpfCliente);
         Vendedor v = repoVend.procurarVendedor(nomeVendedor);
         Veiculo veic = repoVeic.procurarVeiculo(chassi);
 
-        if (c != null && v != null && veic != null && repoV.procurarVenda(numero) == null) {
-            Venda novaVenda = new Venda(numero, c, v, veic, entrada);
-            
-            // Injeta a data escolhida na tela antes de processar as regras
+        if (c != null && v != null && veic != null) {
+            Venda novaVenda = new Venda(c, v, veic, entrada);
             novaVenda.setDataVenda(dataDigitada); 
             
             if (novaVenda.realizarVenda()) {
@@ -64,7 +79,6 @@ public class GerenciadorVenda implements IGerenciadorVenda {
 
     @Override
     public Venda procurarVenda(int numero) {
-        // AJUSTE: Mudei para procurarVenda(numero)
         return this.repoV.procurarVenda(numero);
     }
     
@@ -92,7 +106,6 @@ public class GerenciadorVenda implements IGerenciadorVenda {
     
     @Override
     public void removerVenda(int numero) {
-        // Ajuste: Sincronizado com a interface do repositório
         this.repoV.removerVenda(numero);
     }
 }
