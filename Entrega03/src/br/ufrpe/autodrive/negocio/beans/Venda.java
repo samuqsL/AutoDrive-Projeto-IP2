@@ -1,9 +1,17 @@
 package br.ufrpe.autodrive.negocio.beans;
 
 import java.time.LocalDateTime;
+import java.util.UUID;       // ⬅️ Adicionado (gerando numero atuomatico)
+import java.io.Serializable; // ⬅️ Adicionado (para permitir serialização e persistencia dos dados)
+import java.time.LocalDate;  // - Adicionado 
+import java.time.Period;     // - Adicionado
+
+//Serialização da classe (Serialization/Persistence)*
+public class Venda implements Serializable{
+	
+  // É uma excelente prática de POO colocar essa constante de controle (Serialization/Persistence)*
+  private static final long serialVersionUID = 1L;
   
-public class Venda {
-  //Atributos
   private int numero;
   private Cliente cliente;
   private Vendedor vendedor;
@@ -12,92 +20,104 @@ public class Venda {
   private double entrada;
   private LocalDateTime dataVenda;
 
-  private static final double TAXA_IMPOSTO = 0.10; //Variavel compartilhada por todas as classes (static) | variavel constate fixa (final)
-  private static final double ENTRADA_MINIMA = 5000.0; // Variavel constate fixa e compatilhada de ENTRADA MINIMA da VENDA!
+  private static final double TAXA_IMPOSTO = 0.10;
+  private static final double ENTRADA_MINIMA = 5000.0;
 
-  //Construtor default (sem valores - precisa settar atributos posteriormente!)
   public Venda() {}
   
-  //Construtor 1 [Principal]
-  public Venda (int numero, Cliente cliente, Vendedor vendedor, Veiculo veiculo, double entrada){
-    //valor total não é inicializado no construtor!
-    this.numero = numero;
+  public Venda(Cliente cliente, Vendedor vendedor, Veiculo veiculo, double entrada) {
+    this.numero = Math.abs(UUID.randomUUID().hashCode());
     this.cliente = cliente;
     this.vendedor = vendedor;
     this.veiculo = veiculo;
     setEntrada(entrada);
   }
   
-  //getters (pegar valor)
+  public Venda (int numero, Cliente cliente, Vendedor vendedor, Veiculo veiculo, double entrada){
+    this.numero = numero;
+    this.cliente = cliente;
+    this.vendedor = vendedor;
+    this.veiculo = veiculo;
+    setEntrada(entrada);
+  }
+
+  // Getters e Setters
   public int getNumero() { return this.numero; }
-  public Cliente getCliente() {return this.cliente;}
-  public Vendedor getVendedor() {return this.vendedor;}
-  public Veiculo getVeiculo() {return this.veiculo;}
-  public double getValorTotal() {return this.valorTotal;}
-  public LocalDateTime getDataVenda() {return this.dataVenda;}
-  public double getEntrada() {return this.entrada;}
-  //setters (alterar valor / validações)
-  public void setNumero(int numero) { this.numero = numero; }
-  public void setCliente(Cliente cliente) {this.cliente = cliente;}
-  public void setVendedor(Vendedor vendedor) {this.vendedor = vendedor;}
-  public void setVeiculo(Veiculo veiculo) {this.veiculo = veiculo;}
-  public void setValorTotal(double valorTotal) {this.valorTotal = valorTotal;}
-  public void setDataVenda(LocalDateTime dataVenda) {this.dataVenda = dataVenda;}
+  public Cliente getCliente() { return this.cliente; }
+  public Vendedor getVendedor() { return this.vendedor; }
+  public Veiculo getVeiculo() { return this.veiculo; }
+  public double getValorTotal() { return this.valorTotal; }
+  public double getEntrada() { return this.entrada; }
+  public LocalDateTime getDataVenda() { return this.dataVenda; }
+  public void setDataVenda(LocalDateTime data) { this.dataVenda = data; }
+  
   public void setEntrada(double entrada) {
-    if (entrada < 0) {
-      throw new IllegalArgumentException("Entrada inválida");
-    }
-    this.entrada = entrada;
+      if (entrada < 0) {
+          this.entrada = 0;
+      } else {
+          this.entrada = entrada;
+      }
   }
 
- //Metodo 1 (realizar venda de veiculo) - [PRINCIPAL]
+  /**
+   * Executa a efetivação da venda aplicando as regras de negócio do AutoDrive
+   */
   public boolean realizarVenda() {
-  
-      if (!cliente.validarCnhCliente()) {
-          return false; //encerrar metodo antes da hora(retorna false), para impedir da venda (se CNH DO CLIENTE for INVÁLIDA)
-      }
-  
-      if (veiculo.getStatus() == StatusVeiculo.VENDIDO) {
-          return false; //encerrar metodo antes da hora(retorna false), para impedir da venda (se tiver VENDIDO)!
+      // Validação básica de integridade
+      if (this.veiculo == null || this.cliente == null || this.vendedor == null) {
+          return false; 
       }
       
-      if (veiculo.getStatus() == StatusVeiculo.RESERVADO){
-        return false; //encerrar metodo antes da hora(retorna false), para impedir da venda (SE tiver RESERVADO)!
+      // REQ03 & REQ04: O carro não pode já ter sido vendido
+      if (this.veiculo.getStatus() == StatusVeiculo.VENDIDO) {
+          return false; 
       }
 
-      if (veiculo.getStatus() == StatusVeiculo.EM_MANUTENCAO){
-        return false; //encerrar metodo antes da hora(retorna false), para impedir da venda (SE tiver EM_MANUTENCAO)!
+      // [NOVO] REQ12: Bloquear faturamento se possuir pendências de documentação (RENAVAM vazio ou nulo)
+      if (this.veiculo.getRenavam() == null || this.veiculo.getRenavam().trim().isEmpty()) {
+          return false;
       }
-    
-      if (veiculo.getRenavam() == null || veiculo.getRenavam().isEmpty()){
-        return false; //encerrar metodo antes da hora(retorna false), para impedir da venda (SE RENAVAM tiver VAZIO)!
+
+      // [NOVO] REQ19: Impedir a venda de veículo que possua reserva ativa
+      if (this.veiculo.getStatus() == StatusVeiculo.RESERVADO) {
+          return false;
       }
-      if (entrada < ENTRADA_MINIMA) {
-        return false; //encerrar metodo antes da hora(retorna false), para impedir da venda (SE ENTRADA < ENTRADA MINIMA)
-      }
-  
-      double precoBase = veiculo.getPreco(); // Variavel local do metodo realizarVenda(), o "precoBase" é o preco do veiculo da venda!
-      double imposto = calcularImposto(precoBase); // variavel local do metodo realizaVenda(), o "imposto" da venda = *calculoImposto()* (chamada do metodo)
-      double comissao = calcularComissao(precoBase); // variavel local do metodo realizaVenda(), a "comissao" = *preçoBase * PercentualComissao(do vendedor)!
-  
-      this.valorTotal = precoBase + imposto; //Inicializa o atributo "ValorTotal" da venda = *precoBase + imposto*
-     
-      this.dataVenda = LocalDateTime.now(); //inicializa o atributo: "dataVenda" da venda = *data atual*
-      veiculo.setStatus(StatusVeiculo.VENDIDO); // SE todas as condicões forem atendidas ENTAO veiculo é dado como *VENDIDO*
       
-      vendedor.setComissao(vendedor.getComissao() + comissao); //alterar atributo comissão pro vendedor (PÓS VENDA)! 
-    return true;
+      // REQ15: Bloquear a finalização da venda caso o valor de entrada seja inferior ao mínimo
+      if (this.entrada < ENTRADA_MINIMA) {
+          return false; 
+      }
+  
+      // REQ04: Cálculo de impostos e comissões
+      double precoBase = veiculo.getPreco(); 
+      double imposto = calcularImposto(precoBase); 
+      double comissao = calcularComissao(precoBase); 
+  
+      this.valorTotal = precoBase + imposto; 
+      
+      if (this.dataVenda == null) {
+          this.dataVenda = LocalDateTime.now(); 
+      }
+      
+      // REQ03: Controlar status do veículo mudando para VENDIDO
+      veiculo.setStatus(StatusVeiculo.VENDIDO); 
+      
+      // Acumula a comissão do vendedor com precisão
+      vendedor.setComissao(vendedor.getComissao() + comissao); 
+      return true;
   }
   
-  //Metodo 2 (Calcular Comissao)
   public double calcularComissao(double precoBase) {
-    return precoBase * vendedor.getPercentualComissao();
+      if (vendedor == null) return 0.0;
+      return precoBase * vendedor.getPercentualComissao();
   }
-  //Metodo 3 (CalcularImposto)
+  
   public double calcularImposto(double precoBase) {
-    return precoBase * TAXA_IMPOSTO;
+      return precoBase * TAXA_IMPOSTO;
   }
+
   public int calcularMesesUso() {
-    return 0; // Stub temporário para compilar
+      if (this.dataVenda == null) return 0;
+      return Period.between(this.dataVenda.toLocalDate(), LocalDate.now()).getMonths();
   }
 }
