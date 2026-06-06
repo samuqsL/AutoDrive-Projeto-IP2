@@ -2,8 +2,14 @@ package br.ufrpe.autodrive.negocio.beans;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.io.Serializable;
 
-public class OrdemServico {
+//Serialização da classe (Serialization/Persistence)*
+public class OrdemServico implements Serializable {
+	
+	// É uma excelente prática de POO colocar essa constante de controle (Serialization/Persistence)*
+	private static final long serialVersionUID = 1L;
+	
     private int numero;
     private StatusOS status;
     private String dataAbertura;
