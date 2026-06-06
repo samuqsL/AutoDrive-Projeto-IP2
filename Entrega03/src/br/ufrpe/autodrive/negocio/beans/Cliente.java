@@ -1,6 +1,13 @@
 package br.ufrpe.autodrive.negocio.beans;
 
-public class Cliente extends Pessoa { 
+/**
+ * Classe Cliente - Agora herdando de Pessoa
+ */
+public class Cliente extends Pessoa {
+	
+	// Apenas adiciona o ID específico de versão para o Cliente (Serialization/Persistence)*
+	private static final long serialVersionUID = 1L;
+	
     private String cnh;
     private String email;
 
@@ -49,5 +56,10 @@ public class Cliente extends Pessoa {
 
     public boolean validarCnhCliente() {
         return this.cnh != null && !this.cnh.isEmpty();
+    }
+    
+    @Override
+    public String toString() {
+        return this.getNome();
     }
 }
