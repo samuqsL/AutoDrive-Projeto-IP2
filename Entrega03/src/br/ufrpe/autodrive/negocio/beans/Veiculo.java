@@ -6,9 +6,15 @@
 // [A] aviso
 
 package br.ufrpe.autodrive.negocio.beans;
+import java.io.Serializable;
 
 //classe mae de "VeiculoNovo" e "VeiculoSeminovo"
-public abstract class Veiculo {
+//A mãe assina a responsabilidade da serialização (Serialization/Persistence)*
+public abstract class Veiculo implements Serializable {
+	
+	//É uma excelente prática de POO colocar essa constante de controle (Serialization/Persistence)*
+	private static final long serialVersionUID = 1L;
+	
 	//atributos
 	private String chassi;
 	private String renavam;
@@ -74,5 +80,10 @@ public abstract class Veiculo {
 	//Metodos
 	public void reservar() {
 		this.status = StatusVeiculo.RESERVADO;
+	}
+	
+	@Override
+	public String toString() {
+	    return this.getModelo() + " (" + this.getChassi() + ")"; // Exibe: Chevrolet Onix (93X82KAA)
 	}
 }
