@@ -2,6 +2,10 @@ package br.ufrpe.autodrive.negocio.beans;
 
 //classe filha de "Veiculo"
 public class VeiculoSeminovo extends Veiculo {
+	
+	// Apenas adiciona o ID específico de versão para o VeiculoSeminovo (Serialization/Persistence)*
+	private static final long serialVersionUID = 1L;
+	
 	//atributos [são herdados da classe Veiculo]!
 	
 	//construtor principal
