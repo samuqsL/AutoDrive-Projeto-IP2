@@ -1,6 +1,14 @@
 package br.ufrpe.autodrive.negocio.beans;
 
+
+/**
+ * Classe Vendedor - Agora herdando de Pessoa
+ */
 public class Vendedor extends Pessoa {
+	
+	// Apenas adiciona o ID específico de versão para o Vendedor (Serialization/Persistence)
+	private static final long serialVersionUID = 1L;
+	
     private double comissao;
     private double percentualComissao;
 
@@ -29,5 +37,10 @@ public class Vendedor extends Pessoa {
     public void setPercentualComissao(double percentualComissao){
         if (percentualComissao < 0) throw new IllegalArgumentException("Percentual inválido");
         this.percentualComissao = percentualComissao;
+    }
+    
+    @Override
+    public String toString() {
+        return this.getNome(); // Exibe: Artur M.
     }
 }
