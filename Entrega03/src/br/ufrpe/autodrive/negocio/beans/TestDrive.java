@@ -1,9 +1,14 @@
 package br.ufrpe.autodrive.negocio.beans;
 
 import java.time.LocalDateTime;
+import java.io.Serializable;
 
-public class TestDrive {
-
+//Serialização da classe (Serialization/Persistence)*
+public class TestDrive implements Serializable {
+	
+	// É uma excelente prática de POO colocar essa constante de controle (Serialization/Persistence)*
+	private static final long serialVersionUID = 1L;
+	
     private Cliente cliente;
     private Veiculo veiculo;
     private LocalDateTime dataTestDrive; // 🟢 Novo Atributo
@@ -29,7 +34,8 @@ public class TestDrive {
         if (cliente == null || !cliente.validarCnhCliente()) {
             return false;
         }
-
+        
+        // 🛑 ADICIONADO: "|| veiculo.getStatus() == StatusVeiculo.VENDIDO"
         if (veiculo == null || veiculo.getStatus() == StatusVeiculo.EM_MANUTENCAO || veiculo.getStatus() == StatusVeiculo.VENDIDO) {
             return false;
         }
