@@ -1,6 +1,12 @@
 package br.ufrpe.autodrive.negocio.beans;
+import java.io.Serializable;
 
-public abstract class Pessoa {
+//A mãe assina a responsabilidade da serialização (Serialization/Persistence)*
+public abstract class Pessoa implements Serializable {
+	
+	// É uma excelente prática de POO colocar essa constante de controle (Serialization/Persistence)*
+	private static final long serialVersionUID = 1L;
+	
     protected String nome;
     protected String cpf;
     protected String telefone;
