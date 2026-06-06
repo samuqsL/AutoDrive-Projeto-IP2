@@ -1,6 +1,13 @@
 package br.ufrpe.autodrive.negocio.beans;
 
-public class Pecas {
+import java.io.Serializable;
+
+//Serialização da classe (Serialization/Persistence)*
+public class Pecas implements Serializable {
+	
+	// É uma excelente prática de POO colocar essa constante de controle (Serialization/Persistence)*
+	private static final long serialVersionUID = 1L;
+	
     private String nome;
     private String codigo;
     private double preco;
