@@ -1,10 +1,9 @@
 package br.ufrpe.autodrive.negocio.beans;
 
+import java.io.Serializable; // - Adicionado (para permitir serialização e persistencia dos dados)
+import java.time.LocalDate;  // ⬅️ Adicionado 
 import java.time.LocalDateTime;
-import java.util.UUID;       // ⬅️ Adicionado (gerando numero atuomatico)
-import java.io.Serializable; // ⬅️ Adicionado (para permitir serialização e persistencia dos dados)
-import java.time.LocalDate;  // - Adicionado 
-import java.time.Period;     // - Adicionado
+import java.util.UUID;       // - Adicionado (gerando numero atuomatico)
 
 //Serialização da classe (Serialization/Persistence)*
 public class Venda implements Serializable{
@@ -117,7 +116,8 @@ public class Venda implements Serializable{
   }
 
   public int calcularMesesUso() {
-      if (this.dataVenda == null) return 0;
-      return Period.between(this.dataVenda.toLocalDate(), LocalDate.now()).getMonths();
+	  if (this.dataVenda == null) return 0;
+	  // Garante o cálculo absoluto de meses, mesmo mudando de um ano para o outro
+	  return (int) java.time.temporal.ChronoUnit.MONTHS.between(this.dataVenda.toLocalDate(), LocalDate.now());
   }
 }
