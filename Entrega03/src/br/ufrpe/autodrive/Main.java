@@ -6,6 +6,7 @@ import br.ufrpe.autodrive.negocio.beans.*;
 import br.ufrpe.autodrive.gui.ScreenManager;
 import javafx.application.Application;
 import javafx.stage.Stage;
+import java.time.LocalDateTime;
 
 public class Main extends Application {
 
@@ -39,7 +40,7 @@ public class Main extends Application {
         Cliente c1 = new Cliente("Samuel Silva", "123.456.789-00", "CNH12345", "samuel@email.com", "(81) 99999-9999");
         Cliente c2 = new Cliente("Maria Souza", "987.654.321-11", "CNH54321", "maria@email.com", "(81) 98888-8888");
         Cliente c3 = new Cliente("Yuri Neves", "321.122.567-12", "CNH1567", "yuri@gmail.com", "(81)9199-1919");
-        		
+                
         // Evita duplicar registros se os dados já tiverem sido carregados do arquivo .dat
         if (repoClientes.procurarCliente("123.456.789-00") == null) {
             repoClientes.adicionarCliente(c1);
@@ -50,8 +51,6 @@ public class Main extends Application {
         if (repoClientes.procurarCliente("321.122.567-12") == null) {
             repoClientes.adicionarCliente(c3);
         }
-        
-
         
         Vendedor vend1 = new Vendedor("Artur M.", 0.05);
         Vendedor vend2 = new Vendedor("Otavio R.", 0.05); 
@@ -85,7 +84,7 @@ public class Main extends Application {
             repoVeiculos.adicionarVeiculo(vSemAlerta);
         }
 
-        // --- 3.3. DADOS DE HISTÓRICO PRÉVIO PARA OS RELATÓRIOS DO OTÁVIO ---
+        // --- 3.3. DADOS DE HISTÓRICO PRÉVIO PARA OS RELATÓRIOS E CONSULTAS ---
         VeiculoNovo carRelatorio1 = new VeiculoNovo("CHASSIREP1", "RENREP1", "Hyundai HB20", 2025, 80000.00);
         VeiculoNovo carRelatorio2 = new VeiculoNovo("CHASSIREP2", "RENREP2", "Jeep Renegade", 2024, 110000.00);
         VeiculoNovo carRelatorio3 = new VeiculoNovo("CHASSIREP3", "RENREP3", "Fiat Pulse", 2025, 95000.00);
@@ -94,16 +93,19 @@ public class Main extends Application {
         if (repoVeiculos.procurarVeiculo("CHASSIREP2") == null) repoVeiculos.adicionarVeiculo(carRelatorio2);
         if (repoVeiculos.procurarVeiculo("CHASSIREP3") == null) repoVeiculos.adicionarVeiculo(carRelatorio3);
         
-        // Verifica se o histórico de vendas já existe no arquivo antes de simular novas vendas fictícias
+        // 🟢 [HISTÓRICO ATUALIZADO]: 3 Vendas com datas diferentes para testar filtros na tabela
         if (repoVendas.listarTodasVendas().isEmpty()) {
+            // Venda 1: Realizada em Abril de 2026
             gVenda.efetuarVenda(0, "123.456.789-00", "CHASSIREP1", "Artur M.", 20000.00, 
-                java.time.LocalDateTime.of(2026, 5, 10, 14, 30));
+                LocalDateTime.of(2026, 4, 15, 14, 30));
                 
+            // Venda 2: Realizada em Maio de 2026
             gVenda.efetuarVenda(0, "987.654.321-11", "CHASSIREP2", "Otavio R.", 35000.00, 
-                java.time.LocalDateTime.of(2026, 5, 20, 10, 15));
+                LocalDateTime.of(2026, 5, 10, 10, 15));
                 
-            gVenda.efetuarVenda(0, "123.456.789-00", "CHASSIREP3", "Artur M.", 15000.00, 
-                java.time.LocalDateTime.of(2026, 5, 20, 16, 45));
+            // Venda 3: Realizada em Junho de 2026 (Mês Atual)
+            gVenda.efetuarVenda(0, "321.122.567-12", "CHASSIREP3", "Artur M.", 15000.00, 
+                LocalDateTime.of(2026, 6, 02, 16, 45));
         }
         
         // --- 3.4. MASSA DE TESTES EXCLUSIVA PARA A OFICINA (YURI) ---
