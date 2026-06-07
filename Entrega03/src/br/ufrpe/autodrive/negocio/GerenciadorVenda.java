@@ -21,7 +21,6 @@ public class GerenciadorVenda implements IGerenciadorVenda {
         this.repoVeic = repoVeic;
     }
     
-    // Novas pontes para coletar os dados do estoque e popular os ComboBoxes
     @Override
     public List<Cliente> listarTodosClientes() {
         return this.repoC.listarClientes();
@@ -48,11 +47,21 @@ public class GerenciadorVenda implements IGerenciadorVenda {
         Vendedor v = repoVend.procurarVendedor(nomeVendedor);
         Veiculo veic = repoVeic.procurarVeiculo(chassi);
 
+        // 🛑 TRAVA DE DUPLICAÇÃO ANTES DA VENDA: Se o veículo já estiver VENDIDO na memória, barra imediatamente
+        if (veic != null && veic.getStatus() == StatusVeiculo.VENDIDO) {
+            return false;
+        }
+
         if (c != null && v != null && veic != null) {
-            // Usa o construtor automático com UUID
             Venda novaVenda = new Venda(c, v, veic, entrada);
+            novaVenda.setDataVenda(LocalDateTime.now()); 
+            
             if (novaVenda.realizarVenda()) {
                 this.repoV.adicionarVenda(novaVenda);
+                
+                // 🟢 CORREÇÃO DOS MÉTODOS: Usa os métodos reais mapeados do seu repositório de veículos
+                this.repoVeic.adicionarVeiculo(veic); 
+                
                 return true;
             }
         }
@@ -65,12 +74,21 @@ public class GerenciadorVenda implements IGerenciadorVenda {
         Vendedor v = repoVend.procurarVendedor(nomeVendedor);
         Veiculo veic = repoVeic.procurarVeiculo(chassi);
 
+        // 🛑 TRAVA DE DUPLICAÇÃO ANTES DA VENDA
+        if (veic != null && veic.getStatus() == StatusVeiculo.VENDIDO) {
+            return false;
+        }
+
         if (c != null && v != null && veic != null) {
             Venda novaVenda = new Venda(c, v, veic, entrada);
             novaVenda.setDataVenda(dataDigitada); 
             
             if (novaVenda.realizarVenda()) {
                 this.repoV.adicionarVenda(novaVenda);
+                
+                // 🟢 CORREÇÃO DOS MÉTODOS: Sincroniza o estado do veículo no repositório
+                this.repoVeic.adicionarVeiculo(veic);
+                
                 return true;
             }
         }
