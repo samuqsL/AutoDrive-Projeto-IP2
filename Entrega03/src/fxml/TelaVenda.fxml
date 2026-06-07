@@ -48,8 +48,6 @@
                               <ComboBox fx:id="comboVendedor" prefWidth="280.0" promptText="Selecione o Vendedor..." />
                               <Label text="Valor de Entrada:" />
                               <TextField fx:id="txtEntrada" />
-                              <Label text="Data da Venda:" />
-                              <DatePicker fx:id="dpDataVenda" prefWidth="280.0" />
                            </children>
                         </VBox>
                         <Label fx:id="lblStatus" alignment="CENTER" maxWidth="300.0" wrapText="true" />
