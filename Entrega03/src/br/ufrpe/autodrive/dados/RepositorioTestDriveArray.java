@@ -1,25 +1,43 @@
 package br.ufrpe.autodrive.dados;
 
 import br.ufrpe.autodrive.negocio.beans.TestDrive;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RepositorioTestDriveArray implements IRepositorioTD {
 
-    private List<TestDrive> testDrives;
+    // 1. Instância única para o padrão Singleton
+    private static RepositorioTestDriveArray instance;
 
-    public RepositorioTestDriveArray() {
+    private List<TestDrive> testDrives;
+    private static final String CAMINHO_ARQUIVO = "dados/test_drives.dat";
+
+    // 2. Construtor privado que carrega os dados salvos do arquivo dat
+    private RepositorioTestDriveArray() {
         this.testDrives = new ArrayList<>();
+        this.carregarArquivo();
+    }
+
+    // 3. Método estático para obter a instância única
+    public static synchronized RepositorioTestDriveArray getInstance() {
+        if (instance == null) {
+            instance = new RepositorioTestDriveArray();
+        }
+        return instance;
     }
 
     @Override
     public void adicionarTestDrive(TestDrive td) {
-        this.testDrives.add(td);
+        if (td != null) {
+            this.testDrives.add(td);
+            this.salvarArquivo();
+        }
     }
 
     @Override
     public List<TestDrive> listarTestDrives() {
-        return new ArrayList<TestDrive>(this.testDrives);
+        return new ArrayList<>(this.testDrives);
     }
 
     @Override
@@ -37,6 +55,41 @@ public class RepositorioTestDriveArray implements IRepositorioTD {
         TestDrive tdEncontrado = procurarTestDrive(chassi);
         if (tdEncontrado != null) {
             this.testDrives.remove(tdEncontrado);
+            this.salvarArquivo();
+        }
+    }
+
+    // =========================================================================
+    // 💾 MÉTODOS DE PERSISTÊNCIA EM ARQUIVOS
+    // =========================================================================
+    
+    private void salvarArquivo() {
+        // 1. Cria a referência do arquivo baseada na constante "dados/nome_do_arquivo.dat"
+        File arquivo = new File(CAMINHO_ARQUIVO);
+        
+        // 2. Verifica se a pasta mãe (dados) existe; se não existir, cria!
+        if (arquivo.getParentFile() != null && !arquivo.getParentFile().exists()) {
+            arquivo.getParentFile().mkdirs();
+        }
+        
+        // 3. Abre o fluxo de gravação e despeja a lista correspondente
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(CAMINHO_ARQUIVO))) {
+            oos.writeObject(this.testDrives);
+        } catch (IOException e) {
+            System.err.println("Erro ao salvar arquivo de test drives: " + e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void carregarArquivo() {
+        File f = new File(CAMINHO_ARQUIVO);
+        if (!f.exists()) return;
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
+            this.testDrives = (ArrayList<TestDrive>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Erro ao carregar arquivo de test drives, iniciando lista vazia.");
+            this.testDrives = new ArrayList<>();
         }
     }
 }
