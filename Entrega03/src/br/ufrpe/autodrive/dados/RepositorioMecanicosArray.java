@@ -7,19 +7,19 @@ import java.util.List;
 
 public class RepositorioMecanicosArray implements IRepositorioMecanicos {
 
-    // 1. Instância única para o padrão Singleton
+    // Instância única para o padrão Singleton
     private static RepositorioMecanicosArray instance;
 
     private ArrayList<Mecanico> listaMecanicos;
     private static final String CAMINHO_ARQUIVO = "dados/mecanicos.dat";
 
-    // 2. Construtor privado que carrega os dados salvos do arquivo dat
+    // Construtor privado que carrega os dados salvos do arquivo dat
     private RepositorioMecanicosArray() {
         this.listaMecanicos = new ArrayList<>();
         this.carregarArquivo();
     }
 
-    // 3. Método estático para obter a instância única
+    // Método estático para obter a instância única
     public static RepositorioMecanicosArray getInstance() {
         if (instance == null) {
             instance = new RepositorioMecanicosArray();
@@ -57,6 +57,13 @@ public class RepositorioMecanicosArray implements IRepositorioMecanicos {
     @Override
     public List<Mecanico> listarTodos() {
         return new ArrayList<>(this.listaMecanicos);
+    }
+
+    @Override
+    public void atualizarMecanico(Mecanico m) {
+        // Como a lista em memória já possui as referências alteradas,
+        // apenas invocamos a gravação do arquivo para persistir o novo estado.
+        this.salvarArquivo();
     }
 
     // =========================================================================
