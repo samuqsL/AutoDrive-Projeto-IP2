@@ -20,7 +20,7 @@ public class OrdemServico implements Serializable {
     private Cliente cliente;
     private Veiculo veiculo;
     
-    // FUNÇÃO LOCALIZADA: Atributo para vincular o mecânico individual responsável
+    // Atributo para vincular o mecânico responsável
     private Mecanico mecanico; 
 
     private List<Pecas> listaPecas;
@@ -32,28 +32,25 @@ public class OrdemServico implements Serializable {
         this.status = StatusOS.ABERTA; // Toda OS nasce por padrão na fila (ABERTA)
         this.valorTotal = 0.0;
 
-        // FUNÇÃO LOCALIZADA: Gerador automático de código aleatório para a OS (5 dígitos)
+        // Gerador automático de código reserva (caso não fornecido externamente)
         this.numero = 10000 + new Random().nextInt(90000);
 
-        // FUNÇÃO LOCALIZADA: Captura automática da data do sistema
+        // Captura automática da data do sistema
         LocalDateTime agora = LocalDateTime.now();
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         this.dataAbertura = agora.format(formatador);
     }
 
-    // FUNÇÃO LOCALIZADA: Construtor simplificado (sem número e data manuais)
     public OrdemServico(Cliente cliente, Veiculo veiculo) {
         this();
         this.cliente = cliente;
         this.veiculo = veiculo;
     }
 
-    // FUNÇÃO LOCALIZADA: Validador boolean para identificar se a OS possui mecânico alocado
     public boolean possuiMecanico() {
         return this.mecanico != null;
     }
 
-    // Métodos utilitários e regras mantidos do projeto original
     public boolean adicionarPeca(Pecas peca, int quantidade) {
         if (peca != null && quantidade > 0) {
             peca.setQuantidade(quantidade);
@@ -72,7 +69,27 @@ public class OrdemServico implements Serializable {
         for (Pecas p : listaPecas) {
             total += p.getPreco() * p.getQuantidade();
         }
+        for (MaoDeObra m : listaServicos) {
+            total += m.getPreco();
+        }
         this.valorTotal = total;
+    }
+
+    // 🟢 MÉTODOS CORRIGIDOS: Solucionam o erro "cannot find symbol" na classe Relatorio
+    public Double getValorPecas() {
+        double total = 0;
+        for (Pecas p : listaPecas) {
+            total += p.getPreco() * p.getQuantidade();
+        }
+        return total;
+    }
+
+    public Double getValorMaoDeObra() {
+        double total = 0;
+        for (MaoDeObra m : listaServicos) {
+            total += m.getPreco();
+        }
+        return total;
     }
 
     public boolean finalizarOS() {
