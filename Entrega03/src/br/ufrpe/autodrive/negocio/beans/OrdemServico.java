@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 
 public class OrdemServico implements Serializable {
 	
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 	
     private int numero;
     private StatusOS status;
@@ -20,19 +20,25 @@ public class OrdemServico implements Serializable {
     private Cliente cliente;
     private Veiculo veiculo;
     
-    // Atributo para vincular o mecânico responsável
+    // Atributo para vincular o mecânico individual responsável
     private Mecanico mecanico; 
 
     private List<Pecas> listaPecas;
     private List<MaoDeObra> listaServicos;
+
+    // ATRIBUTOS ADICIONADOS (Correção para a classe Relatorio)
+    private double valorPecas;
+    private double valorMaoDeObra;
 
     public OrdemServico() {
         this.listaPecas = new ArrayList<>();
         this.listaServicos = new ArrayList<>();
         this.status = StatusOS.ABERTA; // Toda OS nasce por padrão na fila (ABERTA)
         this.valorTotal = 0.0;
+        this.valorPecas = 0.0;
+        this.valorMaoDeObra = 0.0;
 
-        // Gerador automático de código reserva (caso não fornecido externamente)
+        // Gerador automático de código aleatório para a OS (5 dígitos)
         this.numero = 10000 + new Random().nextInt(90000);
 
         // Captura automática da data do sistema
@@ -65,31 +71,14 @@ public class OrdemServico implements Serializable {
     }
 
     public void calcularTotal() {
-        double total = 0;
+        double totalPecas = 0;
         for (Pecas p : listaPecas) {
-            total += p.getPreco() * p.getQuantidade();
+            totalPecas += p.getPreco() * p.getQuantidade();
         }
-        for (MaoDeObra m : listaServicos) {
-            total += m.getPreco();
-        }
-        this.valorTotal = total;
-    }
-
-    // 🟢 MÉTODOS CORRIGIDOS: Solucionam o erro "cannot find symbol" na classe Relatorio
-    public Double getValorPecas() {
-        double total = 0;
-        for (Pecas p : listaPecas) {
-            total += p.getPreco() * p.getQuantidade();
-        }
-        return total;
-    }
-
-    public Double getValorMaoDeObra() {
-        double total = 0;
-        for (MaoDeObra m : listaServicos) {
-            total += m.getPreco();
-        }
-        return total;
+        this.valorPecas = totalPecas;
+        
+        // Exemplo: se houver cálculo de mão de obra depois, some a this.valorMaoDeObra
+        this.valorTotal = this.valorPecas + this.valorMaoDeObra;
     }
 
     public boolean finalizarOS() {
@@ -130,4 +119,10 @@ public class OrdemServico implements Serializable {
 
     public Mecanico getMecanico() { return mecanico; }
     public void setMecanico(Mecanico mecanico) { this.mecanico = mecanico; }
+
+    public double getValorPecas() { return valorPecas; }
+    public void setValorPecas(double valorPecas) { this.valorPecas = valorPecas; }
+
+    public double getValorMaoDeObra() { return valorMaoDeObra; }
+    public void setValorMaoDeObra(double valorMaoDeObra) { this.valorMaoDeObra = valorMaoDeObra; }
 }
