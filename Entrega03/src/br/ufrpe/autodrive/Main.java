@@ -12,7 +12,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         // =========================================================================
-        // 🟢 Passo 1: Inicialização dos Repositórios (Singleton + Persistência)
+        // 1: Inicialização dos Repositórios (Singleton + Persistência)
         // =========================================================================
         IRepositorioVendas repoVendas = RepositorioVendasArray.getInstance();
         IRepositorioClientes repoClientes = RepositorioClientesArray.getInstance();
@@ -21,27 +21,37 @@ public class Main extends Application {
         IRepositorioOS repoOS = RepositorioOsArray.getInstance();
         IRepositorioTD repoTestDrive = RepositorioTestDriveArray.getInstance();
         
+        // NOVO: Repositório de mecânicos injetado
+        IRepositorioMecanicos repoMecanicos = RepositorioMecanicosArray.getInstance();
+        
         // =========================================================================
-        // 🟢 Passo 2: Instanciar os Mecânicos Individuais e os Gerenciadores
+        // 2: Instanciar os Mecânicos Individuais, Salvar e criar os Gerenciadores
         // =========================================================================
         
-        // FUNÇÃO LOCALIZADA: Criação dos 2 mecânicos solicitados com produtividade individual ativa
-        Mecanico mario = new Mecanico("Mario", true);
-        Mecanico luigi = new Mecanico("Luigi", true);
+        // Se a lista estiver vazia (primeira execução), adiciona os mecânicos no repositório
+        if (repoMecanicos.listarTodos().isEmpty()) {
+            Mecanico mario = new Mecanico("Mario", true);
+            Mecanico luigi = new Mecanico("Luigi", true);
+            repoMecanicos.adicionarMecanico(mario);
+            repoMecanicos.adicionarMecanico(luigi);
+        }
         
+        // Correções nas assinaturas (Respeitando os tipos de Repositórios)
         IGerenciadorVenda gVenda = new GerenciadorVenda(repoVendas, repoClientes, repoVeiculos, repoVendedores);
         
-        // FUNÇÃO LOCALIZADA: Acoplamento de Mario e Luigi no Gerenciador de Oficina
-        IGerenciadorOficina gOficina = new GerenciadorOficina(repoOS, repoClientes, repoVeiculos, mario, luigi);
+        // Acoplamento correto do Repositório de Mecânicos no Gerenciador de Oficina
+        IGerenciadorOficina gOficina = new GerenciadorOficina(repoOS, repoClientes, repoVeiculos, repoMecanicos);
         
         IGerenciadorTestDrive gTestDrive = new GerenciadorTestDrive(repoTestDrive, repoClientes, repoVeiculos, repoVendedores);
         
-        System.out.println("-> [Main] Oficina configurada com Mario e Luigi. Fila reativa operacional!");
+        System.out.println("-> [Main] Oficina configurada. Fila reativa operacional!");
         
         // =========================================================================
-        // 🟢 Passo 3: Configurar o palco principal do JavaFX e abrir a aplicação
+        // 3: Configurar o palco principal do JavaFX e abrir a aplicação
         // =========================================================================
         ScreenManager.getInstance().setMainStage(primaryStage);
+        
+        // Correção: Passando exatamente os gerenciadores que as telas esperam
         ScreenManager.getInstance().injetarGerenciadoresNasTelas(gVenda, gOficina, gTestDrive);
         ScreenManager.getInstance().showMenuPrincipal();
     }
