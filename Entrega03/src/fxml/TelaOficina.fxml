@@ -66,15 +66,12 @@
                             <TableColumn fx:id="colNomeCliente" prefWidth="180.0" text="Nome do Cliente" />
                             <TableColumn fx:id="colCpfCliente" prefWidth="120.0" text="CPF" />
                           </columns>
-                           <columnResizePolicy>
-                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                           </columnResizePolicy>
                         </TableView>
                         
                         <Label text="2. Digite o Chassi do Veículo:" textFill="#57606f" />
                         <TextField fx:id="txtChassi" promptText="Ex: 9BWZZZ372VET612" style="-fx-padding: 8px;" />
                         
-                        <Button fx:id="btnAbrirOS" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#botaoAbrirOS" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10px; -fx-cursor: hand;" text="Abrir Ordem de Serviço" />
+                        <Button fx:id="btnAbrirOS" maxWidth="Infinity" mnemonicParsing="false" onAction="#botaoAbrirOS" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10px; -fx-cursor: hand;" text="Abrir Ordem de Serviço" />
                      </children>
                   </VBox>
                   
@@ -87,9 +84,9 @@
                         </Label>
                         
                         <Label text="Selecione a OS em manutenção:" textFill="#57606f" />
-                        <ComboBox fx:id="cbOsManutencao" maxWidth="1.7976931348623157E308" promptText="Selecione a OS para finalizar..." style="-fx-padding: 5px;" />
+                        <ComboBox fx:id="cbOsManutencao" maxWidth="Infinity" promptText="Selecione a OS para finalizar..." style="-fx-padding: 5px;" />
                         
-                        <Button fx:id="btnFinalizarOS" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#botaoFinalizarServico" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10px; -fx-cursor: hand;" text="Finalizar e Liberar Veículo" />
+                        <Button fx:id="btnFinalizarOS" maxWidth="Infinity" mnemonicParsing="false" onAction="#botaoFinalizarServico" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10px; -fx-cursor: hand;" text="Finalizar e Liberar Veículo" />
                      </children>
                   </VBox>
                   
@@ -119,7 +116,7 @@
                            <children>
                               <HBox alignment="BASELINE_LEFT" spacing="10.0">
                                  <children>
-                                    <Label text="Fila de Espera &amp; Manutenção Ativa" textFill="#2c3e50">
+                                    <Label text="Fila de Espera e Manutencao Ativa" textFill="#2c3e50">
                                        <font>
                                           <font name="System Bold" size="13.0" />
                                        </font>
@@ -137,11 +134,8 @@
                                   <TableColumn fx:id="colClienteOSFila" prefWidth="180.0" text="Ordem / Nome do Cliente" />
                                   <TableColumn fx:id="colVeiculoChassiFila" prefWidth="110.0" text="Chassi Veículo" />
                                   <TableColumn fx:id="colDataFila" prefWidth="95.0" text="Data Abertura" />
-                                    <TableColumn fx:id="colStatusFila" prefWidth="110.0" text="Status" />
+                                  <TableColumn fx:id="colStatusFila" prefWidth="110.0" text="Status" />
                                 </columns>
-                                 <columnResizePolicy>
-                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                 </columnResizePolicy>
                               </TableView>
                            </children>
                         </VBox>
@@ -159,11 +153,8 @@
                                   <TableColumn fx:id="colClienteOSHist" prefWidth="180.0" text="Ordem / Nome do Cliente" />
                                   <TableColumn fx:id="colVeiculoChassiHist" prefWidth="110.0" text="Chassi Veículo" />
                                   <TableColumn fx:id="colDataHist" prefWidth="95.0" text="Data Abertura" />
-                                    <TableColumn fx:id="colStatusHist" prefWidth="110.0" text="Status" />
+                                  <TableColumn fx:id="colStatusHist" prefWidth="110.0" text="Status" />
                                 </columns>
-                                 <columnResizePolicy>
-                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                 </columnResizePolicy>
                               </TableView>
                            </children>
                         </VBox>
