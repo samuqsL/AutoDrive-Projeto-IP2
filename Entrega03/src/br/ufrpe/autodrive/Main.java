@@ -29,6 +29,13 @@ public class Main extends Application {
         // =========================================================================
         IGerenciadorVenda gVenda = new GerenciadorVenda(repoVendas, repoClientes, repoVendedores, repoVeiculos);
         IGerenciadorOficina gOficina = new GerenciadorOficina(repoOS, repoClientes, repoVeiculos);
+        
+        // 🟢 Adicionando mecânicos para testes do FXML e do motor de alocação
+        Mecanico m1 = new Mecanico("Mario (Mecânico 1)", true);
+        Mecanico m2 = new Mecanico("Luigi (Mecânico 2)", true);
+        gOficina.adicionarMecanico(m1);
+        gOficina.adicionarMecanico(m2);
+
         IGerenciadorRelatorio gRelatorio = new GerenciadorRelatorio(repoVendas, repoOS);
         IGerenciadorTestDrive gTestDrive = new GerenciadorTestDrive(repoTestDrive, repoClientes, repoVeiculos);
         
