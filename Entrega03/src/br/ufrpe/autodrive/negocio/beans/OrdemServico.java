@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 
 public class OrdemServico implements Serializable {
 	
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 	
     private int numero;
     private StatusOS status;
@@ -20,67 +20,47 @@ public class OrdemServico implements Serializable {
     private Cliente cliente;
     private Veiculo veiculo;
     
-    // Atributo para vincular o mecânico individual responsável
+    // FUNÇÃO LOCALIZADA: Atributo para vincular o mecânico individual responsável
     private Mecanico mecanico; 
 
     private List<Pecas> listaPecas;
     private List<MaoDeObra> listaServicos;
-
-    // ATRIBUTOS ADICIONADOS (Correção para a classe Relatorio)
-    private double valorPecas;
-    private double valorMaoDeObra;
 
     public OrdemServico() {
         this.listaPecas = new ArrayList<>();
         this.listaServicos = new ArrayList<>();
         this.status = StatusOS.ABERTA; // Toda OS nasce por padrão na fila (ABERTA)
         this.valorTotal = 0.0;
-        this.valorPecas = 0.0;
-        this.valorMaoDeObra = 0.0;
 
-        // Gerador automático de código aleatório para a OS (5 dígitos)
+        // FUNÇÃO LOCALIZADA: Gerador automático de código aleatório para a OS (5 dígitos)
         this.numero = 10000 + new Random().nextInt(90000);
 
-        // Captura automática da data do sistema
+        // FUNÇÃO LOCALIZADA: Captura automática da data do sistema
         LocalDateTime agora = LocalDateTime.now();
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         this.dataAbertura = agora.format(formatador);
     }
-
-    public OrdemServico(Cliente cliente, Veiculo veiculo) {
-        this();
-        this.cliente = cliente;
-        this.veiculo = veiculo;
+    
+    public void marcarComoPago() {
+        this.status = StatusOS.PAGA;
     }
-
-    public boolean possuiMecanico() {
-        return this.mecanico != null;
-    }
-
+    
     public boolean adicionarPeca(Pecas peca, int quantidade) {
-        if (peca != null && quantidade > 0) {
+        if(peca != null) {
             peca.setQuantidade(quantidade);
             this.listaPecas.add(peca);
             return true;
         }
         return false;
     }
-
-    public void marcarComoPago() {
-        this.status = StatusOS.PAGA;
-    }
-
+    
     public void calcularTotal() {
-        double totalPecas = 0;
-        for (Pecas p : listaPecas) {
-            totalPecas += p.getPreco() * p.getQuantidade();
-        }
-        this.valorPecas = totalPecas;
-        
-        // Exemplo: se houver cálculo de mão de obra depois, some a this.valorMaoDeObra
-        this.valorTotal = this.valorPecas + this.valorMaoDeObra;
+        double total = 0;
+        for(Pecas p : listaPecas) total += p.getPreco() * p.getQuantidade();
+        for(MaoDeObra m : listaServicos) total += m.getValor();
+        this.valorTotal = total;
     }
-
+    
     public boolean finalizarOS() {
         this.status = StatusOS.FINALIZADA;
         LocalDateTime agora = LocalDateTime.now();
@@ -110,19 +90,34 @@ public class OrdemServico implements Serializable {
 
     public Veiculo getVeiculo() { return veiculo; }
     public void setVeiculo(Veiculo veiculo) { this.veiculo = veiculo; }
+    
+    public Mecanico getMecanico() { return mecanico; }
+    public void setMecanico(Mecanico mecanico) { this.mecanico = mecanico; }
 
     public List<Pecas> getListaPecas() { return listaPecas; }
     public void setListaPecas(List<Pecas> listaPecas) { this.listaPecas = listaPecas; }
 
     public List<MaoDeObra> getListaServicos() { return listaServicos; }
     public void setListaServicos(List<MaoDeObra> listaServicos) { this.listaServicos = listaServicos; }
-
-    public Mecanico getMecanico() { return mecanico; }
-    public void setMecanico(Mecanico mecanico) { this.mecanico = mecanico; }
-
-    public double getValorPecas() { return valorPecas; }
-    public void setValorPecas(double valorPecas) { this.valorPecas = valorPecas; }
-
-    public double getValorMaoDeObra() { return valorMaoDeObra; }
-    public void setValorMaoDeObra(double valorMaoDeObra) { this.valorMaoDeObra = valorMaoDeObra; }
+    
+    // ======== MÉTODOS CORRIGIDOS PARA O GERENCIADOR RELATÓRIO ========
+    public double getValorPecas() {
+        double total = 0;
+        if (listaPecas != null) {
+            for (Pecas p : listaPecas) {
+                total += p.getPreco() * p.getQuantidade();
+            }
+        }
+        return total;
+    }
+    
+    public double getValorMaoDeObra() {
+        double total = 0;
+        if (listaServicos != null) {
+            for (MaoDeObra m : listaServicos) {
+                total += m.getValor();
+            }
+        }
+        return total;
+    }
 }
