@@ -24,11 +24,26 @@ public class Main extends Application {
         IRepositorioOS repoOS = RepositorioOsArray.getInstance();
         IRepositorioTD repoTestDrive = RepositorioTestDriveArray.getInstance();
         
+        // 🟢 REPO DOS MECÂNICOS
+        IRepositorioMecanicos repoMecanicos = RepositorioMecanicosArray.getInstance();
+        
+        // Instanciação e inserção dos mecânicos Mario e Luigi no banco de dados da oficina
+        if (repoMecanicos.procurarMecanico("Mario") == null) {
+            repoMecanicos.adicionarMecanico(new Mecanico("Mario", true));
+        }
+        if (repoMecanicos.procurarMecanico("Luigi") == null) {
+            repoMecanicos.adicionarMecanico(new Mecanico("Luigi", true));
+        }
+        
         // =========================================================================
         // 🟢 Passo 2: Instanciar os Gerenciadores Primeiro
         // =========================================================================
-        IGerenciadorVenda gVenda = new GerenciadorVenda(repoVendas, repoClientes, repoVendedores, repoVeiculos);
-        IGerenciadorOficina gOficina = new GerenciadorOficina(repoOS, repoClientes, repoVeiculos);
+        // Correção de assinatura: repoVeiculos e repoVendedores invertidos para compilar
+        IGerenciadorVenda gVenda = new GerenciadorVenda(repoVendas, repoClientes, repoVeiculos, repoVendedores);
+        
+        // Correção de assinatura: Usando o repoMecanicos em vez dos objetos mecânicos diretos
+        IGerenciadorOficina gOficina = new GerenciadorOficina(repoOS, repoClientes, repoVeiculos, repoMecanicos);
+        
         IGerenciadorRelatorio gRelatorio = new GerenciadorRelatorio(repoVendas, repoOS);
         IGerenciadorTestDrive gTestDrive = new GerenciadorTestDrive(repoTestDrive, repoClientes, repoVeiculos);
         
@@ -109,7 +124,8 @@ public class Main extends Application {
         }
         
         // --- 3.4. MASSA DE TESTES EXCLUSIVA PARA A OFICINA (YURI) ---
-        Mecanico mecanicoOficina = new Mecanico("Pedro Mecânico", 500.0, true);
+        // Alterado para buscar direto do banco de dados o Mario para a OS de teste prévia
+        Mecanico mecanicoOficina = repoMecanicos.procurarMecanico("Mario");
 
         // Como o repositório de OS ainda limpa a memória RAM ao fechar, mantemos a inserção padrão
         if (repoOS.listarTodas().isEmpty()) {
