@@ -3,11 +3,14 @@ package br.ufrpe.autodrive.negocio.beans;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.Serializable;
+import java.util.Random;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class OrdemServico implements Serializable {
-    
-    private static final long serialVersionUID = 1L;
-    
+	
+	private static final long serialVersionUID = 1L;
+	
     private int numero;
     private StatusOS status;
     private String dataAbertura;
@@ -16,7 +19,9 @@ public class OrdemServico implements Serializable {
 
     private Cliente cliente;
     private Veiculo veiculo;
-    private Mecanico mecanicoResponsavel;
+    
+    // FUNÇÃO LOCALIZADA: Atributo para vincular o mecânico individual responsável
+    private Mecanico mecanico; 
 
     private List<Pecas> listaPecas;
     private List<MaoDeObra> listaServicos;
@@ -24,59 +29,61 @@ public class OrdemServico implements Serializable {
     public OrdemServico() {
         this.listaPecas = new ArrayList<>();
         this.listaServicos = new ArrayList<>();
-        this.status = StatusOS.ABERTA; 
+        this.status = StatusOS.ABERTA; // Toda OS nasce por padrão na fila (ABERTA)
         this.valorTotal = 0.0;
+
+        // FUNÇÃO LOCALIZADA: Gerador automático de código aleatório para a OS (5 dígitos)
+        this.numero = 10000 + new Random().nextInt(90000);
+
+        // FUNÇÃO LOCALIZADA: Captura automática da data do sistema
+        LocalDateTime agora = LocalDateTime.now();
+        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        this.dataAbertura = agora.format(formatador);
     }
 
-    public OrdemServico(int numero, String dataAbertura, Cliente cliente, Veiculo veiculo) {
+    // FUNÇÃO LOCALIZADA: Construtor simplificado (sem número e data manuais)
+    public OrdemServico(Cliente cliente, Veiculo veiculo) {
         this();
-        this.numero = numero;
-        this.dataAbertura = dataAbertura;
         this.cliente = cliente;
         this.veiculo = veiculo;
-        
-        if (this.veiculo != null) {
-            this.veiculo.setStatus(StatusVeiculo.EM_MANUTENCAO);
-        }
     }
 
+    // FUNÇÃO LOCALIZADA: Validador boolean para identificar se a OS possui mecânico alocado
+    public boolean possuiMecanico() {
+        return this.mecanico != null;
+    }
+
+    // Métodos utilitários e regras mantidos do projeto original
     public boolean adicionarPeca(Pecas peca, int quantidade) {
         if (peca != null && quantidade > 0) {
             peca.setQuantidade(quantidade);
-            return this.listaPecas.add(peca);
+            this.listaPecas.add(peca);
+            return true;
         }
         return false;
-    }
-
-    public void calcularTotal() {
-        double total = 0;
-        for (Pecas p : listaPecas) {
-            total += (p.getPreco() * p.getQuantidade());
-        }
-        for (MaoDeObra m : listaServicos) {
-            total += m.getValor();
-        }
-        this.valorTotal = total;
     }
 
     public void marcarComoPago() {
         this.status = StatusOS.PAGA;
     }
 
-    public boolean finalizarOS() {
-        if (this.status == StatusOS.PAGA || this.status == StatusOS.PROCESSO_MANUTENCAO) {
-            this.status = StatusOS.FINALIZADA;
-            if (this.veiculo != null) {
-                this.veiculo.setStatus(StatusVeiculo.DISPONIVEL);
-            }
-            return true;
+    public void calcularTotal() {
+        double total = 0;
+        for (Pecas p : listaPecas) {
+            total += p.getPreco() * p.getQuantidade();
         }
-        return false;
+        this.valorTotal = total;
     }
 
-    public Mecanico getMecanicoResponsavel() { return mecanicoResponsavel; }
-    public void setMecanicoResponsavel(Mecanico mecanicoResponsavel) { this.mecanicoResponsavel = mecanicoResponsavel; }
+    public boolean finalizarOS() {
+        this.status = StatusOS.FINALIZADA;
+        LocalDateTime agora = LocalDateTime.now();
+        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        this.dataFechamento = agora.format(formatador);
+        return true;
+    }
 
+    // Getters e Setters
     public int getNumero() { return numero; }
     public void setNumero(int numero) { this.numero = numero; }
 
@@ -103,4 +110,7 @@ public class OrdemServico implements Serializable {
 
     public List<MaoDeObra> getListaServicos() { return listaServicos; }
     public void setListaServicos(List<MaoDeObra> listaServicos) { this.listaServicos = listaServicos; }
+
+    public Mecanico getMecanico() { return mecanico; }
+    public void setMecanico(Mecanico mecanico) { this.mecanico = mecanico; }
 }
