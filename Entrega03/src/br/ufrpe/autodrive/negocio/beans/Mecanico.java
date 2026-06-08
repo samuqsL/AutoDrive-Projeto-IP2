@@ -1,41 +1,33 @@
 package br.ufrpe.autodrive.negocio.beans;
 
-/**
- * Classe Mecanico - Agora herdando de Pessoa
- */
 public class Mecanico extends Pessoa {
-	
-	// Apenas adiciona o ID específico de versão para o Mecanico (Serialization/Persistence)
-	private static final long serialVersionUID = 1L;
-	
-    // 1. Removido o atributo 'nome' (agora vem de Pessoa)
-    private Double bonus;
+    
+    private static final long serialVersionUID = 1L;
+    
+    private int produtividade;
     private boolean disponivel;
 
-    // Construtor Default
     public Mecanico() {
         super();
+        this.produtividade = 0;
     }
 
-    // Construtor Principal
-    public Mecanico(String nome, Double bonus, boolean disponivel) {
-        // 2. Passa o nome para a Pessoa e define CPF/Telefone como null por enquanto
+    public Mecanico(String nome, boolean disponivel) {
         super(nome, null, null); 
-        this.bonus = bonus;
         this.disponivel = disponivel;
+        this.produtividade = 0;
     }
 
-    // --- Métodos Específicos do Mecânico ---
-
-    public Double getBonus() {
-        return bonus;
+    public int getProdutividade() {
+        return produtividade;
     }
 
-    public void setBonus(Double bonus) {
-        if (bonus < 0) {
-            throw new IllegalArgumentException("O bônus não pode ser negativo.");
-        }
-        this.bonus = bonus;
+    public void setProdutividade(int produtividade) {
+        this.produtividade = produtividade;
+    }
+
+    public void incrementarProdutividade() {
+        this.produtividade++;
     }
 
     public boolean isDisponivel() {
@@ -45,7 +37,4 @@ public class Mecanico extends Pessoa {
     public void setDisponivel(boolean disponivel) {
         this.disponivel = disponivel;
     }
-
-    // Os métodos getNome() e setNome() foram APAGADOS daqui, 
-    // pois o Java já os herda automaticamente de Pessoa.
 }
