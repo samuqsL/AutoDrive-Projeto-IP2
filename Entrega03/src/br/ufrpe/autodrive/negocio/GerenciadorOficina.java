@@ -2,12 +2,23 @@ package br.ufrpe.autodrive.negocio;
 
 import br.ufrpe.autodrive.dados.*;
 import br.ufrpe.autodrive.negocio.beans.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Random;
 
 public class GerenciadorOficina implements IGerenciadorOficina {
 
     private IRepositorioOS repoOS;
-    private IRepositorioClientes repoClientes; // Precisamos desses dois para buscar
-    private IRepositorioVeiculos repoVeiculos; // os objetos reais pelos IDs
+    private IRepositorioClientes repoClientes;
+    private IRepositorioVeiculos repoVeiculos;
+    
+    private List<Mecanico> listaMecanicos = new ArrayList<>();
+    private Queue<OrdemServico> filaDeOS = new LinkedList<>();
+    private Random gerador = new Random();
 
     public GerenciadorOficina(IRepositorioOS repoOS, IRepositorioClientes repoClientes, IRepositorioVeiculos repoVeiculos) {
         this.repoOS = repoOS;
@@ -16,57 +27,95 @@ public class GerenciadorOficina implements IGerenciadorOficina {
     }
 
     @Override
-    public boolean abrirOS(int numero, String dataAbertura, String cpfCliente, String chassiVeiculo) {
-        // Busca os objetos reais nos repositórios
+    public void adicionarMecanico(Mecanico m) {
+        if (m != null) {
+            this.listaMecanicos.add(m);
+        }
+    }
+
+    @Override
+    public int abrirOS(String cpfCliente, String chassiVeiculo) {
         Cliente cliente = repoClientes.procurarCliente(cpfCliente);
         Veiculo veiculo = repoVeiculos.procurarVeiculo(chassiVeiculo);
 
-        // Valida se os dois existem e se o número da OS é único
-        if (cliente != null && veiculo != null && repoOS.buscarPorNumero(numero) == null) {
+        if (cliente != null && veiculo != null) {
             
-            // 🛑 NOVA TRAVA DE SEGURANÇA: Se o carro já estiver em manutenção, impede a abertura!
             if (veiculo.getStatus() == StatusVeiculo.EM_MANUTENCAO) {
-                return false; // Retorna falso e a GUI exibirá mensagem de erro
+                return -1; 
             }
             
-            OrdemServico novaOS = new OrdemServico(numero, dataAbertura, cliente, veiculo);
+            int numeroUnico;
+            do {
+                numeroUnico = gerador.nextInt(99999) + 1;
+            } while (repoOS.buscarPorNumero(numeroUnico) != null);
+            
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            String dataAtual = LocalDate.now().format(formatter);
+            
+            OrdemServico novaOS = new OrdemServico(numeroUnico, dataAtual, cliente, veiculo);
+            
+            Mecanico mecanicoLivre = null;
+            for (Mecanico m : listaMecanicos) {
+                if (m.isDisponivel()) {
+                    mecanicoLivre = m;
+                    break;
+                }
+            }
+
+            if (mecanicoLivre != null) {
+                novaOS.setMecanicoResponsavel(mecanicoLivre);
+                novaOS.setStatus(StatusOS.PROCESSO_MANUTENCAO);
+                mecanicoLivre.setDisponivel(false);
+            } else {
+                filaDeOS.add(novaOS);
+            }
+            
             repoOS.salvar(novaOS);
-            return true;
+            return numeroUnico;
         }
-        return false;
+        return -1;
     }
 
     @Override
     public boolean finalizarServico(int numeroOS) {
         OrdemServico os = repoOS.buscarPorNumero(numeroOS);
         
-        if (os != null) {
-        	// 🛑 TRAVA DE SEGURANÇA: Se a OS já estiver FINALIZADA, impede de rodar novamente!
-            if (os.getStatus() == StatusOS.FINALIZADA) {
-                return false; // Retorna falso para a GUI exibir a mensagem de erro
+        if (os != null && os.getStatus() == StatusOS.PROCESSO_MANUTENCAO) {
+            
+            Mecanico m = os.getMecanicoResponsavel();
+            if (m != null) {
+                m.incrementarProdutividade();
+                m.setDisponivel(true);
             }
             
-            // 1. Cumpri o Requisito 1: A OS precisa estar PAGA
-            os.marcarComoPago();
-            
-            // 2. Cumpri o Requisito 2: Garante o item obrigatório se veio da GUI vazio
-            if (os.getListaPecas().isEmpty()) {
-                Pecas pecaObrigatoria = new Pecas();
-                pecaObrigatoria.setNome("oleo"); // Nome exato para passar no equalsIgnoreCase
-                pecaObrigatoria.setPreco(120.00); // Define um preço padrão para o relatório computar
-                pecaObrigatoria.setQuantidade(1);
-                
-                os.getListaPecas().add(pecaObrigatoria);
+            os.setStatus(StatusOS.FINALIZADA);
+            if (os.getVeiculo() != null) {
+                os.getVeiculo().setStatus(StatusVeiculo.DISPONIVEL);
             }
             
-            // 3. Força a OS a atualizar o seu próprio atributo 'valorTotal' internamente
-            os.calcularTotal(); 
+            if (!filaDeOS.isEmpty() && m != null) {
+                OrdemServico proximaOS = filaDeOS.poll();
+                proximaOS.setMecanicoResponsavel(m);
+                proximaOS.setStatus(StatusOS.PROCESSO_MANUTENCAO);
+                m.setDisponivel(false);
+                repoOS.salvar(proximaOS);
+            }
             
-            // 4. Finaliza de vez mudando o status para FINALIZADA e liberando o carro
-            return os.finalizarOS();
+            repoOS.salvar(os);
+            return true;
         }
-        
         return false;
+    }
+
+    @Override
+    public List<OrdemServico> listarHistoricoOSFinalizadas() {
+        List<OrdemServico> finalizadas = new ArrayList<>();
+        for (OrdemServico os : repoOS.listarTodas()) { 
+            if (os.getStatus() == StatusOS.FINALIZADA) {
+                finalizadas.add(os);
+            }
+        }
+        return finalizadas;
     }
 
     @Override
@@ -82,8 +131,7 @@ public class GerenciadorOficina implements IGerenciadorOficina {
     public boolean registrarServicoNaOS(int numeroOS, MaoDeObra servico) {
         OrdemServico os = repoOS.buscarPorNumero(numeroOS);
         if (os != null) {
-            os.adicionarServico(servico);
-            return true;
+            return os.getListaServicos().add(servico);
         }
         return false;
     }
