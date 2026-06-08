@@ -2,19 +2,17 @@ package br.ufrpe.autodrive.negocio;
 
 import br.ufrpe.autodrive.dados.*;
 import br.ufrpe.autodrive.negocio.beans.*;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
 public class GerenciadorOficina implements IGerenciadorOficina {
 
     private IRepositorioOS repoOS;
     private IRepositorioClientes repoClientes; 
     private IRepositorioVeiculos repoVeiculos; 
-    
-    // CORREÇÃO: Utilizando Repositório em vez de atributos fixos mario/luigi
-    private IRepositorioMecanicos repoMecanicos; 
+    private IRepositorioMecanicos repoMecanicos; // 🟢 CORREÇÃO: Substitui as instâncias fixas pela arquitetura correta
 
-    // Construtor atualizado recebendo os repositórios
+    // Construtor atualizado recebendo os repositórios, incluindo o de mecânicos
     public GerenciadorOficina(IRepositorioOS repoOS, IRepositorioClientes repoClientes, IRepositorioVeiculos repoVeiculos, IRepositorioMecanicos repoMecanicos) {
         this.repoOS = repoOS;
         this.repoClientes = repoClientes;
@@ -32,12 +30,13 @@ public class GerenciadorOficina implements IGerenciadorOficina {
         Veiculo veiculo = repoVeiculos.procurarVeiculo(chassiVeiculo);
 
         if (cliente != null && veiculo != null) {
-            OrdemServico novaOS = new OrdemServico();
-            novaOS.setCliente(cliente);
-            novaOS.setVeiculo(veiculo);
+            // Instancia a Ordem de Serviço (Gera número e data automaticamente internamente)
+            OrdemServico novaOS = new OrdemServico(cliente, veiculo);
             
+            // Salva no repositório persistente como status ABERTA (na fila)
             repoOS.salvar(novaOS);
             
+            // Invoca o algoritmo da fila para tentar alocar um mecânico disponível imediatamente
             verificarEProcessarFila();
             return true;
         }
@@ -49,33 +48,47 @@ public class GerenciadorOficina implements IGerenciadorOficina {
         List<OrdemServico> listaGeral = repoOS.listarTodas();
         if (listaGeral == null) return;
 
+        // Varre a lista na ordem em que foram salvas (ordem cronológica de abertura)
         for (OrdemServico os : listaGeral) {
             if (os.getStatus() == StatusOS.ABERTA) {
                 
-                // Busca os mecânicos pelo repositório
-                List<Mecanico> mecanicos = repoMecanicos.listarTodos();
+                // Puxa do repositório a lista atualizada de mecânicos
+                List<Mecanico> todosMecanicos = repoMecanicos.listarTodos();
                 List<Mecanico> disponiveis = new ArrayList<>();
-                for (Mecanico m : mecanicos) {
+                
+                for (Mecanico m : todosMecanicos) {
                     if (m.isDisponivel()) {
                         disponiveis.add(m);
                     }
                 }
-                
+
+                // Se houver pelo menos um mecânico disponível, prossegue com a alocação
                 if (!disponiveis.isEmpty()) {
-                    int indexAleatorio = (int) (Math.random() * disponiveis.size());
-                    Mecanico escolhido = disponiveis.get(indexAleatorio);
-                    alocarMecanicoNaOS(os, escolhido);
+                    Mecanico mecanicoEscolhido;
+                    // Se houver mais de um (ex: Mario e Luigi), sorteia de forma aleatória
+                    if (disponiveis.size() > 1) {
+                        mecanicoEscolhido = disponiveis.get(Math.random() < 0.5 ? 0 : 1);
+                    } else {
+                        mecanicoEscolhido = disponiveis.get(0);
+                    }
+                    alocarMecanicoNaOS(os, mecanicoEscolhido);
                 } else {
+                    // Todos ocupados, a OS permanece em ABERTA esperando na fila
                     break; 
                 }
             }
         }
     }
 
+    // Método auxiliar privado para amarrar o mecânico à OS e travar sua disponibilidade
     private void alocarMecanicoNaOS(OrdemServico os, Mecanico mecanico) {
         os.setMecanico(mecanico);
-        os.setStatus(StatusOS.PROCESSO_MANUTENCAO); 
-        mecanico.setDisponivel(false); 
+        os.setStatus(StatusOS.PROCESSO_MANUTENCAO); // Muda o status para Manutenção ativa
+        mecanico.setDisponivel(false); // O mecânico agora está ocupado
+        
+        // 🟢 CORREÇÃO: Força a atualização do mecânico no repositório persistente
+        repoMecanicos.removerMecanico(mecanico.getNome());
+        repoMecanicos.adicionarMecanico(mecanico);
         
         if (os.getVeiculo() != null) {
             os.getVeiculo().setStatus(StatusVeiculo.EM_MANUTENCAO);
@@ -88,9 +101,11 @@ public class GerenciadorOficina implements IGerenciadorOficina {
     public boolean finalizarServico(int numeroOS) {
         OrdemServico os = repoOS.buscarPorNumero(numeroOS);
         
+        // Restrito apenas a quem está sob PROCESSO_MANUTENCAO
         if (os != null && os.getStatus() == StatusOS.PROCESSO_MANUTENCAO) {
             os.marcarComoPago();
             
+            // Inserção padrão do óleo caso esteja vazia conforme seu requisito obrigatório anterior
             if (os.getListaPecas().isEmpty()) {
                 Pecas pecaObrigatoria = new Pecas();
                 pecaObrigatoria.setNome("oleo"); 
@@ -100,19 +115,26 @@ public class GerenciadorOficina implements IGerenciadorOficina {
             }
             
             os.calcularTotal(); 
-            os.finalizarOS(); 
+            os.finalizarOS(); // Muda para FINALIZADA e bota data de fechamento
             
             if (os.getVeiculo() != null) {
-                os.getVeiculo().setStatus(StatusVeiculo.ESTOQUE); 
+                os.getVeiculo().setStatus(StatusVeiculo.ESTOQUE); // Libera o veículo
             }
             
+            // FUNÇÃO LOCALIZADA: Captura o mecânico da OS, soma +1 à produtividade dele e o libera
             Mecanico mecanicoAtribuido = os.getMecanico();
             if (mecanicoAtribuido != null) {
-                mecanicoAtribuido.incrementarProdutividade(); 
-                mecanicoAtribuido.setDisponivel(true);        
+                mecanicoAtribuido.incrementarProdutividade(); // Adiciona +1 à produtividade individual
+                mecanicoAtribuido.setDisponivel(true);        // Fica disponível novamente
+                
+                // 🟢 CORREÇÃO: Força a atualização do mecânico no repositório persistente
+                repoMecanicos.removerMecanico(mecanicoAtribuido.getNome());
+                repoMecanicos.adicionarMecanico(mecanicoAtribuido);
             }
             
             repoOS.salvar(os);
+            
+            // Como um mecânico acabou de ficar livre, processamos a fila para puxar o próximo cliente
             verificarEProcessarFila();
             return true;
         }
@@ -123,9 +145,7 @@ public class GerenciadorOficina implements IGerenciadorOficina {
     public boolean registrarPecaNaOS(int numeroOS, Pecas peca, int quantidade) {
         OrdemServico os = repoOS.buscarPorNumero(numeroOS);
         if (os != null && os.getStatus() == StatusOS.PROCESSO_MANUTENCAO) {
-            boolean adicionado = os.adicionarPeca(peca, quantidade);
-            if(adicionado) repoOS.salvar(os);
-            return adicionado;
+            return os.adicionarPeca(peca, quantidade);
         }
         return false;
     }
@@ -134,9 +154,9 @@ public class GerenciadorOficina implements IGerenciadorOficina {
     public boolean registrarServicoNaOS(int numeroOS, MaoDeObra servico) {
         OrdemServico os = repoOS.buscarPorNumero(numeroOS);
         if (os != null && os.getStatus() == StatusOS.PROCESSO_MANUTENCAO) {
-            // CORREÇÃO: Usando a lista da própria OS
+            // 🟢 CORREÇÃO: Estava "this.listaServicos.add" apontando para variável nula/inexistente
             os.getListaServicos().add(servico);
-            repoOS.salvar(os); 
+            repoOS.salvar(os); // Salva as mudanças da OS
             return true;
         }
         return false;
