@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="750.0" prefWidth="1150.0" style="-fx-background-color: #f4f6f9;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.TelaOficina">
+<BorderPane prefHeight="750.0" prefWidth="1150.0" style="-fx-background-color: #f4f6f9;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
    
    <top>
       <VBox spacing="5.0" style="-fx-background-color: #2c3e50; -fx-padding: 15px;">
@@ -71,7 +71,7 @@
                         <Label text="2. Digite o Chassi do Veículo:" textFill="#57606f" />
                         <TextField fx:id="txtChassi" promptText="Ex: 9BWZZZ372VET612" style="-fx-padding: 8px;" />
                         
-                        <Button fx:id="btnAbrirOS" maxWidth="Infinity" mnemonicParsing="false" onAction="#botaoAbrirOS" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10px; -fx-cursor: hand;" text="Abrir Ordem de Serviço" />
+                        <Button fx:id="btnAbrirOS" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#botaoAbrirOS" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10px; -fx-cursor: hand;" text="Abrir Ordem de Serviço" />
                      </children>
                   </VBox>
                   
@@ -84,9 +84,9 @@
                         </Label>
                         
                         <Label text="Selecione a OS em manutenção:" textFill="#57606f" />
-                        <ComboBox fx:id="cbOsManutencao" maxWidth="Infinity" promptText="Selecione a OS para finalizar..." style="-fx-padding: 5px;" />
+                        <ComboBox fx:id="cbOsManutencao" maxWidth="1.7976931348623157E308" promptText="Selecione a OS para finalizar..." style="-fx-padding: 5px;" />
                         
-                        <Button fx:id="btnFinalizarOS" maxWidth="Infinity" mnemonicParsing="false" onAction="#botaoFinalizarServico" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10px; -fx-cursor: hand;" text="Finalizar e Liberar Veículo" />
+                        <Button fx:id="btnFinalizarOS" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#botaoFinalizarServico" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10px; -fx-cursor: hand;" text="Finalizar e Liberar Veículo" />
                      </children>
                   </VBox>
                   
