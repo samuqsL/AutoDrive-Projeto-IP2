@@ -2,6 +2,7 @@ package br.ufrpe.autodrive.negocio;
 
 import br.ufrpe.autodrive.dados.*;
 import br.ufrpe.autodrive.negocio.beans.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class GerenciadorOficina implements IGerenciadorOficina {
@@ -9,9 +10,11 @@ public class GerenciadorOficina implements IGerenciadorOficina {
     private IRepositorioOS repoOS;
     private IRepositorioClientes repoClientes; 
     private IRepositorioVeiculos repoVeiculos; 
-    private IRepositorioMecanicos repoMecanicos; // Correção: uso do repositório em vez de variáveis soltas
+    
+    // CORREÇÃO: Utilizando Repositório em vez de atributos fixos mario/luigi
+    private IRepositorioMecanicos repoMecanicos; 
 
-    // Construtor atualizado recebendo as interfaces da camada de dados
+    // Construtor atualizado recebendo os repositórios
     public GerenciadorOficina(IRepositorioOS repoOS, IRepositorioClientes repoClientes, IRepositorioVeiculos repoVeiculos, IRepositorioMecanicos repoMecanicos) {
         this.repoOS = repoOS;
         this.repoClientes = repoClientes;
@@ -22,21 +25,26 @@ public class GerenciadorOficina implements IGerenciadorOficina {
         verificarEProcessarFila();
     }
 
+    // FUNÇÃO LOCALIZADA: Abertura simplificada de OS enviando direto para a fila de espera (ABERTA)
     @Override
     public boolean abrirOS(String cpfCliente, String chassiVeiculo) {
         Cliente cliente = repoClientes.procurarCliente(cpfCliente);
         Veiculo veiculo = repoVeiculos.procurarVeiculo(chassiVeiculo);
 
         if (cliente != null && veiculo != null) {
-            OrdemServico novaOS = new OrdemServico(cliente, veiculo);
+            OrdemServico novaOS = new OrdemServico();
+            novaOS.setCliente(cliente);
+            novaOS.setVeiculo(veiculo);
+            
             repoOS.salvar(novaOS);
+            
             verificarEProcessarFila();
             return true;
         }
         return false;
     }
 
-    // Algoritmo de gerenciamento da Fila por Ordem de Chegada utilizando o Repositório de Mecânicos
+    // FUNÇÃO LOCALIZADA: Algoritmo de gerenciamento da Fila por Ordem de Chegada (FIFO)
     public synchronized void verificarEProcessarFila() {
         List<OrdemServico> listaGeral = repoOS.listarTodas();
         if (listaGeral == null) return;
@@ -44,21 +52,20 @@ public class GerenciadorOficina implements IGerenciadorOficina {
         for (OrdemServico os : listaGeral) {
             if (os.getStatus() == StatusOS.ABERTA) {
                 
-                // Busca no repositório algum mecânico que esteja livre
-                Mecanico mecanicoDisponivel = null;
-                List<Mecanico> todosMecanicos = repoMecanicos.listarTodos();
-                
-                for (Mecanico m : todosMecanicos) {
+                // Busca os mecânicos pelo repositório
+                List<Mecanico> mecanicos = repoMecanicos.listarTodos();
+                List<Mecanico> disponiveis = new ArrayList<>();
+                for (Mecanico m : mecanicos) {
                     if (m.isDisponivel()) {
-                        mecanicoDisponivel = m;
-                        break; 
+                        disponiveis.add(m);
                     }
                 }
                 
-                if (mecanicoDisponivel != null) {
-                    alocarMecanicoNaOS(os, mecanicoDisponivel);
+                if (!disponiveis.isEmpty()) {
+                    int indexAleatorio = (int) (Math.random() * disponiveis.size());
+                    Mecanico escolhido = disponiveis.get(indexAleatorio);
+                    alocarMecanicoNaOS(os, escolhido);
                 } else {
-                    // Todos ocupados, interrompe e espera alguém finalizar
                     break; 
                 }
             }
@@ -76,6 +83,7 @@ public class GerenciadorOficina implements IGerenciadorOficina {
         repoOS.salvar(os);
     }
 
+    // FUNÇÃO LOCALIZADA: Finalização da OS incrementando +1 na produtividade do mecânico alocado
     @Override
     public boolean finalizarServico(int numeroOS) {
         OrdemServico os = repoOS.buscarPorNumero(numeroOS);
@@ -115,9 +123,9 @@ public class GerenciadorOficina implements IGerenciadorOficina {
     public boolean registrarPecaNaOS(int numeroOS, Pecas peca, int quantidade) {
         OrdemServico os = repoOS.buscarPorNumero(numeroOS);
         if (os != null && os.getStatus() == StatusOS.PROCESSO_MANUTENCAO) {
-            boolean adicionou = os.adicionarPeca(peca, quantidade);
-            if (adicionou) repoOS.salvar(os);
-            return adicionou;
+            boolean adicionado = os.adicionarPeca(peca, quantidade);
+            if(adicionado) repoOS.salvar(os);
+            return adicionado;
         }
         return false;
     }
@@ -126,15 +134,11 @@ public class GerenciadorOficina implements IGerenciadorOficina {
     public boolean registrarServicoNaOS(int numeroOS, MaoDeObra servico) {
         OrdemServico os = repoOS.buscarPorNumero(numeroOS);
         if (os != null && os.getStatus() == StatusOS.PROCESSO_MANUTENCAO) {
-            // CORREÇÃO: Antes estava dando erro com `this.listaServicos`
+            // CORREÇÃO: Usando a lista da própria OS
             os.getListaServicos().add(servico);
-            repoOS.salvar(os);
+            repoOS.salvar(os); 
             return true;
         }
         return false;
-    }
-
-    public List<OrdemServico> listarTodosServicos() {
-        return this.repoOS.listarTodas(); 
     }
 }
