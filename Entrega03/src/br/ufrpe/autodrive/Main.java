@@ -116,7 +116,8 @@ public class Main extends Application {
         }
         
         // --- 3.4. MASSA DE TESTES EXCLUSIVA PARA A OFICINA (YURI) ---
-        Mecanico mecanicoOficina = new Mecanico("Pedro Mecânico", 500.0, true);
+        // Ajustado para usar o construtor correto de Mecanico
+        Mecanico mecanicoOficina = new Mecanico("Pedro Mecânico", true);
 
         // Como o repositório de OS ainda limpa a memória RAM ao fechar, mantemos a inserção padrão
         if (repoOS.listarTodas().isEmpty()) {
@@ -135,6 +136,7 @@ public class Main extends Application {
             servico1.setMecanico(mecanicoOficina);
             os1.getListaServicos().add(servico1);
 
+            os1.calcularTotal(); // Garante cálculo correto no caso de teste inicial
             os1.marcarComoPago(); 
             repoOS.salvar(os1);
         }
@@ -144,7 +146,7 @@ public class Main extends Application {
             repoVeiculos.adicionarVeiculo(vOficinaDisponivel);
         }
 
-        System.out.println("-> [Main] Todos os erros corrigidos! Casos de teste integrados e persistência ativa.");
+        System.out.println("-> [Main] Todos os erros corrigidos! Casos de teste integrados e persistência activa.");
         
         // =========================================================================
         // 🟢 Passo 4: Configurar o palco principal e abrir a aplicação
