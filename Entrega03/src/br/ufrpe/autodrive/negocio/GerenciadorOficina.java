@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 
+// Controlador central das regras de negócio e fluxo da oficina
 public class GerenciadorOficina implements IGerenciadorOficina {
 
     private IRepositorioOS repoOS;
@@ -26,6 +27,7 @@ public class GerenciadorOficina implements IGerenciadorOficina {
         this.repoVeiculos = repoVeiculos;
     }
 
+    // Registra um mecânico na listagem interna de funcionários técnicos
     @Override
     public void adicionarMecanico(Mecanico m) {
         if (m != null) {
@@ -33,6 +35,7 @@ public class GerenciadorOficina implements IGerenciadorOficina {
         }
     }
 
+    // Abre uma nova OS, vincula cliente/veículo e aloca mecânico ou envia para fila de espera
     @Override
     public int abrirOS(String cpfCliente, String chassiVeiculo) {
         Cliente cliente = repoClientes.procurarCliente(cpfCliente);
@@ -76,6 +79,7 @@ public class GerenciadorOficina implements IGerenciadorOficina {
         return -1;
     }
 
+    // Conclui a OS, incrementa produtividade, libera mecânico e avança a fila de espera
     @Override
     public boolean finalizarServico(int numeroOS) {
         OrdemServico os = repoOS.buscarPorNumero(numeroOS);
@@ -88,6 +92,7 @@ public class GerenciadorOficina implements IGerenciadorOficina {
                 m.setDisponivel(true);
             }
             
+            os.calcularTotal();
             os.setStatus(StatusOS.FINALIZADA);
             if (os.getVeiculo() != null) {
                 os.getVeiculo().setStatus(StatusVeiculo.DISPONIVEL);
@@ -107,6 +112,7 @@ public class GerenciadorOficina implements IGerenciadorOficina {
         return false;
     }
 
+    // Filtra do repositório geral apenas as ordens marcadas como finalizadas
     @Override
     public List<OrdemServico> listarHistoricoOSFinalizadas() {
         List<OrdemServico> finalizadas = new ArrayList<>();
@@ -118,20 +124,32 @@ public class GerenciadorOficina implements IGerenciadorOficina {
         return finalizadas;
     }
 
+    // Insere novas peças na OS informada, atualiza o custo total e salva no arquivo
     @Override
     public boolean registrarPecaNaOS(int numeroOS, Pecas peca, int quantidade) {
         OrdemServico os = repoOS.buscarPorNumero(numeroOS);
         if (os != null) {
-            return os.adicionarPeca(peca, quantidade);
+            boolean sucesso = os.adicionarPeca(peca, quantidade);
+            if (sucesso) {
+                os.calcularTotal();
+                repoOS.salvar(os);
+            }
+            return sucesso;
         }
         return false;
     }
 
+    // Vincula uma mão de obra à OS informada, atualiza o custo total e salva no arquivo
     @Override
     public boolean registrarServicoNaOS(int numeroOS, MaoDeObra servico) {
         OrdemServico os = repoOS.buscarPorNumero(numeroOS);
         if (os != null) {
-            return os.getListaServicos().add(servico);
+            boolean sucesso = os.getListaServicos().add(servico);
+            if (sucesso) {
+                os.calcularTotal();
+                repoOS.salvar(os);
+            }
+            return sucesso;
         }
         return false;
     }
