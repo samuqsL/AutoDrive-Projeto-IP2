@@ -40,33 +40,64 @@ public class OrdemServico implements Serializable {
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         this.dataAbertura = agora.format(formatador);
     }
-    
-    public void marcarComoPago() {
-        this.status = StatusOS.PAGA;
+
+    // FUNÇÃO LOCALIZADA: Construtor simplificado (sem número e data manuais)
+    public OrdemServico(Cliente cliente, Veiculo veiculo) {
+        this();
+        this.cliente = cliente;
+        this.veiculo = veiculo;
     }
-    
+
+    // FUNÇÃO LOCALIZADA: Validador boolean para identificar se a OS possui mecânico alocado
+    public boolean possuiMecanico() {
+        return this.mecanico != null;
+    }
+
+    // Métodos utilitários e regras mantidos do projeto original
     public boolean adicionarPeca(Pecas peca, int quantidade) {
-        if(peca != null) {
+        if (peca != null && quantidade > 0) {
             peca.setQuantidade(quantidade);
             this.listaPecas.add(peca);
             return true;
         }
         return false;
     }
-    
+
+    public void marcarComoPago() {
+        this.status = StatusOS.PAGA;
+    }
+
     public void calcularTotal() {
         double total = 0;
-        for(Pecas p : listaPecas) total += p.getPreco() * p.getQuantidade();
-        for(MaoDeObra m : listaServicos) total += m.getValor();
+        for (Pecas p : listaPecas) {
+            total += p.getPreco() * p.getQuantidade();
+        }
         this.valorTotal = total;
     }
-    
+
     public boolean finalizarOS() {
         this.status = StatusOS.FINALIZADA;
         LocalDateTime agora = LocalDateTime.now();
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         this.dataFechamento = agora.format(formatador);
         return true;
+    }
+
+    // 🟢 CORREÇÃO: Métodos solicitados pela classe Relatorio para compilar corretamente
+    public Double getValorPecas() {
+        double totalPecas = 0.0;
+        for (Pecas p : listaPecas) {
+            totalPecas += (p.getPreco() * p.getQuantidade());
+        }
+        return totalPecas;
+    }
+
+    public Double getValorMaoDeObra() {
+        double totalMaoDeObra = 0.0;
+        for (MaoDeObra m : listaServicos) {
+            totalMaoDeObra += m.getValor();
+        }
+        return totalMaoDeObra;
     }
 
     // Getters e Setters
@@ -90,34 +121,13 @@ public class OrdemServico implements Serializable {
 
     public Veiculo getVeiculo() { return veiculo; }
     public void setVeiculo(Veiculo veiculo) { this.veiculo = veiculo; }
-    
-    public Mecanico getMecanico() { return mecanico; }
-    public void setMecanico(Mecanico mecanico) { this.mecanico = mecanico; }
 
     public List<Pecas> getListaPecas() { return listaPecas; }
     public void setListaPecas(List<Pecas> listaPecas) { this.listaPecas = listaPecas; }
 
     public List<MaoDeObra> getListaServicos() { return listaServicos; }
     public void setListaServicos(List<MaoDeObra> listaServicos) { this.listaServicos = listaServicos; }
-    
-    // ======== MÉTODOS CORRIGIDOS PARA O GERENCIADOR RELATÓRIO ========
-    public double getValorPecas() {
-        double total = 0;
-        if (listaPecas != null) {
-            for (Pecas p : listaPecas) {
-                total += p.getPreco() * p.getQuantidade();
-            }
-        }
-        return total;
-    }
-    
-    public double getValorMaoDeObra() {
-        double total = 0;
-        if (listaServicos != null) {
-            for (MaoDeObra m : listaServicos) {
-                total += m.getValor();
-            }
-        }
-        return total;
-    }
+
+    public Mecanico getMecanico() { return mecanico; }
+    public void setMecanico(Mecanico mecanico) { this.mecanico = mecanico; }
 }
