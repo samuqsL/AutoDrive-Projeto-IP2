@@ -4,12 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.io.Serializable;
 
-//Serialização da classe (Serialization/Persistence)*
 public class OrdemServico implements Serializable {
-	
-	// É uma excelente prática de POO colocar essa constante de controle (Serialization/Persistence)*
-	private static final long serialVersionUID = 1L;
-	
+    
+    private static final long serialVersionUID = 1L;
+    
     private int numero;
     private StatusOS status;
     private String dataAbertura;
@@ -18,6 +16,7 @@ public class OrdemServico implements Serializable {
 
     private Cliente cliente;
     private Veiculo veiculo;
+    private Mecanico mecanicoResponsavel;
 
     private List<Pecas> listaPecas;
     private List<MaoDeObra> listaServicos;
@@ -25,7 +24,8 @@ public class OrdemServico implements Serializable {
     public OrdemServico() {
         this.listaPecas = new ArrayList<>();
         this.listaServicos = new ArrayList<>();
-        this.status = StatusOS.ABERTA;
+        this.status = StatusOS.ABERTA; 
+        this.valorTotal = 0.0;
     }
 
     public OrdemServico(int numero, String dataAbertura, Cliente cliente, Veiculo veiculo) {
@@ -35,88 +35,48 @@ public class OrdemServico implements Serializable {
         this.cliente = cliente;
         this.veiculo = veiculo;
         
-        // AJUSTE: Ao abrir a OS, o veículo entra em manutenção
         if (this.veiculo != null) {
             this.veiculo.setStatus(StatusVeiculo.EM_MANUTENCAO);
         }
     }
 
-    // AJUSTE: Passou a retornar boolean em vez de void (e sem System.out.println)
     public boolean adicionarPeca(Pecas peca, int quantidade) {
-        if (peca.retirarDoEstoque(quantidade)) {
-            Pecas item = new Pecas(
-                peca.getNome(),
-                peca.getCodigo(),
-                peca.getPreco(),
-                quantidade
-            );
-            listaPecas.add(item);
-            return true; // Sucesso
+        if (peca != null && quantidade > 0) {
+            peca.setQuantidade(quantidade);
+            return this.listaPecas.add(peca);
         }
-        return false; // Falha: Estoque insuficiente
+        return false;
     }
 
-    public void adicionarServico(MaoDeObra servico) {
-        listaServicos.add(servico);
-    }
-
-    public Double calcularTotal() {
+    public void calcularTotal() {
         double total = 0;
-
         for (Pecas p : listaPecas) {
-            total += p.custoPecas();
+            total += (p.getPreco() * p.getQuantidade());
         }
-
         for (MaoDeObra m : listaServicos) {
-            total += m.calcularCusto();
+            total += m.getValor();
         }
-
         this.valorTotal = total;
-        return total;
     }
 
     public void marcarComoPago() {
         this.status = StatusOS.PAGA;
     }
 
-    // ✅ REQ16
-    private boolean validarItensObrigatorios() {
-        for (Pecas p : listaPecas) {
-            if (p.getNome().equalsIgnoreCase("oleo")) {
-                return true;
+    public boolean finalizarOS() {
+        if (this.status == StatusOS.PAGA || this.status == StatusOS.PROCESSO_MANUTENCAO) {
+            this.status = StatusOS.FINALIZADA;
+            if (this.veiculo != null) {
+                this.veiculo.setStatus(StatusVeiculo.DISPONIVEL);
             }
+            return true;
         }
         return false;
     }
 
-    // AJUSTE: Passou a retornar boolean em vez de void (e sem System.out.println)
-    public boolean finalizarOS() {
-        if (status != StatusOS.PAGA) {
-            return false; // OS precisa estar PAGA
-        }
-    
-        if (!validarItensObrigatorios()) {
-            return false; // Obrigatório incluir óleo na revisão
-        }
-    
-        this.status = StatusOS.FINALIZADA;
-    
-        // AJUSTE: Após finalizar e pagar, o veículo volta a ficar disponível
-        if (this.veiculo != null) {
-            this.veiculo.setStatus(StatusVeiculo.ESTOQUE);
-        }
-    
-        // NOVO AJUSTE: "Liberar" todos os mecânicos que trabalharam nesta OS
-        for (MaoDeObra servico : listaServicos) {
-            if (servico.getMecanico() != null) {
-                servico.getMecanico().setDisponivel(true);
-            }
-        }
-    
-        return true; // Sucesso: OS finalizada, veículo e mecânicos liberados
-    }
+    public Mecanico getMecanicoResponsavel() { return mecanicoResponsavel; }
+    public void setMecanicoResponsavel(Mecanico mecanicoResponsavel) { this.mecanicoResponsavel = mecanicoResponsavel; }
 
-    // Getters e Setters
     public int getNumero() { return numero; }
     public void setNumero(int numero) { this.numero = numero; }
 
@@ -143,20 +103,4 @@ public class OrdemServico implements Serializable {
 
     public List<MaoDeObra> getListaServicos() { return listaServicos; }
     public void setListaServicos(List<MaoDeObra> listaServicos) { this.listaServicos = listaServicos; }
-    
-    public double getValorPecas() {
-        double total = 0;
-        for (Pecas p : listaPecas) {
-            total += p.custoPecas();
-        }
-        return total;
-    }
-
-    public double getValorMaoDeObra() {
-        double total = 0;
-        for (MaoDeObra m : listaServicos) {
-            total += m.calcularCusto();
-        }
-        return total;
-    }
 }
