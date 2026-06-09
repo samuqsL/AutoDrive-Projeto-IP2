@@ -124,12 +124,14 @@ public class Main extends Application {
         }
         
         // --- 3.4. MASSA DE TESTES EXCLUSIVA PARA A OFICINA (YURI) ---
-        // Alterado para buscar direto do banco de dados o Mario para a OS de teste prévia
+        // Altera para buscar direto do banco de dados o Mario para a OS de teste prévia
         Mecanico mecanicoOficina = repoMecanicos.procurarMecanico("Mario");
 
-        // Como o repositório de OS ainda limpa a memória RAM ao fechar, mantemos a inserção padrão
+        // Proteção de persistência: só insere a OS se o banco de dados de OS estiver vazio
         if (repoOS.listarTodas().isEmpty()) {
-            OrdemServico os1 = new OrdemServico(901, "31/05/2026", c1, vAlerta);
+            
+            // 🟢 CORREÇÃO: Usando o novo construtor automatizado do Yuri (Sem número e sem data manual)
+            OrdemServico os1 = new OrdemServico(c1, vAlerta);
 
             Pecas peca1 = new Pecas();
             peca1.setNome("oleo"); 
@@ -144,7 +146,10 @@ public class Main extends Application {
             servico1.setMecanico(mecanicoOficina);
             os1.getListaServicos().add(servico1);
 
-            os1.marcarComoPago(); 
+            // Simula o fluxo de encerramento correto
+            os1.setStatus(StatusOS.FINALIZADA); 
+            
+            // Salva no repositório persistente (Singleton vai gravar no arquivo .dat automaticamente)
             repoOS.salvar(os1);
         }
 
