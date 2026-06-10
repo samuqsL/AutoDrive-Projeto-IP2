@@ -58,9 +58,33 @@ public class RepositorioTestDriveArray implements IRepositorioTD {
             this.salvarArquivo();
         }
     }
+    
+    // parte de remover por ID
+    @Override
+    public TestDrive procurarTestDrivePorID(String id) {
+        if (id == null) return null;
+        
+        for (TestDrive td : testDrives) {
+            // Checa se o agendamento e o ID dele existem antes de comparar
+            if (td != null && td.getId() != null) {
+                if (td.getId().equals(id)) {
+                    return td;
+                }
+            }
+        }
+        return null;
+    }
+    @Override
+    public void removerTestDrivePorID(String id) {
+        TestDrive tdEncontrado = procurarTestDrivePorID(id);
+        if (tdEncontrado != null) {
+            this.testDrives.remove(tdEncontrado);
+            this.salvarArquivo();
+        }
+    }
 
     // =========================================================================
-    // 💾 MÉTODOS DE PERSISTÊNCIA EM ARQUIVOS
+    //  MÉTODOS DE PERSISTÊNCIA EM ARQUIVOS
     // =========================================================================
     
     private void salvarArquivo() {
