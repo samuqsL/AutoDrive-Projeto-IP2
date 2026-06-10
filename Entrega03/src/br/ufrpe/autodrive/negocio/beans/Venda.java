@@ -82,6 +82,11 @@ public class Venda implements Serializable{
           return false;
       }
       
+      // ❌ 🟢 CORREÇÃO DA OFICINA: Impede a venda se o veículo estiver em manutenção ou na fila de espera!
+      if (this.veiculo.getStatus() == StatusVeiculo.EM_MANUTENCAO) {
+          return false;
+      }
+      
       // REQ15: Bloquear a finalização da venda caso o valor de entrada seja inferior ao mínimo
       if (this.entrada < ENTRADA_MINIMA) {
           return false; 
