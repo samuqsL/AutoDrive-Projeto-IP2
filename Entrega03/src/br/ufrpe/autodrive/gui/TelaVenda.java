@@ -1,240 +1,187 @@
 package br.ufrpe.autodrive.gui;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 import br.ufrpe.autodrive.negocio.IGerenciadorVenda;
-import br.ufrpe.autodrive.negocio.beans.Cliente;
 import br.ufrpe.autodrive.negocio.beans.Notificacao;
-import br.ufrpe.autodrive.negocio.beans.Veiculo;
-import br.ufrpe.autodrive.negocio.beans.Venda;
-import br.ufrpe.autodrive.negocio.beans.Vendedor;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 
 public class TelaVenda {
 
+    // =========================================================================
+    // 🟢 1. Componentes Vinculados ao FXML (Scene Builder)
+    // =========================================================================
+    
+    // Gerenciadores de Layout (Painéis Invisíveis/Visíveis)
     @FXML private VBox painelMenuVendas;
     @FXML private VBox painelFormulario;
 
-    @FXML private ComboBox<Cliente> comboCliente;
-    @FXML private ComboBox<Veiculo> comboVeiculo;
-    @FXML private ComboBox<Vendedor> comboVendedor;
+    // Campos de Entrada de Dados (Inputs)
+    @FXML private TextField txtNumero;
+    @FXML private TextField txtCpf;
+    @FXML private TextField txtChassi;
+    @FXML private TextField txtVendedor;
     @FXML private TextField txtEntrada;
+    @FXML private javafx.scene.control.DatePicker dpDataVenda;
+
+    // Componentes de Saída de Dados (Feedbacks para o usuário)
     @FXML private Label lblStatus;
-    @FXML private TextArea txtAreaAlertas;
+    @FXML private TextArea txtAreaAlertas; // Um campo de texto grande para listar os alertas na interface
 
-    // --- Componentes do Histórico de Vendas ---
-    @FXML private DatePicker dpFiltroInicio;
-    @FXML private DatePicker dpFiltroFim;
-    @FXML private TableView<Venda> tabelaVendas;
-    @FXML private TableColumn<Venda, Integer> colNumero;
-    @FXML private TableColumn<Venda, Cliente> colCliente;
-    @FXML private TableColumn<Venda, Veiculo> colVeiculo;
-    @FXML private TableColumn<Venda, Double> colTotal;
-    @FXML private TableColumn<Venda, LocalDateTime> colData; // Nova coluna adicionada
+    // Atributo de negócio (Injetado)
+    private IGerenciadorVenda control; 
 
-    private ObservableList<Venda> dadosTabelaVendas = FXCollections.observableArrayList();
-    private IGerenciadorVenda control;
+    // Construtor Padrão Vazio necessário para o JavaFX
+    public TelaVenda() {}
 
-    // 🟢 VOLTOU AO NOME ORIGINAL: Mantém compatibilidade exata com a linha 63 do seu ScreenManager
-    public void injetarGerenciador(IGerenciadorVenda gV) {
-        this.control = gV;
-        atualizarTabela(control.listarTodasVendas());
+    /**
+     * Método para Injetar o Gerenciador vindo das camadas internas.
+     */
+    public void injetarGerenciador(IGerenciadorVenda gVenda) {
+        this.control = gVenda;
+        System.out.println("-> [TelaVenda] Gerenciador de Vendas injetado com sucesso!");
     }
 
-    @FXML
-    public void initialize() {
-        // Vincula os atributos básicos às colunas existentes
-        colNumero.setCellValueFactory(new PropertyValueFactory<>("numero"));
-        colCliente.setCellValueFactory(new PropertyValueFactory<>("cliente"));
-        colVeiculo.setCellValueFactory(new PropertyValueFactory<>("veiculo"));
-        colTotal.setCellValueFactory(new PropertyValueFactory<>("valorTotal"));
-        
-        // Mapeamento e formatação da nova coluna de data
-        colData.setCellValueFactory(new PropertyValueFactory<>("dataVenda"));
-        
-        // Customiza a exibição para formatar LocalDateTime como (dd/MM/yyyy HH:mm)
-        colData.setCellFactory(column -> new TableCell<Venda, LocalDateTime>() {
-            private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-            @Override
-            protected void updateItem(LocalDateTime item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.format(formatter));
-                }
-            }
-        });
+    // =========================================================================
+    // 🟢 2. Métodos de Chaveamento de Telas (Ações da Interface)
+    // =========================================================================
 
-        tabelaVendas.setItems(dadosTabelaVendas);
-    }
-
-    @FXML
-    public void botaoConfirmarVenda() {
-        Cliente c = comboCliente.getValue();
-        Veiculo veic = comboVeiculo.getValue();
-        Vendedor v = comboVendedor.getValue();
-        String txt = txtEntrada.getText();
-
-        if (c == null || veic == null || v == null || txt.isEmpty()) {
-            lblStatus.setText("Por favor, preencha todos os campos do formulário.");
-            lblStatus.setStyle("-fx-text-fill: red;");
-            return;
-        }
-
-        try {
-            double entrada = Double.parseDouble(txt);
-            boolean sucesso = control.efetuarVenda(0, c.getCpf(), veic.getChassi(), v.getNome(), entrada, LocalDateTime.now());
-
-            if (sucesso) {
-                lblStatus.setText("Venda realizada e registrada com sucesso!");
-                lblStatus.setStyle("-fx-text-fill: green;");
-                limparCamposFormulario();
-                atualizarTabela(control.listarTodasVendas());
-            } else {
-                lblStatus.setText("Falha: Verifique se o veículo está disponível ou se a entrada atingiu o mínimo de R$ 5.000,00.");
-                lblStatus.setStyle("-fx-text-fill: red;");
-            }
-        } catch (NumberFormatException e) {
-            lblStatus.setText("O campo de entrada aceita apenas valores numéricos válidos.");
-            lblStatus.setStyle("-fx-text-fill: red;");
-        }
-    }
-
-    @FXML
-    public void acaoFiltrarPorPeriodo() {
-        LocalDate inicio = dpFiltroInicio.getValue();
-        LocalDate fim = dpFiltroFim.getValue();
-
-        if (inicio == null || fim == null) {
-            lblStatus.setText("Selecione ambas as datas para aplicar o filtro por período.");
-            lblStatus.setStyle("-fx-text-fill: orange;");
-            return;
-        }
-
-        if (inicio.isAfter(fim)) {
-            lblStatus.setText("A data de início não pode ser posterior à data de término.");
-            lblStatus.setStyle("-fx-text-fill: red;");
-            return;
-        }
-
-        List<Venda> todas = control.listarTodasVendas();
-        List<Venda> filtradas = new ArrayList<>();
-
-        for (Venda v : todas) {
-            if (v.getDataVenda() != null) {
-                LocalDate dataV = v.getDataVenda().toLocalDate();
-                if ((dataV.isEqual(inicio) || dataV.isAfter(inicio)) && 
-                    (dataV.isEqual(fim) || dataV.isBefore(fim))) {
-                    filtradas.add(v);
-                }
-            }
-        }
-
-        atualizarTabela(filtradas);
-        lblStatus.setText("Filtro aplicado! Exibindo período selecionado.");
-        lblStatus.setStyle("-fx-text-fill: blue;");
-    }
-
-    @FXML
-    public void acaoLimparFiltro() {
-        dpFiltroInicio.setValue(null);
-        dpFiltroFim.setValue(null);
-        if (control != null) {
-            atualizarTabela(control.listarTodasVendas());
-        }
-        lblStatus.setText("Filtros de período limpos.");
-        lblStatus.setStyle("-fx-text-fill: black;");
-    }
-
-    private void atualizarTabela(List<Venda> lista) {
-        dadosTabelaVendas.clear();
-        if (lista != null) {
-            dadosTabelaVendas.addAll(lista);
-        }
-        tabelaVendas.refresh();
-    }
-
+    /**
+     * Chamado pelo botão "Realizar Nova Venda" no menu de vendas.
+     * Esconde as opções principais e exibe o formulário de inputs.
+     */
     @FXML
     public void acaoAbrirFormulario() {
+        limparCamposFormulario();
+        
+        // Troca de visual alternando visibilidade e gerenciamento de espaço
         painelMenuVendas.setVisible(false);
         painelMenuVendas.setManaged(false);
+        
         painelFormulario.setVisible(true);
         painelFormulario.setManaged(true);
-        lblStatus.setText("");
-
-        if (control != null) {
-            comboCliente.setItems(FXCollections.observableArrayList(control.listarTodosClientes()));
-            comboVeiculo.setItems(FXCollections.observableArrayList(control.listarTodosVeiculos()));
-            comboVendedor.setItems(FXCollections.observableArrayList(control.listarTodosVendedores()));
-        }
     }
 
+    /**
+     * Chamado pelo botão "Voltar" dentro do formulário ou após concluir a operação.
+     * Esconde o formulário e traz o usuário de volta ao menu anterior de vendas.
+     */
     @FXML
     public void acaoVoltarMenuVendas() {
         painelFormulario.setVisible(false);
         painelFormulario.setManaged(false);
+        
         painelMenuVendas.setVisible(true);
         painelMenuVendas.setManaged(true);
-        lblStatus.setText("");
-        limparCamposFormulario();
     }
 
+    // =========================================================================
+    // 🟢 3. Operações de Negócio (Substitutos do Scanner)
+    // =========================================================================
+
+    /**
+     * Chamado pelo botão "Confirmar Venda" dentro do formulário.
+     * Captura os textos das caixas, valida e executa no repositório.
+     */
+    @FXML
+    public void botaoConfirmarVenda() {
+        System.out.println("\n--- [GUI] EXECUTANDO EFETUAR NOVA VENDA ---");
+        lblStatus.setText(""); // Reseta mensagem anterior
+
+        try {
+            // 1. Captura os dados dos TextFields substituindo o antigo Scanner!
+            int numero = Integer.parseInt(txtNumero.getText().trim());
+            String cpfCliente = txtCpf.getText().trim();
+            String chassi = txtChassi.getText().trim();
+            String nomeVendedor = txtVendedor.getText().trim();
+            double entrada = Double.parseDouble(txtEntrada.getText().trim());
+
+            // 2. Validação simples de campos vazios antes de enviar ao backend
+            if (cpfCliente.isEmpty() || chassi.isEmpty() || nomeVendedor.isEmpty()) {
+                lblStatus.setText("❌ ERRO: Preencha todos os campos obrigatórios.");
+                lblStatus.setStyle("-fx-text-fill: red;");
+                return;
+            }
+            
+            //3. NOVO: Captura a data escolhida (Se não escolher, assume a data/hora atual)
+            java.time.LocalDateTime dataVenda = java.time.LocalDateTime.now();
+            if (dpDataVenda != null && dpDataVenda.getValue() != null) {
+                // Converte LocalDate para LocalDateTime no início do dia (00:00)
+                dataVenda = dpDataVenda.getValue().atStartOfDay(); 
+            }
+
+            //4. ALTERADO: Agora chama a sobrecarga passando a variável "dataVenda" no final
+            boolean sucesso = control.efetuarVenda(numero, cpfCliente, chassi, nomeVendedor, entrada, dataVenda);
+
+            if (sucesso) {
+                lblStatus.setText("✅ SUCESSO: Venda registrada na base de dados!");
+                lblStatus.setStyle("-fx-text-fill: green;");
+                
+                // Opcional: Você pode chamar acaoVoltarMenuVendas() aqui caso queira fechar o form na hora
+            } else {
+                lblStatus.setText("❌ ERRO: Cadastro inexistente (Cliente/Vendedor/Veículo) ou veículo indisponível.");
+                lblStatus.setStyle("-fx-text-fill: red;");
+            }
+
+        } catch (NumberFormatException e) {
+            lblStatus.setText("⚠️ ERRO: Use apenas números inteiros em 'Número' e decimais em 'Entrada'.");
+            lblStatus.setStyle("-fx-text-fill: orange;");
+        }
+    }
+
+    /**
+     * Chamado pelo botão "Verificar Alertas" no menu de vendas.
+     * Busca as notificações e imprime no TextArea da janela gráfica.
+     */
     @FXML
     public void botaoVerificarAlertas() {
-        txtAreaAlertas.clear(); 
+        System.out.println("\n--- [GUI] BUSCANDO ALERTAS DE REVISÃO ---");
+        txtAreaAlertas.clear(); // Limpa resultados de buscas anteriores
+        
         List<Notificacao> alertas = control.listarAlertasRevisao(); 
+    
         if (alertas == null || alertas.isEmpty()) {
             txtAreaAlertas.setText("Nenhum veículo precisa de revisão no momento.");
         } else {
             StringBuilder sb = new StringBuilder();
-            sb.append("--- ALERTAS DE REVISÃO ---\n\n");
+            sb.append("--- VEÍCULOS REQUERENDO REVISÃO TRATADOS ---\n\n");
+            
             for (Notificacao n : alertas) {
-                sb.append("[!] ").append(n.getCliente().getNome()).append(" | ").append(n.getVeiculo().getModelo()).append("\n");
+                sb.append("[ALERTA] Cliente: ").append(n.getCliente().getNome())
+                  .append(" | Veículo: ").append(n.getVeiculo().getModelo())
+                  .append(" | KM Atual: ").append(n.getQuilometragem())
+                  .append("\n----------------------------------------\n");
             }
+            
+            // Exibe a listagem diretamente na caixa de texto na tela do usuário
             txtAreaAlertas.setText(sb.toString());
         }
     }
     
     @FXML
     public void acaoSairParaMenuPrincipal() {
+        System.out.println("-> [TelaVenda] Voltando para o Menu Principal...");
+        
+        // Altera a cena do palco principal de volta para o MenuPrincipal que está salvo na memória
         ScreenManager.getInstance().showMenuPrincipal();
     }
     
+    /*
+     * Método auxiliar de limpeza de interface
+    */
     private void limparCamposFormulario() {
-        if (comboCliente != null) {
-            comboCliente.setValue(null);
-            comboCliente.setPromptText("");
-            comboCliente.setPromptText("Selecione o Cliente...");
-        }
-        if (comboVeiculo != null) {
-            comboVeiculo.setValue(null);
-            comboVeiculo.setPromptText("");
-            comboVeiculo.setPromptText("Selecione o Veículo...");
-        }
-        if (comboVendedor != null) {
-            comboVendedor.setValue(null);
-            comboVendedor.setPromptText("");
-            comboVendedor.setPromptText("Selecione o Vendedor...");
-        }
-        if (txtEntrada != null) {
-            txtEntrada.clear();
+        txtNumero.clear();
+        txtCpf.clear();
+        txtChassi.clear();
+        txtVendedor.clear();
+        txtEntrada.clear();
+        lblStatus.setText("");
+        if (dpDataVenda != null) {
+            dpDataVenda.setValue(null);
         }
     }
 }

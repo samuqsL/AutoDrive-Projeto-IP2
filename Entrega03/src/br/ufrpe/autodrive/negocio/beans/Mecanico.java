@@ -1,45 +1,37 @@
 package br.ufrpe.autodrive.negocio.beans;
 
 /**
- * Classe Mecanico - Herdando de Pessoa com controle de produtividade individual
+ * Classe Mecanico - Agora herdando de Pessoa
  */
 public class Mecanico extends Pessoa {
-	
-	private static final long serialVersionUID = 1L;
-	
-    // FUNÇÃO LOCALIZADA: Atributos de controle individual e disponibilidade
-    private int produtividade; // Substituiu o antigo 'bonus' por contador de OS finalizadas
+    // 1. Removido o atributo 'nome' (agora vem de Pessoa)
+    private Double bonus;
     private boolean disponivel;
 
     // Construtor Default
     public Mecanico() {
         super();
-        this.produtividade = 0;
     }
 
-    // FUNÇÃO LOCALIZADA: Construtor adaptado para inicializar com nome e disponibilidade
-    public Mecanico(String nome, boolean disponivel) {
+    // Construtor Principal
+    public Mecanico(String nome, Double bonus, boolean disponivel) {
+        // 2. Passa o nome para a Pessoa e define CPF/Telefone como null por enquanto
         super(nome, null, null); 
-        this.produtividade = 0; // Inicia sempre com zero ordens concluídas
+        this.bonus = bonus;
         this.disponivel = disponivel;
     }
 
     // --- Métodos Específicos do Mecânico ---
 
-    // FUNÇÃO LOCALIZADA: Getters, Setters e Incrementador de Produtividade
-    public int getProdutividade() {
-        return produtividade;
+    public Double getBonus() {
+        return bonus;
     }
 
-    public void setProdutividade(int produtividade) {
-        if (produtividade < 0) {
-            throw new IllegalArgumentException("A produtividade não pode ser negativa.");
+    public void setBonus(Double bonus) {
+        if (bonus < 0) {
+            throw new IllegalArgumentException("O bônus não pode ser negativo.");
         }
-        this.produtividade = produtividade;
-    }
-
-    public void incrementarProdutividade() {
-        this.produtividade++; // Acrescenta +1 sempre que concluir uma OS
+        this.bonus = bonus;
     }
 
     public boolean isDisponivel() {
@@ -49,4 +41,7 @@ public class Mecanico extends Pessoa {
     public void setDisponivel(boolean disponivel) {
         this.disponivel = disponivel;
     }
+
+    // Os métodos getNome() e setNome() foram APAGADOS daqui, 
+    // pois o Java já os herda automaticamente de Pessoa.
 }

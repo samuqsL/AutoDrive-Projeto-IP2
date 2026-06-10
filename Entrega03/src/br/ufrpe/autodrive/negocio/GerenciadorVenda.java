@@ -21,74 +21,41 @@ public class GerenciadorVenda implements IGerenciadorVenda {
         this.repoVeic = repoVeic;
     }
     
-    @Override
-    public List<Cliente> listarTodosClientes() {
-        return this.repoC.listarClientes();
-    }
-
-    @Override
-    public List<Veiculo> listarTodosVeiculos() {
-        return this.repoVeic.listarTodos();
-    }
-
-    @Override
-    public List<Vendedor> listarTodosVendedores() {
-        return this.repoVend.listarTodos();
-    }
-    
-    @Override
-    public List<Venda> listarTodasVendas() {
-        return this.repoV.listarTodasVendas();
-    }
-    
+    // 🟢 Efetuar Venda sem data settada (automatico: estabelece data atual)
     @Override
     public boolean efetuarVenda(int numero, String cpfCliente, String chassi, String nomeVendedor, double entrada) {
         Cliente c = repoC.procurarCliente(cpfCliente);
         Vendedor v = repoVend.procurarVendedor(nomeVendedor);
         Veiculo veic = repoVeic.procurarVeiculo(chassi);
 
-        // 🛑 TRAVA DE DUPLICAÇÃO ANTES DA VENDA: Se o veículo já estiver VENDIDO na memória, barra imediatamente
-        if (veic != null && veic.getStatus() == StatusVeiculo.VENDIDO) {
-            return false;
-        }
-
-        if (c != null && v != null && veic != null) {
-            Venda novaVenda = new Venda(c, v, veic, entrada);
-            novaVenda.setDataVenda(LocalDateTime.now()); 
+        // AJUSTE: Mudei para procurarVenda(numero)
+        if (c != null && v != null && veic != null && repoV.procurarVenda(numero) == null) {
+            
+            Venda novaVenda = new Venda(numero, c, v, veic, entrada);
             
             if (novaVenda.realizarVenda()) {
-                this.repoV.adicionarVenda(novaVenda);
-                
-                // 🟢 CORREÇÃO DOS MÉTODOS: Usa os métodos reais mapeados do seu repositório de veículos
-                this.repoVeic.adicionarVeiculo(veic); 
-                
+                this.repoV.adicionarVenda(novaVenda); // Bate com IRepositorio
                 return true;
             }
         }
         return false;
     }
     
+    // 🟢 Efetuar Venda com data settada (data definida no construtor):
     @Override
     public boolean efetuarVenda(int numero, String cpfCliente, String chassi, String nomeVendedor, double entrada, LocalDateTime dataDigitada) {
         Cliente c = repoC.procurarCliente(cpfCliente);
         Vendedor v = repoVend.procurarVendedor(nomeVendedor);
         Veiculo veic = repoVeic.procurarVeiculo(chassi);
 
-        // 🛑 TRAVA DE DUPLICAÇÃO ANTES DA VENDA
-        if (veic != null && veic.getStatus() == StatusVeiculo.VENDIDO) {
-            return false;
-        }
-
-        if (c != null && v != null && veic != null) {
-            Venda novaVenda = new Venda(c, v, veic, entrada);
+        if (c != null && v != null && veic != null && repoV.procurarVenda(numero) == null) {
+            Venda novaVenda = new Venda(numero, c, v, veic, entrada);
+            
+            // Injeta a data escolhida na tela antes de processar as regras
             novaVenda.setDataVenda(dataDigitada); 
             
             if (novaVenda.realizarVenda()) {
                 this.repoV.adicionarVenda(novaVenda);
-                
-                // 🟢 CORREÇÃO DOS MÉTODOS: Sincroniza o estado do veículo no repositório
-                this.repoVeic.adicionarVeiculo(veic);
-                
                 return true;
             }
         }
@@ -97,6 +64,7 @@ public class GerenciadorVenda implements IGerenciadorVenda {
 
     @Override
     public Venda procurarVenda(int numero) {
+        // AJUSTE: Mudei para procurarVenda(numero)
         return this.repoV.procurarVenda(numero);
     }
     
@@ -124,6 +92,7 @@ public class GerenciadorVenda implements IGerenciadorVenda {
     
     @Override
     public void removerVenda(int numero) {
+        // Ajuste: Sincronizado com a interface do repositório
         this.repoV.removerVenda(numero);
     }
 }

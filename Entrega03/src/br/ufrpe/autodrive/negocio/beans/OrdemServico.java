@@ -2,15 +2,8 @@ package br.ufrpe.autodrive.negocio.beans;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.io.Serializable;
-import java.util.Random;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
-public class OrdemServico implements Serializable {
-	
-	private static final long serialVersionUID = 1L;
-	
+public class OrdemServico {
     private int numero;
     private StatusOS status;
     private String dataAbertura;
@@ -19,9 +12,6 @@ public class OrdemServico implements Serializable {
 
     private Cliente cliente;
     private Veiculo veiculo;
-    
-    // FUNÇÃO LOCALIZADA: Atributo para vincular o mecânico individual responsável
-    private Mecanico mecanico; 
 
     private List<Pecas> listaPecas;
     private List<MaoDeObra> listaServicos;
@@ -29,75 +19,95 @@ public class OrdemServico implements Serializable {
     public OrdemServico() {
         this.listaPecas = new ArrayList<>();
         this.listaServicos = new ArrayList<>();
-        this.status = StatusOS.ABERTA; // Toda OS nasce por padrão na fila (ABERTA)
-        this.valorTotal = 0.0;
-
-        // FUNÇÃO LOCALIZADA: Gerador automático de código aleatório para a OS (5 dígitos)
-        this.numero = 10000 + new Random().nextInt(90000);
-
-        // FUNÇÃO LOCALIZADA: Captura automática da data do sistema
-        LocalDateTime agora = LocalDateTime.now();
-        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        this.dataAbertura = agora.format(formatador);
+        this.status = StatusOS.ABERTA;
     }
 
-    // FUNÇÃO LOCALIZADA: Construtor simplificado (sem número e data manuais)
-    public OrdemServico(Cliente cliente, Veiculo veiculo) {
+    public OrdemServico(int numero, String dataAbertura, Cliente cliente, Veiculo veiculo) {
         this();
+        this.numero = numero;
+        this.dataAbertura = dataAbertura;
         this.cliente = cliente;
         this.veiculo = veiculo;
-    }
-
-    // FUNÇÃO LOCALIZADA: Validador boolean para identificar se a OS possui mecânico alocado
-    public boolean possuiMecanico() {
-        return this.mecanico != null;
-    }
-
-    // Métodos utilitários e regras mantidos do projeto original
-    public boolean adicionarPeca(Pecas peca, int quantidade) {
-        if (peca != null && quantidade > 0) {
-            peca.setQuantidade(quantidade);
-            this.listaPecas.add(peca);
-            return true;
+        
+        // AJUSTE: Ao abrir a OS, o veículo entra em manutenção
+        if (this.veiculo != null) {
+            this.veiculo.setStatus(StatusVeiculo.EM_MANUTENCAO);
         }
-        return false;
+    }
+
+    // AJUSTE: Passou a retornar boolean em vez de void (e sem System.out.println)
+    public boolean adicionarPeca(Pecas peca, int quantidade) {
+        if (peca.retirarDoEstoque(quantidade)) {
+            Pecas item = new Pecas(
+                peca.getNome(),
+                peca.getCodigo(),
+                peca.getPreco(),
+                quantidade
+            );
+            listaPecas.add(item);
+            return true; // Sucesso
+        }
+        return false; // Falha: Estoque insuficiente
+    }
+
+    public void adicionarServico(MaoDeObra servico) {
+        listaServicos.add(servico);
+    }
+
+    public Double calcularTotal() {
+        double total = 0;
+
+        for (Pecas p : listaPecas) {
+            total += p.custoPecas();
+        }
+
+        for (MaoDeObra m : listaServicos) {
+            total += m.calcularCusto();
+        }
+
+        this.valorTotal = total;
+        return total;
     }
 
     public void marcarComoPago() {
         this.status = StatusOS.PAGA;
     }
 
-    public void calcularTotal() {
-        double total = 0;
+    // ✅ REQ16
+    private boolean validarItensObrigatorios() {
         for (Pecas p : listaPecas) {
-            total += p.getPreco() * p.getQuantidade();
+            if (p.getNome().equalsIgnoreCase("oleo")) {
+                return true;
+            }
         }
-        this.valorTotal = total;
+        return false;
     }
 
+    // AJUSTE: Passou a retornar boolean em vez de void (e sem System.out.println)
     public boolean finalizarOS() {
+        if (status != StatusOS.PAGA) {
+            return false; // OS precisa estar PAGA
+        }
+    
+        if (!validarItensObrigatorios()) {
+            return false; // Obrigatório incluir óleo na revisão
+        }
+    
         this.status = StatusOS.FINALIZADA;
-        LocalDateTime agora = LocalDateTime.now();
-        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        this.dataFechamento = agora.format(formatador);
-        return true;
-    }
-
-    // 🟢 CORREÇÃO: Métodos solicitados pela classe Relatorio para compilar corretamente
-    public Double getValorPecas() {
-        double totalPecas = 0.0;
-        for (Pecas p : listaPecas) {
-            totalPecas += (p.getPreco() * p.getQuantidade());
+    
+        // AJUSTE: Após finalizar e pagar, o veículo volta a ficar disponível
+        if (this.veiculo != null) {
+            this.veiculo.setStatus(StatusVeiculo.ESTOQUE);
         }
-        return totalPecas;
-    }
-
-    public Double getValorMaoDeObra() {
-        double totalMaoDeObra = 0.0;
-        for (MaoDeObra m : listaServicos) {
-            totalMaoDeObra += m.getValor();
+    
+        // NOVO AJUSTE: "Liberar" todos os mecânicos que trabalharam nesta OS
+        for (MaoDeObra servico : listaServicos) {
+            if (servico.getMecanico() != null) {
+                servico.getMecanico().setDisponivel(true);
+            }
         }
-        return totalMaoDeObra;
+    
+        return true; // Sucesso: OS finalizada, veículo e mecânicos liberados
     }
 
     // Getters e Setters
@@ -127,7 +137,20 @@ public class OrdemServico implements Serializable {
 
     public List<MaoDeObra> getListaServicos() { return listaServicos; }
     public void setListaServicos(List<MaoDeObra> listaServicos) { this.listaServicos = listaServicos; }
+    
+    public double getValorPecas() {
+        double total = 0;
+        for (Pecas p : listaPecas) {
+            total += p.custoPecas();
+        }
+        return total;
+    }
 
-    public Mecanico getMecanico() { return mecanico; }
-    public void setMecanico(Mecanico mecanico) { this.mecanico = mecanico; }
+    public double getValorMaoDeObra() {
+        double total = 0;
+        for (MaoDeObra m : listaServicos) {
+            total += m.calcularCusto();
+        }
+        return total;
+    }
 }

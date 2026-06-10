@@ -1,280 +1,105 @@
 package br.ufrpe.autodrive.gui;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import br.ufrpe.autodrive.dados.RepositorioClientesArray;
-import br.ufrpe.autodrive.dados.RepositorioOsArray;
-import br.ufrpe.autodrive.dados.RepositorioVeiculosArray;
-import br.ufrpe.autodrive.negocio.IGerenciadorOficina;
-import br.ufrpe.autodrive.negocio.beans.Cliente;
-import br.ufrpe.autodrive.negocio.beans.OrdemServico;
-import br.ufrpe.autodrive.negocio.beans.StatusOS;
-import br.ufrpe.autodrive.negocio.beans.Veiculo;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.TextField;
+import br.ufrpe.autodrive.negocio.IGerenciadorOficina;
 
 public class TelaOficina {
     
     private IGerenciadorOficina control;
 
-    // --- Componentes do Formulário de Cadastro ---
-    @FXML private ComboBox<Cliente> cbCliente;
-    @FXML private ComboBox<Veiculo> cbVeiculo;
+    @FXML private TextField txtNumeroOS;
+    @FXML private TextField txtData;
+    @FXML private TextField txtCpf;
+    @FXML private TextField txtChassi;
+    @FXML private TextField txtFinalizarOS;
     @FXML private Label lblMensagem;
-
-    // --- Componente de Finalização ---
-    @FXML private ComboBox<String> cbFinalizarOS;
-
-    // --- Componentes de Filtro ---
-    @FXML private DatePicker dpFiltroData;
-
-    // --- Componentes da Tabela: Fila de Espera / Manutenção ---
-    @FXML private TableView<OrdemServico> tbFila;
-    @FXML private TableColumn<OrdemServico, String> colFilaOS;
-    @FXML private TableColumn<OrdemServico, String> colFilaVeiculo; // 🟢 NOVA COLUNA DECLARADA
-    @FXML private TableColumn<OrdemServico, StatusOS> colFilaStatus;
-    @FXML private TableColumn<OrdemServico, String> colFilaData;
-
-    // --- Componentes da Tabela: Histórico ---
-    @FXML private TableView<OrdemServico> tbHistorico;
-    @FXML private TableColumn<OrdemServico, String> colHistOS;
-    @FXML private TableColumn<OrdemServico, String> colHistVeiculo; // 🟢 NOVA COLUNA DECLARADA
-    @FXML private TableColumn<OrdemServico, StatusOS> colHistStatus;
-    @FXML private TableColumn<OrdemServico, String> colHistData;
-    
 
     public TelaOficina() {}
 
-    @FXML
-    public void initialize() {
-        // Vincula dinamicamente a Fila (OS + Nome)
-        if (colFilaOS != null) {
-            colFilaOS.setCellValueFactory(data -> {
-                OrdemServico os = data.getValue();
-                String clienteNome = (os != null && os.getCliente() != null) ? os.getCliente().getNome() : "Desconhecido";
-                return new javafx.beans.property.SimpleStringProperty(os.getNumero() + " - " + clienteNome);
-            });
-        }
-        
-        // 🟢 MAPEAMENTO DA NOVA COLUNA DE VEÍCULO (FILA)
-        if (colFilaVeiculo != null) {
-            colFilaVeiculo.setCellValueFactory(data -> {
-                OrdemServico os = data.getValue();
-                Veiculo v = (os != null) ? os.getVeiculo() : null;
-                String infoVeiculo = (v != null) ? v.getModelo() + " (" + v.getChassi() + ")" : "Não informado";
-                return new javafx.beans.property.SimpleStringProperty(infoVeiculo);
-            });
-        }
-        
-        if (colFilaStatus != null) colFilaStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        if (colFilaData != null) colFilaData.setCellValueFactory(new PropertyValueFactory<>("dataAbertura"));
-
-        // Vincula dinamicamente o Histórico (OS + Nome)
-        if (colHistOS != null) {
-            colHistOS.setCellValueFactory(data -> {
-                OrdemServico os = data.getValue();
-                String clienteNome = (os != null && os.getCliente() != null) ? os.getCliente().getNome() : "Desconhecido";
-                return new javafx.beans.property.SimpleStringProperty(os.getNumero() + " - " + clienteNome);
-            });
-        }
-        
-        // 🟢 MAPEAMENTO DA NOVA COLUNA DE VEÍCULO (HISTÓRICO)
-        if (colHistVeiculo != null) {
-            colHistVeiculo.setCellValueFactory(data -> {
-                OrdemServico os = data.getValue();
-                Veiculo v = (os != null) ? os.getVeiculo() : null;
-                String infoVeiculo = (v != null) ? v.getModelo() + " (" + v.getChassi() + ")" : "Não informado";
-                return new javafx.beans.property.SimpleStringProperty(infoVeiculo);
-            });
-        }
-        
-        if (colHistStatus != null) colHistStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        if (colHistData != null) colHistData.setCellValueFactory(new PropertyValueFactory<>("dataFechamento"));
-
-        // Efeito Cascata do DatePicker: Atualiza tabelas instantaneamente ao selecionar uma data
-        if (dpFiltroData != null) {
-            dpFiltroData.valueProperty().addListener((observable, oldValue, newValue) -> {
-                atualizarTabelas();
-            });
-        }
-    }
-
     public void injetarGerenciador(IGerenciadorOficina control) {
         this.control = control;
-        carregarComboBoxes();
-        atualizarTabelas();
-    }
-
-    // Carrega os dados dos repositórios diretamente para os ComboBoxes
-    private void carregarComboBoxes() {
-        try {
-            List<Cliente> clientes = RepositorioClientesArray.getInstance().listarClientes();
-            if (cbCliente != null) cbCliente.setItems(FXCollections.observableArrayList(clientes));
-
-            List<Veiculo> veiculos = RepositorioVeiculosArray.getInstance().listarTodos();
-            if (cbVeiculo != null) cbVeiculo.setItems(FXCollections.observableArrayList(veiculos));
-        } catch (Exception e) {
-            System.err.println("Aviso: Falha ao carregar repositórios nos ComboBoxes.");
-        }
     }
 
     @FXML
     public void botaoAbrirOS() { 
         try {
-            Cliente clienteSelecionado = cbCliente.getValue();
-            Veiculo veiculoSelecionado = cbVeiculo.getValue();
+            if (txtNumeroOS.getText().trim().isEmpty()) {
+                lblMensagem.setText("X Erro: O número da OS é obrigatório.");
+                lblMensagem.setStyle("-fx-text-fill: red;");
+                return;
+            }
+            
+            int numero = Integer.parseInt(txtNumeroOS.getText().trim());
+            String data = txtData.getText().trim();
+            String cpf = txtCpf.getText().trim();
+            String chassi = txtChassi.getText().trim();
 
-            // Validação direta baseada nas seleções
-            if (clienteSelecionado == null || veiculoSelecionado == null) {
-                exibirMensagemErro("Selecione um Cliente e um Veículo para abrir a OS.");
+            if (data.isEmpty() || cpf.isEmpty() || chassi.isEmpty()) {
+                lblMensagem.setText("X Erro: Todos os campos são obrigatórios.");
+                lblMensagem.setStyle("-fx-text-fill: red;");
                 return;
             }
 
-            // Extrai as chaves necessárias para o Gerenciador
-            String cpf = clienteSelecionado.getCpf();
-            String chassi = veiculoSelecionado.getChassi();
-
-            if (control != null && control.abrirOS(cpf, chassi)) {
-                lblMensagem.setText("✓ Sucesso: Nova Ordem de Serviço inserida na Fila.");
+            if (control != null && control.abrirOS(numero, data, cpf, chassi)) {
+                lblMensagem.setText("✓ Sucesso: OS " + numero + " aberta e Veículo em manutenção.");
                 lblMensagem.setStyle("-fx-text-fill: green;");
                 limparCamposCadastro();
-                atualizarTabelas();
             } else {
-                exibirMensagemErro("Não foi possível abrir a OS. Verifique os dados (pode estar Em Manutenção).");
+                lblMensagem.setText("X Erro: Dados inválidos ou OS já existente.");
+                lblMensagem.setStyle("-fx-text-fill: red;");
             }
-        } catch (Exception e) {
-            exibirMensagemErro("Ocorreu uma falha ao tentar abrir a Ordem de Serviço.");
+        } catch (NumberFormatException e) {
+            lblMensagem.setText("X Erro: O número da OS deve ser um valor numérico inteiro.");
+            lblMensagem.setStyle("-fx-text-fill: red;");
         }
     }
 
     @FXML
-    public void botaoFinalizarOS() {
+    public void botaoFinalizarOS() { 
         try {
-            String selecao = cbFinalizarOS.getValue();
-            
-            if (selecao == null || selecao.trim().isEmpty()) {
-                exibirMensagemErro("Selecione uma OS em manutenção para finalizar.");
+            if (txtFinalizarOS.getText().trim().isEmpty()) {
+                lblMensagem.setText("X Erro: Digite o número da OS para finalizar.");
+                lblMensagem.setStyle("-fx-text-fill: red;");
                 return;
             }
 
-            int numeroOS = Integer.parseInt(selecao.split(" ")[0]);
+            int numero = Integer.parseInt(txtFinalizarOS.getText().trim());
 
-            if (control != null && control.finalizarServico(numeroOS)) {
-                lblMensagem.setText("✓ Sucesso: OS nº " + numeroOS + " finalizada. Mecânico e Veículo liberados.");
+            if (control != null && control.finalizarServico(numero)) {
+                lblMensagem.setText("✓ Sucesso: OS " + numero + " finalizada e Veículo disponível.");
                 lblMensagem.setStyle("-fx-text-fill: green;");
-                atualizarTabelas(); 
+                txtFinalizarOS.clear();
             } else {
-                exibirMensagemErro("Falha ao finalizar a OS selecionada.");
+                lblMensagem.setText("X Erro: OS não encontrada ou requisitos não preenchidos.");
+                lblMensagem.setStyle("-fx-text-fill: red;");
             }
-        } catch (Exception e) {
-            exibirMensagemErro("Falha operacional ao encerrar a Ordem de Serviço.");
-        }
-    }
-
-    @FXML
-    public void limparFiltroData() {
-        if (dpFiltroData != null) {
-            dpFiltroData.setValue(null);
-        }
-    }
-
-    private void atualizarTabelas() {
-        try {
-            List<OrdemServico> todasOS = RepositorioOsArray.getInstance().listarTodas();
-            if (todasOS == null) return;
-
-            LocalDate dataFiltro = (dpFiltroData != null) ? dpFiltroData.getValue() : null;
-
-            // 1. Atualiza Fila (Aplica filtro de Data simultaneamente)
-            List<OrdemServico> filaAtiva = todasOS.stream()
-                .filter(os -> os.getStatus() == StatusOS.ABERTA || os.getStatus() == StatusOS.PROCESSO_MANUTENCAO)
-                .filter(os -> verificaDataFiltro(os.getDataAbertura(), dataFiltro))
-                .collect(Collectors.toList());
-
-            // 2. Atualiza Histórico (Aplica filtro de Data simultaneamente)
-            List<OrdemServico> historicoConcluido = todasOS.stream()
-                .filter(os -> os.getStatus() != StatusOS.ABERTA && os.getStatus() != StatusOS.PROCESSO_MANUTENCAO)
-                .filter(os -> verificaDataFiltro(os.getDataFechamento(), dataFiltro))
-                .collect(Collectors.toList());
-
-            // 3. Atualiza o ComboBox de Finalizar (APENAS PROCESSO_MANUTENCAO)
-            List<String> opcoesFinalizar = todasOS.stream()
-                .filter(os -> os.getStatus() == StatusOS.PROCESSO_MANUTENCAO)
-                .map(os -> {
-                    String nome = (os.getCliente() != null) ? os.getCliente().getNome() : "Desconhecido";
-                    return os.getNumero() + " - " + nome; 
-                })
-                .collect(Collectors.toList());
-
-            if (tbFila != null) {
-                tbFila.setItems(FXCollections.observableArrayList(filaAtiva));
-                tbFila.refresh();
-            }
-            if (tbHistorico != null) {
-                tbHistorico.setItems(FXCollections.observableArrayList(historicoConcluido));
-                tbHistorico.refresh();
-            }
-            if (cbFinalizarOS != null) {
-                cbFinalizarOS.setItems(FXCollections.observableArrayList(opcoesFinalizar));
-            }
-        } catch (Exception e) {
-            System.err.println("Erro crítico ao sincronizar dados: " + e.getMessage());
-        }
-    }
-
-    private boolean verificaDataFiltro(Object dataObjeto, LocalDate dataFiltro) {
-        if (dataFiltro == null) return true; 
-        if (dataObjeto == null) return false;
-
-        try {
-            String dataStr = dataObjeto.toString();
-            if (dataStr.contains(" ")) {
-                dataStr = dataStr.split(" ")[0];
-            }
-            
-            DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            LocalDate dataConvertida = LocalDate.parse(dataStr, formatador);
-            
-            return dataConvertida.equals(dataFiltro);
-        } catch (Exception e) {
-            return dataObjeto.toString().contains(dataFiltro.toString());
+        } catch (NumberFormatException e) {
+            lblMensagem.setText("X Erro: Digite um número de OS válido.");
+            lblMensagem.setStyle("-fx-text-fill: red;");
         }
     }
 
     @FXML
     public void botaoVoltar() { 
+        // 🟢 CORREÇÃO: Limpa todos os campos e labels ANTES de ir para o menu
         limparTudo(); 
         ScreenManager.getInstance().showMenuPrincipal();
     }
 
     private void limparCamposCadastro() {
-        if (cbCliente != null) cbCliente.getSelectionModel().clearSelection();
-        if (cbVeiculo != null) cbVeiculo.getSelectionModel().clearSelection();
+        txtNumeroOS.clear();
+        txtData.clear();
+        txtCpf.clear();
+        txtChassi.clear();
     }
 
+    // 🟢 NOVO MÉTODO: Faz uma limpeza completa em todos os quadrantes da tela
     private void limparTudo() {
-        limparCamposCadastro();      
-        if (dpFiltroData != null) dpFiltroData.setValue(null);
-        if (cbFinalizarOS != null) cbFinalizarOS.getSelectionModel().clearSelection();     
-        if (lblMensagem != null) {
-            lblMensagem.setText("Pronto para operar"); 
-            lblMensagem.setStyle("-fx-text-fill: black;"); 
-        }
-    }
-
-    private void exibirMensagemErro(String msg) {
-        if (lblMensagem != null) {
-            lblMensagem.setText("X Erro: " + msg);
-            lblMensagem.setStyle("-fx-text-fill: red;");
-        }
+        limparCamposCadastro();      // Limpa os 4 campos da esquerda
+        txtFinalizarOS.clear();      // Limpa o campo da direita
+        lblMensagem.setText("Pronto para operar"); // Reseta o texto padrão
+        lblMensagem.setStyle("-fx-text-fill: #7f8c8d;"); // Reseta a cor cinza estável
     }
 }

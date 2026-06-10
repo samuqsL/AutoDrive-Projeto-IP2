@@ -1,13 +1,6 @@
 package br.ufrpe.autodrive.negocio.beans;
 
-import java.io.Serializable;
-
-//Serialização da classe (Serialization/Persistence)*
-public class MaoDeObra implements Serializable {
-	
-	// É uma excelente prática de POO colocar essa constante de controle (Serialization/Persistence)*
-	private static final long serialVersionUID = 1L;
-	
+public class MaoDeObra {
     private String descricao;
     private double valor;
     private double horas;
