@@ -30,8 +30,15 @@ public class GerenciadorOficina implements IGerenciadorOficina {
         Veiculo veiculo = repoVeiculos.procurarVeiculo(chassiVeiculo);
 
         if (cliente != null && veiculo != null) {
+            if (veiculo.getStatus() == StatusVeiculo.EM_MANUTENCAO) {
+                return false;
+            }
             // Instancia a Ordem de Serviço (Gera número e data automaticamente internamente)
             OrdemServico novaOS = new OrdemServico(cliente, veiculo);
+            
+            // 🟢 AJUSTE DA VENDA: Carimba o veículo como EM_MANUTENCAO e grava no repositório persistente
+            veiculo.setStatus(StatusVeiculo.EM_MANUTENCAO);
+            repoVeiculos.adicionarVeiculo(veiculo); 
             
             // Salva no repositório persistente como status ABERTA (na fila)
             repoOS.salvar(novaOS);
@@ -117,8 +124,10 @@ public class GerenciadorOficina implements IGerenciadorOficina {
             os.calcularTotal(); 
             os.finalizarOS(); // Muda para FINALIZADA e bota data de fechamento
             
+            // 🟢 AJUSTE DA VENDA: Devolve o veículo para DISPONIVEL e salva o estado dele no arquivo persistente
             if (os.getVeiculo() != null) {
-                os.getVeiculo().setStatus(StatusVeiculo.ESTOQUE); // Libera o veículo
+                os.getVeiculo().setStatus(StatusVeiculo.DISPONIVEL); 
+                repoVeiculos.adicionarVeiculo(os.getVeiculo());
             }
             
             // FUNÇÃO LOCALIZADA: Captura o mecânico da OS, soma +1 à produtividade dele e o libera
@@ -127,7 +136,7 @@ public class GerenciadorOficina implements IGerenciadorOficina {
                 mecanicoAtribuido.incrementarProdutividade(); // Adiciona +1 à produtividade individual
                 mecanicoAtribuido.setDisponivel(true);        // Fica disponível novamente
                 
-                // 🟢 CORREÇÃO: Força a atualização do mecânico no repositório persistente
+                // Força a atualização do mecânico no repositório persistente
                 repoMecanicos.removerMecanico(mecanicoAtribuido.getNome());
                 repoMecanicos.adicionarMecanico(mecanicoAtribuido);
             }
