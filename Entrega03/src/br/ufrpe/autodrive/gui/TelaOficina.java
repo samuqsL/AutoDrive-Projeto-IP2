@@ -203,18 +203,27 @@ public class TelaOficina {
         }
     }
 
-    // Método auxiliar seguro para checar a data do filtro
+    // 🟢 CORREÇÃO: Método adaptado para ler a String (dd/MM/yyyy) gerada na OrdemServico
     private boolean verificaDataFiltro(Object dataObjeto, LocalDate dataFiltro) {
-        if (dataFiltro == null) return true; 
+        if (dataFiltro == null) return true; // Se não tem filtro selecionado, mostra tudo
         if (dataObjeto == null) return false;
 
-        if (dataObjeto instanceof LocalDateTime) {
-            return ((LocalDateTime) dataObjeto).toLocalDate().equals(dataFiltro);
-        } else if (dataObjeto instanceof LocalDate) {
-            return dataObjeto.equals(dataFiltro);
+        try {
+            String dataStr = dataObjeto.toString();
+            // Se a data contiver hora (ex: "10/06/2026 14:30"), pega apenas a parte da data
+            if (dataStr.contains(" ")) {
+                dataStr = dataStr.split(" ")[0];
+            }
+            
+            // Converte a string "dd/MM/yyyy" da OS para o padrão LocalDate para comparar perfeitamente
+            DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            LocalDate dataConvertida = LocalDate.parse(dataStr, formatador);
+            
+            return dataConvertida.equals(dataFiltro);
+        } catch (Exception e) {
+            // Fallback de segurança caso a string esteja em outro formato
+            return dataObjeto.toString().contains(dataFiltro.toString());
         }
-        
-        return dataObjeto.toString().contains(dataFiltro.toString());
     }
 
     @FXML
