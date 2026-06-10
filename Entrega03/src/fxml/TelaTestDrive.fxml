@@ -2,50 +2,115 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" spacing="15.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.TelaTestDrive">
-   <padding>
-      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-   </padding>
-   
-   <Label text="Agendar Test-Drive">
-      <font>
-         <Font name="System Bold" size="24.0" />
-      </font>
-   </Label>
-   
-   <VBox spacing="5.0">
-      <Label text="CPF do Cliente:" />
-      <TextField fx:id="txtCpf" promptText="Digite o CPF" />
-   </VBox>
-   
-   <VBox spacing="5.0">
-      <Label text="Chassi do Veículo:" />
-      <TextField fx:id="txtChassi" promptText="Digite o Chassi" />
-   </VBox>
-
-   <VBox spacing="5.0">
-      <Label text="Data do Test-Drive:" />
-      <DatePicker fx:id="datePickerData" promptText="Selecione a data" />
-   </VBox>
-
-   <VBox spacing="5.0">
-      <Label text="Hora (HH:mm):" />
-      <TextField fx:id="txtHora" promptText="Ex: 14:30" />
-   </VBox>
-   <Button mnemonicParsing="false" onAction="#tratarBotaoAgendar" text="Confirmar Agendamento" />
-   
-   <Label fx:id="lblMensagem" text="" textFill="#e10b0b">
-      <font>
-         <Font name="System Bold" size="14.0" />
-      </font>
-   </Label>
-   
-   <Button mnemonicParsing="false" onAction="#tratarBotaoVoltar" text="Voltar ao Menu" />
-
-</VBox>
+<HBox prefHeight="450.0" prefWidth="1050.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.TelaTestDrive">
+   <children>
+      <AnchorPane prefHeight="450.0" prefWidth="900.0">
+         <children>
+            <HBox spacing="20.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+               <children>
+                  
+                  <StackPane prefWidth="330.0">
+                     <children>
+                        <VBox alignment="CENTER" prefWidth="303.0" spacing="15.0">
+                           <padding>
+                              <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                           </padding>
+                           
+                                 <Label text="Agendar Test-Drive">
+                              <font>
+                                 <Font name="System Bold" size="24.0" />
+                              </font>
+                           </Label>
+                           
+                                 <VBox spacing="5.0">
+                              <children>
+                                 <ComboBox fx:id="comboCliente" prefWidth="280.0" promptText="Selecione o Cliente" />
+                              </children>
+                           </VBox>
+                           
+                                 <VBox spacing="5.0">
+                              <children>
+                                 <ComboBox fx:id="comboVeiculo" prefWidth="280.0" promptText="Selecione o Veiculo" />
+                              </children>
+                           </VBox>
+                        
+                                 <VBox spacing="5.0">
+                              <Label text="Data do Test-Drive:" />
+                              <DatePicker fx:id="datePickerData" promptText="Selecione a data" />
+                           </VBox>
+                        
+                                 <VBox spacing="5.0">
+                              <Label text="Hora (HH:mm):" />
+                              <TextField fx:id="txtHora" promptText="Ex: 14:30" />
+                           </VBox>
+                           <Button mnemonicParsing="false" onAction="#tratarBotaoAgendar" text="Confirmar Agendamento" />
+                           
+                                 <Label fx:id="lblMensagem" text="" textFill="#e10b0b">
+                              <font>
+                                 <Font name="System Bold" size="14.0" />
+                              </font>
+                           </Label>
+                           
+                                 <Button mnemonicParsing="false" onAction="#tratarBotaoVoltar" text="Voltar ao Menu" />
+                        
+                              </VBox>
+                     </children>
+                  </StackPane>
+                  
+                  <VBox prefHeight="430.0" prefWidth="525.0" spacing="10.0" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label style="-fx-font-weight: bold;" text="Histórico de test drives" />
+                        
+                        <HBox alignment="CENTER_RIGHT" spacing="8.0">
+                           <children>
+                              <Label text="De:" />
+                              <DatePicker fx:id="dpFiltroInicio" prefWidth="120.0" />
+                              <Label text="Até:" />
+                              <DatePicker fx:id="dpFiltroFim" prefWidth="120.0" />
+                              <Button mnemonicParsing="false" onAction="#acaoFiltrarPorPeriodo" text="Filtrar" />
+                              <Button mnemonicParsing="false" onAction="#acaoLimparFiltro" text="Limpar" />
+                           </children>
+                        </HBox>
+                        
+                        <TableView fx:id="tabelaTestDrives" prefWidth="582.0" VBox.vgrow="ALWAYS">
+                          <columns>
+                            <TableColumn fx:id="colCPF" prefWidth="90.0" text="CPF" />
+                              <TableColumn fx:id="colNome" prefWidth="75.0" text="Nome" />
+                            <TableColumn fx:id="colChassi" prefWidth="100.0" text="Chassi" />
+                            <TableColumn fx:id="colData" prefWidth="110.0" text="Data marcada" />
+                              <TableColumn fx:id="colHora" prefWidth="75.0" text="Hora" />
+                              <TableColumn fx:id="colID" prefWidth="75.0" text="ID" />
+                          </columns>
+                        </TableView>
+                     </children>
+                  </VBox>
+                  
+               </children>
+            </HBox>
+         </children>
+      </AnchorPane>
+      <VBox prefHeight="450.0" prefWidth="133.0">
+         <children>
+            <Label text="cancelar agendamento" />
+            <TextField fx:id="txtIDCancelamento" promptText="digite o ID" />
+            <Button mnemonicParsing="false" onAction="#acaoCancelarAgendamento" text="Cancelar" textFill="RED">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Button>
+         </children>
+      </VBox>
+   </children>
+</HBox>
