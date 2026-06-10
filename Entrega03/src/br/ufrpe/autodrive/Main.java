@@ -1,12 +1,38 @@
 package br.ufrpe.autodrive;
 
-import br.ufrpe.autodrive.dados.*;
-import br.ufrpe.autodrive.negocio.*;
-import br.ufrpe.autodrive.negocio.beans.*; 
+import java.time.LocalDateTime;
+
+import br.ufrpe.autodrive.dados.IRepositorioClientes;
+import br.ufrpe.autodrive.dados.IRepositorioMecanicos;
+import br.ufrpe.autodrive.dados.IRepositorioOS;
+import br.ufrpe.autodrive.dados.IRepositorioTD;
+import br.ufrpe.autodrive.dados.IRepositorioVeiculos;
+import br.ufrpe.autodrive.dados.IRepositorioVendas;
+import br.ufrpe.autodrive.dados.IRepositorioVendedores;
+import br.ufrpe.autodrive.dados.RepositorioClientesArray;
+import br.ufrpe.autodrive.dados.RepositorioMecanicosArray;
+import br.ufrpe.autodrive.dados.RepositorioOsArray;
+import br.ufrpe.autodrive.dados.RepositorioTestDriveArray;
+import br.ufrpe.autodrive.dados.RepositorioVeiculosArray;
+import br.ufrpe.autodrive.dados.RepositorioVendasArray;
+import br.ufrpe.autodrive.dados.RepositorioVendedoresArray;
 import br.ufrpe.autodrive.gui.ScreenManager;
+import br.ufrpe.autodrive.negocio.GerenciadorOficina;
+import br.ufrpe.autodrive.negocio.GerenciadorRelatorio;
+import br.ufrpe.autodrive.negocio.GerenciadorTestDrive;
+import br.ufrpe.autodrive.negocio.GerenciadorVenda;
+import br.ufrpe.autodrive.negocio.IGerenciadorOficina;
+import br.ufrpe.autodrive.negocio.IGerenciadorRelatorio;
+import br.ufrpe.autodrive.negocio.IGerenciadorTestDrive;
+import br.ufrpe.autodrive.negocio.IGerenciadorVenda;
+import br.ufrpe.autodrive.negocio.beans.Cliente;
+import br.ufrpe.autodrive.negocio.beans.Mecanico;
+import br.ufrpe.autodrive.negocio.beans.OrdemServico;
+import br.ufrpe.autodrive.negocio.beans.VeiculoNovo;
+import br.ufrpe.autodrive.negocio.beans.VeiculoSeminovo;
+import br.ufrpe.autodrive.negocio.beans.Vendedor;
 import javafx.application.Application;
 import javafx.stage.Stage;
-import java.time.LocalDateTime;
 
 public class Main extends Application {
 
@@ -39,7 +65,7 @@ public class Main extends Application {
         // 🟢 Passo 2: Instanciar os Gerenciadores Primeiro
         // =========================================================================
         // Correção de assinatura: repoVeiculos e repoVendedores invertidos para compilar
-        IGerenciadorVenda gVenda = new GerenciadorVenda(repoVendas, repoClientes, repoVeiculos, repoVendedores);
+        IGerenciadorVenda gVenda = new GerenciadorVenda(repoVendas, repoClientes, repoVendedores, repoVeiculos);
         
         // Correção de assinatura: Usando o repoMecanicos em vez dos objetos mecânicos diretos
         IGerenciadorOficina gOficina = new GerenciadorOficina(repoOS, repoClientes, repoVeiculos, repoMecanicos);
@@ -123,41 +149,57 @@ public class Main extends Application {
                 LocalDateTime.of(2026, 6, 02, 16, 45));
         }
         
-        // --- 3.4. MASSA DE TESTES EXCLUSIVA PARA A OFICINA (YURI) ---
-        // Altera para buscar direto do banco de dados o Mario para a OS de teste prévia
-        Mecanico mecanicoOficina = repoMecanicos.procurarMecanico("Mario");
+     // --- 3.4. MASSA DE TESTES EXCLUSIVA PARA A OFICINA (YURI) ---
+        // Garante que temos carros extras cadastrados usando a classe correta (VeiculoSeminovo)
+        if (repoVeiculos.procurarVeiculo("CHASSI_FILA_1") == null) {
+            repoVeiculos.adicionarVeiculo(new VeiculoSeminovo("CHASSI_FILA_1", "AAA1111", "Fiat Uno", 2015, 25000.0, 80000.0));
+            repoVeiculos.adicionarVeiculo(new VeiculoSeminovo("CHASSI_FILA_2", "BBB2222", "Ford Ka", 2018, 35000.0, 50000.0));
+            repoVeiculos.adicionarVeiculo(new VeiculoSeminovo("CHASSI_FILA_3", "CCC3333", "Chevrolet Onix", 2020, 55000.0, 30000.0));
+        }
 
-        // Proteção de persistência: só insere a OS se o banco de dados de OS estiver vazio
+        // Executa a massa de testes de fila se o repositório estiver limpo
         if (repoOS.listarTodas().isEmpty()) {
+            System.out.println("\n--- [TESTE YURI] Iniciando Simulação Automatizada de Fila ---");
+
+            // 1. Ocupa o primeiro mecânico (Mario) abrindo a OS 1
+            System.out.println("-> Abrindo OS 1 para o Veículo 1...");
+            gOficina.abrirOS(c1.getCpf(), "CHASSI_FILA_1"); 
+
+            // 2. Ocupa o segundo mecânico (Luigi) abrindo a OS 2
+            System.out.println("-> Abrindo OS 2 para o Veículo 2...");
+            gOficina.abrirOS(c1.getCpf(), "CHASSI_FILA_2"); 
+
+            // 3. Tenta abrir a OS 3. Como Mario e Luigi estão ocupados, ela DEVE ir para a Fila (Status ABERTA)
+            System.out.println("-> Abrindo OS 3 para o Veículo 3 (Não há mecânicos livres)...");
+            gOficina.abrirOS(c1.getCpf(), "CHASSI_FILA_3"); 
+
+            // Vamos listar para conferir o status em que elas nasceram em memória
+            System.out.println("\n--- ESTADO DAS ORDENS LOGO APÓS ABERTURA ---");
+            for (OrdemServico os : repoOS.listarTodas()) {
+                System.out.println("OS Nº: " + os.getNumero() + 
+                                   " | Status: " + os.getStatus() + 
+                                   " | Mecânico: " + (os.getMecanico() != null ? os.getMecanico().getNome() : "NENHUM (Na Fila)"));
+            }
             
-            // 🟢 CORREÇÃO: Usando o novo construtor automatizado do Yuri (Sem número e sem data manual)
-            OrdemServico os1 = new OrdemServico(c1, vAlerta);
-
-            Pecas peca1 = new Pecas();
-            peca1.setNome("oleo"); 
-            peca1.setPreco(250.00);
-            peca1.setQuantidade(1);
-            os1.getListaPecas().add(peca1);
-
-            MaoDeObra servico1 = new MaoDeObra();
-            servico1.setDescricao("Troca de Pastilhas");
-            servico1.setValor(150.00);
-            servico1.setHoras(2.0);
-            servico1.setMecanico(mecanicoOficina);
-            os1.getListaServicos().add(servico1);
-
-            // Simula o fluxo de encerramento correto
-            os1.setStatus(StatusOS.FINALIZADA); 
+            // 4. TESTE DO GATILHO: Vamos finalizar a primeira OS para liberar o Mario
+            int numeroOS1 = repoOS.listarTodas().get(0).getNumero();
             
-            // Salva no repositório persistente (Singleton vai gravar no arquivo .dat automaticamente)
-            repoOS.salvar(os1);
+            System.out.println("\n-> [GATILHO] Finalizando a OS 1 (Nº " + numeroOS1 + ") para liberar o mecânico...");
+            gOficina.finalizarServico(numeroOS1);
+
+            System.out.println("\n--- ESTADO DAS ORDENS APÓS A LIBERAÇÃO DO MECÂNICO ---");
+            for (OrdemServico os : repoOS.listarTodas()) {
+                System.out.println("OS Nº: " + os.getNumero() + 
+                                   " | Status: " + os.getStatus() + 
+                                   " | Mecânico: " + (os.getMecanico() != null ? os.getMecanico().getNome() : "NENHUM"));
+            }
+            System.out.println("-------------------------------------------------------------\n");
         }
 
         VeiculoNovo vOficinaDisponivel = new VeiculoNovo("CHASSIOFICINA", "RENOF001", "Volkswagen Polo", 2026, 89000.00);
         if (repoVeiculos.procurarVeiculo("CHASSIOFICINA") == null) {
             repoVeiculos.adicionarVeiculo(vOficinaDisponivel);
         }
-
         System.out.println("-> [Main] Todos os erros corrigidos! Casos de teste integrados e persistência ativa.");
         
         // =========================================================================
