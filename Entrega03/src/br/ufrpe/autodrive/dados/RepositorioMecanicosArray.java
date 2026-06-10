@@ -71,6 +71,16 @@ public class RepositorioMecanicosArray implements IRepositorioMecanicos {
     // =========================================================================
     
     private void salvarArquivo() {
+    	
+    	// 1. Cria a referência do arquivo baseada na constante "dados/nome_do_arquivo.dat"
+    	File arquivo = new File(CAMINHO_ARQUIVO);
+    	
+    	// 2. Verifica se a pasta mãe (dados) existe; se não existir, cria!
+    	if (arquivo.getParentFile() != null && !arquivo.getParentFile().exists()) {
+    	    arquivo.getParentFile().mkdirs(); // Cria a pasta "dados" se ela não existir
+    	}
+    	
+    	// 3. Abre o fluxo de gravação e despeja a lista correspondente
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(CAMINHO_ARQUIVO))) {
             oos.writeObject(this.listaMecanicos);
         } catch (IOException e) {
