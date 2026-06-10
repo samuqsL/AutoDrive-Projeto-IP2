@@ -6,8 +6,15 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.collections.FXCollections;
 import br.ufrpe.autodrive.negocio.IGerenciadorOficina;
 import br.ufrpe.autodrive.dados.RepositorioOsArray;
+import br.ufrpe.autodrive.dados.RepositorioClientesArray;
+import br.ufrpe.autodrive.dados.RepositorioVeiculosArray;
 import br.ufrpe.autodrive.negocio.beans.OrdemServico;
 import br.ufrpe.autodrive.negocio.beans.StatusOS;
+import br.ufrpe.autodrive.negocio.beans.Cliente;
+import br.ufrpe.autodrive.negocio.beans.Veiculo;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,14 +23,15 @@ public class TelaOficina {
     private IGerenciadorOficina control;
 
     // --- Componentes do Formulário de Cadastro ---
-    @FXML private TextField txtNumeroOS;
-    @FXML private TextField txtData;
-    @FXML private TextField txtCpf;
-    @FXML private TextField txtChassi;
+    @FXML private ComboBox<Cliente> cbCliente;
+    @FXML private ComboBox<Veiculo> cbVeiculo;
     @FXML private Label lblMensagem;
 
-    // --- Componente de Finalização (Agora é um ComboBox) ---
+    // --- Componente de Finalização ---
     @FXML private ComboBox<String> cbFinalizarOS;
+
+    // --- Componentes de Filtro (Substituindo TextField por DatePicker) ---
+    @FXML private DatePicker dpFiltroData;
 
     // --- Componentes da Tabela: Fila de Espera / Manutenção ---
     @FXML private TableView<OrdemServico> tbFila;
@@ -62,23 +70,49 @@ public class TelaOficina {
         }
         if (colHistStatus != null) colHistStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         if (colHistData != null) colHistData.setCellValueFactory(new PropertyValueFactory<>("dataFechamento"));
+
+        // Efeito Cascata do DatePicker: Atualiza tabelas instantaneamente ao selecionar uma data
+        if (dpFiltroData != null) {
+            dpFiltroData.valueProperty().addListener((observable, oldValue, newValue) -> {
+                atualizarTabelas();
+            });
+        }
     }
 
     public void injetarGerenciador(IGerenciadorOficina control) {
         this.control = control;
+        carregarComboBoxes();
         atualizarTabelas();
+    }
+
+    // Carrega os dados dos repositórios diretamente para os ComboBoxes
+    private void carregarComboBoxes() {
+        try {
+            List<Cliente> clientes = RepositorioClientesArray.getInstance().listarClientes();
+            if (cbCliente != null) cbCliente.setItems(FXCollections.observableArrayList(clientes));
+
+            List<Veiculo> veiculos = RepositorioVeiculosArray.getInstance().listarTodos();
+            if (cbVeiculo != null) cbVeiculo.setItems(FXCollections.observableArrayList(veiculos));
+        } catch (Exception e) {
+            System.err.println("Aviso: Falha ao carregar repositórios nos ComboBoxes.");
+        }
     }
 
     @FXML
     public void botaoAbrirOS() { 
         try {
-            String cpf = txtCpf.getText().trim();
-            String chassi = txtChassi.getText().trim();
+            Cliente clienteSelecionado = cbCliente.getValue();
+            Veiculo veiculoSelecionado = cbVeiculo.getValue();
 
-            if (cpf.isEmpty() || chassi.isEmpty()) {
-                exibirMensagemErro("O CPF do cliente e o Chassi do veículo são obrigatórios.");
+            // Validação direta baseada nas seleções
+            if (clienteSelecionado == null || veiculoSelecionado == null) {
+                exibirMensagemErro("Selecione um Cliente e um Veículo para abrir a OS.");
                 return;
             }
+
+            // Extrai as chaves necessárias para o Gerenciador (Sem precisar alterar a interface lógica)
+            String cpf = clienteSelecionado.getCpf();
+            String chassi = veiculoSelecionado.getChassi();
 
             if (control != null && control.abrirOS(cpf, chassi)) {
                 lblMensagem.setText("✓ Sucesso: Nova Ordem de Serviço inserida na Fila.");
@@ -96,7 +130,6 @@ public class TelaOficina {
     @FXML
     public void botaoFinalizarOS() {
         try {
-            // Pega a opção que o gerente selecionou no ComboBox
             String selecao = cbFinalizarOS.getValue();
             
             if (selecao == null || selecao.trim().isEmpty()) {
@@ -104,13 +137,12 @@ public class TelaOficina {
                 return;
             }
 
-            // A seleção vai estar no formato "12345 - Nome". Vamos extrair só o número (antes do espaço).
             int numeroOS = Integer.parseInt(selecao.split(" ")[0]);
 
             if (control != null && control.finalizarServico(numeroOS)) {
                 lblMensagem.setText("✓ Sucesso: OS nº " + numeroOS + " finalizada. Mecânico e Veículo liberados.");
                 lblMensagem.setStyle("-fx-text-fill: green;");
-                atualizarTabelas(); // Atualiza tabelas e limpa o ComboBox
+                atualizarTabelas(); 
             } else {
                 exibirMensagemErro("Falha ao finalizar a OS selecionada.");
             }
@@ -119,19 +151,31 @@ public class TelaOficina {
         }
     }
 
+    // Método atrelado ao novo botão de limpar o filtro de data
+    @FXML
+    public void limparFiltroData() {
+        if (dpFiltroData != null) {
+            dpFiltroData.setValue(null); // O Listener já vai capturar isso e resetar a tabela
+        }
+    }
+
     private void atualizarTabelas() {
         try {
             List<OrdemServico> todasOS = RepositorioOsArray.getInstance().listarTodas();
             if (todasOS == null) return;
 
-            // 1. Atualiza Fila (ABERTA e PROCESSO_MANUTENCAO)
+            LocalDate dataFiltro = (dpFiltroData != null) ? dpFiltroData.getValue() : null;
+
+            // 1. Atualiza Fila (Aplica filtro de Data simultaneamente)
             List<OrdemServico> filaAtiva = todasOS.stream()
                 .filter(os -> os.getStatus() == StatusOS.ABERTA || os.getStatus() == StatusOS.PROCESSO_MANUTENCAO)
+                .filter(os -> verificaDataFiltro(os.getDataAbertura(), dataFiltro))
                 .collect(Collectors.toList());
 
-            // 2. Atualiza Histórico (FINALIZADA, PAGA, etc)
+            // 2. Atualiza Histórico (Aplica filtro de Data simultaneamente)
             List<OrdemServico> historicoConcluido = todasOS.stream()
                 .filter(os -> os.getStatus() != StatusOS.ABERTA && os.getStatus() != StatusOS.PROCESSO_MANUTENCAO)
+                .filter(os -> verificaDataFiltro(os.getDataFechamento(), dataFiltro))
                 .collect(Collectors.toList());
 
             // 3. Atualiza o ComboBox de Finalizar (APENAS PROCESSO_MANUTENCAO)
@@ -139,7 +183,7 @@ public class TelaOficina {
                 .filter(os -> os.getStatus() == StatusOS.PROCESSO_MANUTENCAO)
                 .map(os -> {
                     String nome = (os.getCliente() != null) ? os.getCliente().getNome() : "Desconhecido";
-                    return os.getNumero() + " - " + nome; // Ex: "54321 - João"
+                    return os.getNumero() + " - " + nome; 
                 })
                 .collect(Collectors.toList());
 
@@ -153,11 +197,24 @@ public class TelaOficina {
             }
             if (cbFinalizarOS != null) {
                 cbFinalizarOS.setItems(FXCollections.observableArrayList(opcoesFinalizar));
-                cbFinalizarOS.getSelectionModel().clearSelection(); // Limpa a seleção anterior
             }
         } catch (Exception e) {
             System.err.println("Erro crítico ao sincronizar dados: " + e.getMessage());
         }
+    }
+
+    // Método auxiliar seguro para checar a data do filtro
+    private boolean verificaDataFiltro(Object dataObjeto, LocalDate dataFiltro) {
+        if (dataFiltro == null) return true; 
+        if (dataObjeto == null) return false;
+
+        if (dataObjeto instanceof LocalDateTime) {
+            return ((LocalDateTime) dataObjeto).toLocalDate().equals(dataFiltro);
+        } else if (dataObjeto instanceof LocalDate) {
+            return dataObjeto.equals(dataFiltro);
+        }
+        
+        return dataObjeto.toString().contains(dataFiltro.toString());
     }
 
     @FXML
@@ -167,14 +224,13 @@ public class TelaOficina {
     }
 
     private void limparCamposCadastro() {
-        if (txtNumeroOS != null) txtNumeroOS.clear();
-        if (txtData != null) txtData.clear();
-        if (txtCpf != null) txtCpf.clear();
-        if (txtChassi != null) txtChassi.clear();
+        if (cbCliente != null) cbCliente.getSelectionModel().clearSelection();
+        if (cbVeiculo != null) cbVeiculo.getSelectionModel().clearSelection();
     }
 
     private void limparTudo() {
         limparCamposCadastro();      
+        if (dpFiltroData != null) dpFiltroData.setValue(null);
         if (cbFinalizarOS != null) cbFinalizarOS.getSelectionModel().clearSelection();     
         if (lblMensagem != null) {
             lblMensagem.setText("Pronto para operar"); 
