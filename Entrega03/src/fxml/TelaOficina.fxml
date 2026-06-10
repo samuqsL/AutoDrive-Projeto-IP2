@@ -84,9 +84,10 @@
                         </Label>
                         <TableView fx:id="tbFila" prefHeight="300.0" prefWidth="678.0" VBox.vgrow="ALWAYS">
                           <columns>
-                            <TableColumn fx:id="colFilaOS" prefWidth="250.0" text="OS e Cliente" />
-                            <TableColumn fx:id="colFilaStatus" minWidth="0.0" prefWidth="150.0" text="Status" />
-                            <TableColumn fx:id="colFilaData" prefWidth="150.0" text="Data Abertura" />
+                            <TableColumn fx:id="colFilaOS" prefWidth="160.0" text="OS e Cliente" />
+                            <TableColumn fx:id="colFilaVeiculo" prefWidth="200.0" text="Veículo (Modelo e Chassi)" />
+                            <TableColumn fx:id="colFilaStatus" minWidth="0.0" prefWidth="140.0" text="Status" />
+                            <TableColumn fx:id="colFilaData" prefWidth="140.0" text="Data Abertura" />
                           </columns>
                            <columnResizePolicy>
                               <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -103,9 +104,10 @@
                         </Label>
                         <TableView fx:id="tbHistorico" prefHeight="250.0" prefWidth="678.0" VBox.vgrow="ALWAYS">
                            <columns>
-                              <TableColumn fx:id="colHistOS" prefWidth="250.0" text="OS e Cliente" />
-                              <TableColumn fx:id="colHistStatus" minWidth="0.0" prefWidth="150.0" text="Status" />
-                              <TableColumn fx:id="colHistData" prefWidth="150.0" text="Data Fechamento" />
+                              <TableColumn fx:id="colHistOS" prefWidth="160.0" text="OS e Cliente" />
+                              <TableColumn fx:id="colHistVeiculo" prefWidth="200.0" text="Veículo (Modelo e Chassi)" />
+                              <TableColumn fx:id="colHistStatus" minWidth="0.0" prefWidth="140.0" text="Status" />
+                              <TableColumn fx:id="colHistData" prefWidth="140.0" text="Data Fechamento" />
                            </columns>
                            <columnResizePolicy>
                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
