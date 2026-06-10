@@ -79,10 +79,11 @@
                   
                   <TableView fx:id="tabelaVendas" VBox.vgrow="ALWAYS">
                     <columns>
-                      <TableColumn fx:id="colNumero" prefWidth="80.0" text="Nº Venda" />
-                      <TableColumn fx:id="colCliente" prefWidth="100.0" text="Cliente" />
-                      <TableColumn fx:id="colVeiculo" prefWidth="110.0" text="Veículo" />
-                      <TableColumn fx:id="colTotal" prefWidth="90.0" text="Total (R$)" />
+                      <TableColumn fx:id="colNumero" prefWidth="65.0" text="Nº Venda" />
+                      <TableColumn fx:id="colCliente" prefWidth="95.0" text="Cliente" />
+                      <TableColumn fx:id="colVeiculo" prefWidth="105.0" text="Veículo" />
+                      <TableColumn fx:id="colTotal" prefWidth="80.0" text="Total (R$)" />
+                      <TableColumn fx:id="colData" prefWidth="110.0" text="Data/Hora" />
                     </columns>
                   </TableView>
                </children>
