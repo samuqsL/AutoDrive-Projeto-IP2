@@ -1,22 +1,26 @@
 package br.ufrpe.autodrive.gui;
 
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.collections.FXCollections;
-import br.ufrpe.autodrive.negocio.IGerenciadorOficina;
-import br.ufrpe.autodrive.dados.RepositorioOsArray;
-import br.ufrpe.autodrive.dados.RepositorioClientesArray;
-import br.ufrpe.autodrive.dados.RepositorioVeiculosArray;
-import br.ufrpe.autodrive.negocio.beans.OrdemServico;
-import br.ufrpe.autodrive.negocio.beans.StatusOS;
-import br.ufrpe.autodrive.negocio.beans.Cliente;
-import br.ufrpe.autodrive.negocio.beans.Veiculo;
-
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import br.ufrpe.autodrive.dados.RepositorioClientesArray;
+import br.ufrpe.autodrive.dados.RepositorioOsArray;
+import br.ufrpe.autodrive.dados.RepositorioVeiculosArray;
+import br.ufrpe.autodrive.negocio.IGerenciadorOficina;
+import br.ufrpe.autodrive.negocio.beans.Cliente;
+import br.ufrpe.autodrive.negocio.beans.OrdemServico;
+import br.ufrpe.autodrive.negocio.beans.StatusOS;
+import br.ufrpe.autodrive.negocio.beans.Veiculo;
+import javafx.collections.FXCollections;
+import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 
 public class TelaOficina {
     
@@ -30,20 +34,23 @@ public class TelaOficina {
     // --- Componente de Finalização ---
     @FXML private ComboBox<String> cbFinalizarOS;
 
-    // --- Componentes de Filtro (Substituindo TextField por DatePicker) ---
+    // --- Componentes de Filtro ---
     @FXML private DatePicker dpFiltroData;
 
     // --- Componentes da Tabela: Fila de Espera / Manutenção ---
     @FXML private TableView<OrdemServico> tbFila;
     @FXML private TableColumn<OrdemServico, String> colFilaOS;
+    @FXML private TableColumn<OrdemServico, String> colFilaVeiculo; // 🟢 NOVA COLUNA DECLARADA
     @FXML private TableColumn<OrdemServico, StatusOS> colFilaStatus;
     @FXML private TableColumn<OrdemServico, String> colFilaData;
 
     // --- Componentes da Tabela: Histórico ---
     @FXML private TableView<OrdemServico> tbHistorico;
     @FXML private TableColumn<OrdemServico, String> colHistOS;
+    @FXML private TableColumn<OrdemServico, String> colHistVeiculo; // 🟢 NOVA COLUNA DECLARADA
     @FXML private TableColumn<OrdemServico, StatusOS> colHistStatus;
     @FXML private TableColumn<OrdemServico, String> colHistData;
+    
 
     public TelaOficina() {}
 
@@ -57,6 +64,17 @@ public class TelaOficina {
                 return new javafx.beans.property.SimpleStringProperty(os.getNumero() + " - " + clienteNome);
             });
         }
+        
+        // 🟢 MAPEAMENTO DA NOVA COLUNA DE VEÍCULO (FILA)
+        if (colFilaVeiculo != null) {
+            colFilaVeiculo.setCellValueFactory(data -> {
+                OrdemServico os = data.getValue();
+                Veiculo v = (os != null) ? os.getVeiculo() : null;
+                String infoVeiculo = (v != null) ? v.getModelo() + " (" + v.getChassi() + ")" : "Não informado";
+                return new javafx.beans.property.SimpleStringProperty(infoVeiculo);
+            });
+        }
+        
         if (colFilaStatus != null) colFilaStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         if (colFilaData != null) colFilaData.setCellValueFactory(new PropertyValueFactory<>("dataAbertura"));
 
@@ -68,6 +86,17 @@ public class TelaOficina {
                 return new javafx.beans.property.SimpleStringProperty(os.getNumero() + " - " + clienteNome);
             });
         }
+        
+        // 🟢 MAPEAMENTO DA NOVA COLUNA DE VEÍCULO (HISTÓRICO)
+        if (colHistVeiculo != null) {
+            colHistVeiculo.setCellValueFactory(data -> {
+                OrdemServico os = data.getValue();
+                Veiculo v = (os != null) ? os.getVeiculo() : null;
+                String infoVeiculo = (v != null) ? v.getModelo() + " (" + v.getChassi() + ")" : "Não informado";
+                return new javafx.beans.property.SimpleStringProperty(infoVeiculo);
+            });
+        }
+        
         if (colHistStatus != null) colHistStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         if (colHistData != null) colHistData.setCellValueFactory(new PropertyValueFactory<>("dataFechamento"));
 
@@ -110,7 +139,7 @@ public class TelaOficina {
                 return;
             }
 
-            // Extrai as chaves necessárias para o Gerenciador (Sem precisar alterar a interface lógica)
+            // Extrai as chaves necessárias para o Gerenciador
             String cpf = clienteSelecionado.getCpf();
             String chassi = veiculoSelecionado.getChassi();
 
@@ -120,7 +149,7 @@ public class TelaOficina {
                 limparCamposCadastro();
                 atualizarTabelas();
             } else {
-                exibirMensagemErro("Não foi possível abrir a OS. Verifique os dados.");
+                exibirMensagemErro("Não foi possível abrir a OS. Verifique os dados (pode estar Em Manutenção).");
             }
         } catch (Exception e) {
             exibirMensagemErro("Ocorreu uma falha ao tentar abrir a Ordem de Serviço.");
@@ -151,11 +180,10 @@ public class TelaOficina {
         }
     }
 
-    // Método atrelado ao novo botão de limpar o filtro de data
     @FXML
     public void limparFiltroData() {
         if (dpFiltroData != null) {
-            dpFiltroData.setValue(null); // O Listener já vai capturar isso e resetar a tabela
+            dpFiltroData.setValue(null);
         }
     }
 
@@ -203,25 +231,21 @@ public class TelaOficina {
         }
     }
 
-    // 🟢 CORREÇÃO: Método adaptado para ler a String (dd/MM/yyyy) gerada na OrdemServico
     private boolean verificaDataFiltro(Object dataObjeto, LocalDate dataFiltro) {
-        if (dataFiltro == null) return true; // Se não tem filtro selecionado, mostra tudo
+        if (dataFiltro == null) return true; 
         if (dataObjeto == null) return false;
 
         try {
             String dataStr = dataObjeto.toString();
-            // Se a data contiver hora (ex: "10/06/2026 14:30"), pega apenas a parte da data
             if (dataStr.contains(" ")) {
                 dataStr = dataStr.split(" ")[0];
             }
             
-            // Converte a string "dd/MM/yyyy" da OS para o padrão LocalDate para comparar perfeitamente
             DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             LocalDate dataConvertida = LocalDate.parse(dataStr, formatador);
             
             return dataConvertida.equals(dataFiltro);
         } catch (Exception e) {
-            // Fallback de segurança caso a string esteja em outro formato
             return dataObjeto.toString().contains(dataFiltro.toString());
         }
     }
