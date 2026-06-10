@@ -8,4 +8,8 @@ public interface IRepositorioTD {
     List<TestDrive> listarTestDrives();
     TestDrive procurarTestDrive(String chassi);
     void removerTestDrive(String chassi);
+    
+    // remove test drive por ID
+    TestDrive procurarTestDrivePorID(String id);
+    void removerTestDrivePorID(String id);
 }
