@@ -33,6 +33,23 @@ public class GerenciadorOficina implements IGerenciadorOficina {
 
         if (cliente != null && veiculo != null) {
             
+            // =========================================================================
+            // 🛑 TRAVA DE SEGURANÇA COMPLEMENTAR: impede duplicidade de veículo na oficina
+            // =========================================================================
+            List<OrdemServico> todasOS = repoOS.listarTodas();
+            if (todasOS != null) {
+                for (OrdemServico os : todasOS) {
+                    // Se a OS pertence ao mesmo veículo...
+                    if (os.getVeiculo() != null && os.getVeiculo().getChassi().equals(chassiVeiculo)) {
+                        // ...E a OS não foi fechada/paga ainda (está ativamente na oficina)
+                        if (os.getStatus() == StatusOS.ABERTA || os.getStatus() == StatusOS.PROCESSO_MANUTENCAO) {
+                            System.out.println("[Aviso] Abertura negada: Veículo já possui uma OS ativa na oficina!");
+                            return false; // 🚫 Rejeita na hora e não cria duplicata
+                        }
+                    }
+                }
+            }
+            
             // 🔥 AJUSTE INTELIGENTE: Só passa para EM_MANUTENCAO se o veículo for de estoque/disponível da loja.
             // Se ele já estiver VENDIDO (pós-venda), mantém VENDIDO para não quebrar o histórico!
             if (veiculo.getStatus() == br.ufrpe.autodrive.negocio.beans.StatusVeiculo.ESTOQUE || 
@@ -74,7 +91,7 @@ public class GerenciadorOficina implements IGerenciadorOficina {
         }
         return false;
     }
-
+    
     // FUNÇÃO LOCALIZADA: Algoritmo de gerenciamento da Fila por Ordem de Chegada (FIFO)
     public synchronized void verificarEProcessarFila() {
         List<OrdemServico> listaGeral = repoOS.listarTodas();
