@@ -32,6 +32,14 @@ public class GerenciadorOficina implements IGerenciadorOficina {
         Veiculo veiculo = repoVeiculos.procurarVeiculo(chassiVeiculo);
 
         if (cliente != null && veiculo != null) {
+            
+            // 🔥 AJUSTE INTELIGENTE: Só passa para EM_MANUTENCAO se o veículo for de estoque/disponível da loja.
+            // Se ele já estiver VENDIDO (pós-venda), mantém VENDIDO para não quebrar o histórico!
+            if (veiculo.getStatus() == br.ufrpe.autodrive.negocio.beans.StatusVeiculo.ESTOQUE || 
+                veiculo.getStatus() == br.ufrpe.autodrive.negocio.beans.StatusVeiculo.DISPONIVEL) {
+                veiculo.setStatus(br.ufrpe.autodrive.negocio.beans.StatusVeiculo.EM_MANUTENCAO);
+            }
+            
             OrdemServico novaOS = new OrdemServico();
             novaOS.setCliente(cliente);
             novaOS.setVeiculo(veiculo);
@@ -121,7 +129,7 @@ public class GerenciadorOficina implements IGerenciadorOficina {
     }
 
     // FUNÇÃO LOCALIZADA: Finalização da OS incrementando +1 na produtividade do mecânico alocado
- // =========================================================================
+    // =========================================================================
     // CORREÇÃO DEFINITIVA E PREMIDA: Ajustado perfeitamente com os Getters da OS
     // =========================================================================
     @Override
@@ -155,13 +163,22 @@ public class GerenciadorOficina implements IGerenciadorOficina {
             // Salva a OS finalizada no arquivo físico .dat
             repoOS.salvar(os);
             
+            // 🔥 AJUSTE SEGURO CORRIGIDO: Só volta para o ESTOQUE se o carro estava em manutenção interna da loja
+            if (os.getVeiculo() != null) {
+                if (os.getVeiculo().getStatus() == br.ufrpe.autodrive.negocio.beans.StatusVeiculo.EM_MANUTENCAO) {
+                    // Se era um carro de estoque fazendo manutenção interna, volta pro estoque para poder ser vendido
+                    os.getVeiculo().setStatus(br.ufrpe.autodrive.negocio.beans.StatusVeiculo.ESTOQUE);
+                }
+                // Se o status for VENDIDO (porque o abrirOS não mexeu nele), ele continua VENDIDO. Seguro e perfeito!
+            }
+            
             // 5. Processa a fila FIFO para passar o mecânico liberado para o próximo carro
             this.verificarEProcessarFila();
             return true;
         }
         return false;
     }
-
+    
     @Override
     public boolean registrarPecaNaOS(int numeroOS, Pecas peca, int quantidade) {
         OrdemServico os = repoOS.buscarPorNumero(numeroOS);
