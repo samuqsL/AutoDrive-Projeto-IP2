@@ -135,5 +135,10 @@ public class OrdemServico implements Serializable {
 
     public Mecanico getMecanico() { return mecanico; }
     public void setMecanico(Mecanico mecanico) { this.mecanico = mecanico; }
+
+	@Override
+    public String toString() {
+        return "OS #" + this.numero + " - " + (this.cliente != null ? this.cliente.getNome() : "Sem Cliente");
+    }
     
 }
