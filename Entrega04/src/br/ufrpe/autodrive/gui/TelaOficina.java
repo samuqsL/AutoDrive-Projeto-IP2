@@ -158,25 +158,40 @@ public class TelaOficina {
 
     @FXML
     public void botaoFinalizarOS() {
-        try {
-            String selecao = cbFinalizarOS.getValue();
-            
-            if (selecao == null || selecao.trim().isEmpty()) {
-                exibirMensagemErro("Selecione uma OS em manutenção para finalizar.");
-                return;
+        String selecionada = cbFinalizarOS.getSelectionModel().getSelectedItem();
+        if (selecionada == null) {
+            if (lblMensagem != null) {
+                lblMensagem.setText("Selecione uma OS válida em manutenção para finalizar!");
+                lblMensagem.setStyle("-fx-text-fill: #e74c3c;"); // Vermelho
             }
+            return;
+        }
 
-            int numeroOS = Integer.parseInt(selecao.split(" ")[0]);
-
-            if (control != null && control.finalizarServico(numeroOS)) {
-                lblMensagem.setText("✓ Sucesso: OS nº " + numeroOS + " finalizada. Mecânico e Veículo liberados.");
-                lblMensagem.setStyle("-fx-text-fill: green;");
-                atualizarTabelas(); 
+        try {
+            // Extrai o número da OS antes do hífen (ex: "12345 - João" vira 12345)
+            int numeroOS = Integer.parseInt(selecionada.split(" - ")[0].trim());
+            
+            // Chama o método correto do GerenciadorOficina com todas as regras salvas
+            boolean sucesso = control.finalizarServico(numeroOS);
+            
+            if (sucesso) {
+                if (lblMensagem != null) {
+                    lblMensagem.setText("OS Nº " + numeroOS + " Paga e Finalizada com sucesso!");
+                    lblMensagem.setStyle("-fx-text-fill: #27ae60;"); // Verde
+                }
+                atualizarTabelas(); // Chama a sua função original com o filtro atualizado!
+                cbFinalizarOS.getSelectionModel().clearSelection();
             } else {
-                exibirMensagemErro("Falha ao finalizar a OS selecionada.");
+                if (lblMensagem != null) {
+                    lblMensagem.setText("Falha ao finalizar o serviço da OS.");
+                    lblMensagem.setStyle("-fx-text-fill: #e74c3c;"); // Vermelho
+                }
             }
         } catch (Exception e) {
-            exibirMensagemErro("Falha operacional ao encerrar a Ordem de Serviço.");
+            if (lblMensagem != null) {
+                lblMensagem.setText("Erro ao processar a finalização.");
+                lblMensagem.setStyle("-fx-text-fill: #e74c3c;");
+            }
         }
     }
 
@@ -189,18 +204,21 @@ public class TelaOficina {
 
     private void atualizarTabelas() {
         try {
+            // 🟢 Adicionado: Mantém os ComboBoxes de Clientes/Veículos sincronizados com os repositórios
+            carregarComboBoxes(); 
+
             List<OrdemServico> todasOS = RepositorioOsArray.getInstance().listarTodas();
             if (todasOS == null) return;
 
             LocalDate dataFiltro = (dpFiltroData != null) ? dpFiltroData.getValue() : null;
 
-            // 1. Atualiza Fila (Aplica filtro de Data simultaneamente)
+            // 1. Exibe estritamente as ordens em espera (ABERTA)
             List<OrdemServico> filaAtiva = todasOS.stream()
-                .filter(os -> os.getStatus() == StatusOS.ABERTA || os.getStatus() == StatusOS.PROCESSO_MANUTENCAO)
+                .filter(os -> os.getStatus() == StatusOS.ABERTA)
                 .filter(os -> verificaDataFiltro(os.getDataAbertura(), dataFiltro))
                 .collect(Collectors.toList());
 
-            // 2. Atualiza Histórico (Aplica filtro de Data simultaneamente)
+            // 2. Atualiza Histórico (PAGA/FINALIZADA)
             List<OrdemServico> historicoConcluido = todasOS.stream()
                 .filter(os -> os.getStatus() != StatusOS.ABERTA && os.getStatus() != StatusOS.PROCESSO_MANUTENCAO)
                 .filter(os -> verificaDataFiltro(os.getDataFechamento(), dataFiltro))

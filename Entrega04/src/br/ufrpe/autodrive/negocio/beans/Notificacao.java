@@ -16,6 +16,7 @@ public class Notificacao {
         this.cliente = cliente;
         this.veiculo = veiculo;
     }
+    
     public Cliente getCliente() { return cliente; }
     public Veiculo getVeiculo() { return veiculo; }
     public double getQuilometragem() { return quilometragem; }

@@ -69,8 +69,13 @@ public class OrdemServico implements Serializable {
 
     public void calcularTotal() {
         double total = 0;
+        // Soma as peças
         for (Pecas p : listaPecas) {
             total += p.getPreco() * p.getQuantidade();
+        }
+        // Soma a mão de obra (serviços)
+        for (MaoDeObra m : listaServicos) {
+            total += m.getValor();
         }
         this.valorTotal = total;
     }
@@ -130,4 +135,5 @@ public class OrdemServico implements Serializable {
 
     public Mecanico getMecanico() { return mecanico; }
     public void setMecanico(Mecanico mecanico) { this.mecanico = mecanico; }
+    
 }

@@ -27,11 +27,16 @@ import br.ufrpe.autodrive.negocio.IGerenciadorTestDrive;
 import br.ufrpe.autodrive.negocio.IGerenciadorVenda;
 import br.ufrpe.autodrive.negocio.beans.Cliente;
 import br.ufrpe.autodrive.negocio.beans.Mecanico;
-import br.ufrpe.autodrive.negocio.beans.Notificacao; // IMPORT ADICIONADO PARA CORRIGIR O ERRO
+import br.ufrpe.autodrive.negocio.beans.Notificacao;
 import br.ufrpe.autodrive.negocio.beans.OrdemServico;
+import br.ufrpe.autodrive.negocio.beans.StatusOS;
 import br.ufrpe.autodrive.negocio.beans.VeiculoNovo;
 import br.ufrpe.autodrive.negocio.beans.VeiculoSeminovo;
+import br.ufrpe.autodrive.negocio.beans.StatusVeiculo;
+import br.ufrpe.autodrive.negocio.beans.Veiculo;
 import br.ufrpe.autodrive.negocio.beans.Vendedor;
+import br.ufrpe.autodrive.negocio.beans.Pecas;
+import br.ufrpe.autodrive.negocio.beans.MaoDeObra;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
@@ -135,7 +140,7 @@ public class Main extends Application {
             gVenda.efetuarVenda(0, "987.654.321-11", "CHASSIREP2", "Otavio R.", 35000.00, LocalDateTime.of(2026, 5, 10, 10, 15));
         }
         if (repoVendas.listarTodasVendas().stream().noneMatch(v -> v.getVeiculo().getChassi().equals("CHASSIREP3"))) {
-            gVenda.efetuarVenda(0, "321.122.567-12", "CHASSIREP3", "Artur M.", 15000.00, LocalDateTime.of(2026, 6, 02, 16, 45));
+            gVenda.efetuarVenda(0, "321.122.567-12", "CHASSIREP3", "Artur M.", 15000.00, LocalDateTime.of(2026, 6, 2, 16, 45));
         }
         
         // --- 3.4. MASSA DE TESTES EXCLUSIVA PARA A OFICINA (YURI) ---
@@ -223,10 +228,155 @@ public class Main extends Application {
         }
         System.out.println("-------------------------------------------------------------\n");
         
+        // =========================================================================
+        // 🟢 Passo 3.6: MASSA DE TESTES PARA O REQ DE OFICINA E RELATÓRIOS (OS)
+        // =========================================================================
+        System.out.println("\n-------------------------------------------------------------");
+        System.out.println("🛠️ [PASSO 3.6] INJETANDO MASSA DE TESTES PARA OFICINA (OS)...");
+        System.out.println("-------------------------------------------------------------");
+
+        // 1. Obter mecânicos do próprio banco instanciado no Passo 1
+        Mecanico mec1 = repoMecanicos.procurarMecanico("Mario");
+        Mecanico mec2 = repoMecanicos.procurarMecanico("Luigi");
+
+        // 💡 CORREÇÃO CIRÚRGICA: Força os mecânicos a estarem disponíveis para a criação 
+        // manual dos registros históricos (evita travar no construtor de MaoDeObra devido ao Passo 3.4)
+        if (mec1 != null) mec1.setDisponivel(true);
+        if (mec2 != null) mec2.setDisponivel(true);
+
+        // 2. Cadastrar Veículos adicionais para suporte à Oficina
+        VeiculoSeminovo vOficina1 = new VeiculoSeminovo("CHASSI_OS_1", "KGO1A23", "Chevrolet Onix", 2021, 62000.00, 45000.0);
+        VeiculoSeminovo vOficina2 = new VeiculoSeminovo("CHASSI_OS_2", "MUT4B56", "Toyota Corolla", 2022, 115000.00, 32000.0);
+        
+        if (repoVeiculos.procurarVeiculo("CHASSI_OS_1") == null) {
+            repoVeiculos.adicionarVeiculo(vOficina1);
+        }
+        if (repoVeiculos.procurarVeiculo("CHASSI_OS_2") == null) {
+            repoVeiculos.adicionarVeiculo(vOficina2);
+        }
+
+        // Garantir temporariamente que os mecânicos aceitem o construtor da Mão de Obra
+        if (mec1 != null) mec1.setDisponivel(true);
+        if (mec2 != null) mec2.setDisponivel(true);
+
+        // 3. Criar e Finalizar Ordens de Serviço (OS) simuladas usando a assinatura correta dos construtores
+        if (repoOS.listarTodas().stream().noneMatch(os -> os.getVeiculo() != null && os.getVeiculo().getChassi().equals("CHASSI_OS_1"))) {
+            OrdemServico os1 = new OrdemServico();
+            os1.setCliente(c1);
+            os1.setVeiculo(vOficina1);
+            os1.setMecanico(mec1);
+            
+            // 📅 SETTANDO AS DATAS PARA O RELATÓRIO (Padrão: dd/MM/yyyy HH:mm)
+            os1.setDataAbertura("10/06/2026 08:00");
+            os1.setDataFechamento("10/06/2026 14:30");
+            
+            // Construtor Pecas: (nome, codigo, preco, quantidade)
+            os1.getListaPecas().add(new Pecas("Kit Filtros e Óleo Sintético", "PC-001", 250.00, 1));
+            os1.getListaPecas().add(new Pecas("Jogo de Velas Iridium", "PC-002", 180.00, 1));
+            
+            // Construtor MaoDeObra: (descricao, valor, horas, mecanico)
+            os1.getListaServicos().add(new MaoDeObra("Mão de Obra Revisão Periódica", 100.00, 2.0, mec1));
+            
+            os1.setStatus(StatusOS.FINALIZADA);
+            os1.setValorTotal(250.00 + 180.00 + (100.00 * 2.0));
+            
+            repoOS.salvar(os1);
+            System.out.println("✅ OS Nº " + os1.getNumero() + " (Onix) injetada com sucesso!");
+        }
+
+        if (repoOS.listarTodas().stream().noneMatch(os -> os.getVeiculo() != null && os.getVeiculo().getChassi().equals("CHASSI_OS_2"))) {
+            OrdemServico os2 = new OrdemServico();
+            os2.setCliente(c2);
+            os2.setVeiculo(vOficina2);
+            os2.setMecanico(mec2);
+            
+            // 📅 SETTANDO AS DATAS PARA O RELATÓRIO (Padrão: dd/MM/yyyy HH:mm)
+            os2.setDataAbertura("11/06/2026 09:00");
+            os2.setDataFechamento("11/06/2026 17:00");
+            
+            // Construtor Pecas: (nome, codigo, preco, quantidade)
+            os2.getListaPecas().add(new Pecas("Par de Discos de Freio Ventilados", "PC-003", 450.00, 1));
+            os2.getListaPecas().add(new Pecas("Jogo de Pastilhas de Freio Cerâmica", "PC-004", 220.00, 1));
+            // Construtor MaoDeObra: (descricao, valor, horas, mecanico)
+            os2.getListaServicos().add(new MaoDeObra("Alinhamento, Balanceamento e Freios", 75.00, 2.0, mec2));
+            
+            os2.setStatus(StatusOS.FINALIZADA);
+            os2.setValorTotal(450.00 + 220.00 + (75.00 * 2.0));
+            
+            repoOS.salvar(os2);
+            System.out.println("✅ OS Nº " + os2.getNumero() + " (Corolla) injetada com sucesso!");
+        }
+
+        // Restaura o estado de ocupação real da oficina após a montagem da lista estática
+        if (mec1 != null) mec1.setDisponivel(false); 
+        if (mec2 != null) mec2.setDisponivel(false); 
+
+        System.out.println("-------------------------------------------------------------\n");
+        
+        // =========================================================================
+        // 🟢 INJEÇÃO DE VEÍCULOS LIVRES PARA OPERAÇÕES EM TELA (VENDA, OS E TEST DRIVE)
+        // =========================================================================
+        System.out.println("🚗 [EXTRA] INJETANDO VEÍCULOS LIVRES PARA USO NAS TELAS...");
+
+        // --- 5 VEÍCULOS DESTINADOS A NOVAS VENDAS (Status: DISPONIVEL) ---
+        // Construtor VeiculoNovo: (chassi, renavam, modelo, ano, preco)
+        VeiculoNovo vVenda1 = new VeiculoNovo("CHASSI_V_1", "AAA0A01", "Jeep Compass", 2026, 185000.00);
+        VeiculoSeminovo vVenda2 = new VeiculoSeminovo("CHASSI_V_2", "BBB0B02", "Honda Civic", 2023, 140000.00, 28000.0);
+        VeiculoNovo vVenda3 = new VeiculoNovo("CHASSI_V_3", "CCC0C03", "Fiat Toro", 2026, 150000.00);
+        VeiculoSeminovo vVenda4 = new VeiculoSeminovo("CHASSI_V_4", "DDD0D04", "Volkswagen Golf", 2020, 110000.00, 65000.0);
+        VeiculoNovo vVenda5 = new VeiculoNovo("CHASSI_V_5", "EEE0E05", "Hyundai Creta", 2026, 135000.00);
+
+        vVenda1.setStatus(StatusVeiculo.DISPONIVEL);
+        vVenda2.setStatus(StatusVeiculo.DISPONIVEL);
+        vVenda3.setStatus(StatusVeiculo.DISPONIVEL);
+        vVenda4.setStatus(StatusVeiculo.DISPONIVEL);
+        vVenda5.setStatus(StatusVeiculo.DISPONIVEL);
+
+        // --- 5 VEÍCULOS DESTINADOS A ABRIR NOVAS ORDENS DE SERVIÇO (Status: DISPONIVEL) ---
+        // Construtor VeiculoSeminovo: (chassi, renavam, modelo, ano, preco, quilometragem)
+        VeiculoSeminovo vOficina3 = new VeiculoSeminovo("CHASSI_M_3", "FFF0F06", "Ford Ka", 2019, 48000.00, 82000.0);
+        VeiculoSeminovo vOficina4 = new VeiculoSeminovo("CHASSI_M_4", "GGG0G07", "Renault Sandero", 2020, 52000.00, 71000.0);
+        VeiculoSeminovo vOficina5 = new VeiculoSeminovo("CHASSI_M_5", "HHH0H08", "Toyota Hilux", 2021, 210000.00, 95000.0);
+        VeiculoSeminovo vOficina6 = new VeiculoSeminovo("CHASSI_M_6", "III0I09", "Hyundai HB20", 2022, 68000.00, 40000.0);
+        VeiculoSeminovo vOficina7 = new VeiculoSeminovo("CHASSI_M_7", "JJJ0J10", "Fiat Uno", 2018, 35000.00, 110000.0);
+
+        vOficina3.setStatus(StatusVeiculo.DISPONIVEL);
+        vOficina4.setStatus(StatusVeiculo.DISPONIVEL);
+        vOficina5.setStatus(StatusVeiculo.DISPONIVEL);
+        vOficina6.setStatus(StatusVeiculo.DISPONIVEL);
+        vOficina7.setStatus(StatusVeiculo.DISPONIVEL);
+
+        // --- 3 VEÍCULOS DESTINADOS A TEST DRIVE / VENDAS ALTERNATIVAS (Status: DISPONIVEL) ---
+        VeiculoNovo vTD1 = new VeiculoNovo("CHASSI_TD_1", "KKK0K11", "BYD Dolphin", 2026, 150000.00);
+        VeiculoNovo vTD2 = new VeiculoNovo("CHASSI_TD_2", "LLL0L12", "GWM Ora 3", 2026, 160000.00);
+        VeiculoSeminovo vTD3 = new VeiculoSeminovo("CHASSI_TD_3", "MMM0M13", "Nissan Kicks", 2024, 105000.00, 15000.0);
+
+        vTD1.setStatus(StatusVeiculo.DISPONIVEL);
+        vTD2.setStatus(StatusVeiculo.DISPONIVEL);
+        vTD3.setStatus(StatusVeiculo.DISPONIVEL);
+
+        // --- SALVANDO NO REPOSITÓRIO (Apenas se o chassi já não existir) ---
+        Veiculo[] novosVeiculos = {
+            vVenda1, vVenda2, vVenda3, vVenda4, vVenda5,
+            vOficina3, vOficina4, vOficina5, vOficina6, vOficina7,
+            vTD1, vTD2, vTD3
+        };
+
+        int adicionados = 0;
+        for (Veiculo v : novosVeiculos) {
+            if (repoVeiculos.procurarVeiculo(v.getChassi()) == null) {
+                repoVeiculos.adicionarVeiculo(v);
+                adicionados++;
+            }
+        }
+        System.out.println("✅ " + adicionados + " novos veículos inseridos e prontos para uso nas telas!");
+        System.out.println("-------------------------------------------------------------\n");
+        
         VeiculoNovo vOficinaDisponivel = new VeiculoNovo("CHASSIOFICINA", "RENOF001", "Volkswagen Polo", 2026, 89000.00);
         if (repoVeiculos.procurarVeiculo("CHASSIOFICINA") == null) {
             repoVeiculos.adicionarVeiculo(vOficinaDisponivel);
         }
+        
         System.out.println("-> [Main] Todos os erros corrigidos! Casos de teste integrados e persistência ativa.");
         
         // =========================================================================

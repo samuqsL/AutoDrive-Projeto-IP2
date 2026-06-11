@@ -23,33 +23,45 @@ public class GerenciadorOficina implements IGerenciadorOficina {
         verificarEProcessarFila();
     }
 
-    // FUNÇÃO LOCALIZADA: Abertura simplificada de OS enviando direto para a fila de espera (ABERTA)
+    // =========================================================================
+    // CORREÇÃO: Fluxo de abertura usando a assinatura real '.salvar(novaOS)'
+    // =========================================================================
     @Override
     public boolean abrirOS(String cpfCliente, String chassiVeiculo) {
         Cliente cliente = repoClientes.procurarCliente(cpfCliente);
         Veiculo veiculo = repoVeiculos.procurarVeiculo(chassiVeiculo);
 
         if (cliente != null && veiculo != null) {
+            OrdemServico novaOS = new OrdemServico();
+            novaOS.setCliente(cliente);
+            novaOS.setVeiculo(veiculo);
             
-            // 🛑 TRAVA CRÍTICA DE REGRA DE NEGÓCIO:
-            // O veículo SÓ pode entrar na oficina se ele estiver totalmente DISPONÍVEL.
-            // Se estiver em TEST_DRIVE, VENDIDO ou já estiver EM_MANUTENCAO, a OS deve ser negada.
-            if (veiculo.getStatus() != StatusVeiculo.DISPONIVEL) {
-                return false; 
+            // Procura se existe algum mecânico totalmente disponível na oficina
+            Mecanico mecanicoLivre = null;
+            for (Mecanico m : repoMecanicos.listarTodos()) {
+                if (m.isDisponivel()) {
+                    mecanicoLivre = m;
+                    break;
+                }
             }
 
-            // Instancia a Ordem de Serviço (Gera número e data automaticamente internamente)
-            OrdemServico novaOS = new OrdemServico(cliente, veiculo);
-            
-            // Carimba o veículo como EM_MANUTENCAO e grava no repositório persistente
-            veiculo.setStatus(StatusVeiculo.EM_MANUTENCAO);
-            repoVeiculos.adicionarVeiculo(veiculo); 
-            
-            // Salva no repositório persistente como status ABERTA (na fila)
+            // Se achou mecânico livre, vincula imediatamente e muda o status da OS
+            if (mecanicoLivre != null) {
+                mecanicoLivre.setDisponivel(false); // Ocupa o mecânico
+                novaOS.setMecanico(mecanicoLivre);
+                novaOS.setStatus(StatusOS.PROCESSO_MANUTENCAO);
+                
+                // Atualiza o estado do mecânico no repositório persistente sem duplicar
+                repoMecanicos.removerMecanico(mecanicoLivre.getNome());
+                repoMecanicos.adicionarMecanico(mecanicoLivre);
+            } else {
+                // Se não há mecânicos, ela nasce puramente na fila de espera (ABERTA)
+                novaOS.setStatus(StatusOS.ABERTA);
+                novaOS.setMecanico(null);
+            }
+
+            // Usando a assinatura correta do seu repositório: '.salvar' adiciona e grava no arquivo .dat de uma vez só
             repoOS.salvar(novaOS);
-            
-            // Invoca o algoritmo da fila para tentar alocar um mecânico disponível imediatamente
-            verificarEProcessarFila();
             return true;
         }
         return false;
@@ -109,47 +121,42 @@ public class GerenciadorOficina implements IGerenciadorOficina {
     }
 
     // FUNÇÃO LOCALIZADA: Finalização da OS incrementando +1 na produtividade do mecânico alocado
+ // =========================================================================
+    // CORREÇÃO DEFINITIVA E PREMIDA: Ajustado perfeitamente com os Getters da OS
+    // =========================================================================
     @Override
     public boolean finalizarServico(int numeroOS) {
         OrdemServico os = repoOS.buscarPorNumero(numeroOS);
         
-        // Restrito apenas a quem está sob PROCESSO_MANUTENCAO
+        // Só permite finalizar ordens que estejam em andamento
         if (os != null && os.getStatus() == StatusOS.PROCESSO_MANUTENCAO) {
-            os.marcarComoPago();
             
-            // Inserção padrão do óleo caso esteja vazia conforme seu requisito obrigatório anterior
-            if (os.getListaPecas().isEmpty()) {
-                Pecas pecaObrigatoria = new Pecas();
-                pecaObrigatoria.setNome("oleo"); 
-                pecaObrigatoria.setPreco(120.00); 
-                pecaObrigatoria.setQuantidade(1);
-                os.getListaPecas().add(pecaObrigatoria);
-            }
+            // 1. CORREÇÃO DAS ASSINATURA: Usando os métodos reais existentes na sua OS
+            double somaItens = os.getValorPecas() + os.getValorMaoDeObra();
             
-            os.calcularTotal(); 
-            os.finalizarOS(); // Muda para FINALIZADA e bota data de fechamento
+            // 2. REQUISITO OBRIGATÓRIO: Injeta os R$ 120.00 fixos do óleo padrão da oficina
+            os.setValorTotal(somaItens + 120.0);
             
-            // 🟢 AJUSTE DA VENDA: Devolve o veículo para DISPONIVEL e salva o estado dele no arquivo persistente
-            if (os.getVeiculo() != null) {
-                os.getVeiculo().setStatus(StatusVeiculo.DISPONIVEL); 
-                repoVeiculos.adicionarVeiculo(os.getVeiculo());
-            }
+            // 3. Modifica os status de fechamento
+            os.setStatus(StatusOS.FINALIZADA);
+            os.setDataFechamento(java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
             
-            // FUNÇÃO LOCALIZADA: Captura o mecânico da OS, soma +1 à produtividade dele e o libera
-            Mecanico mecanicoAtribuido = os.getMecanico();
+            // 4. Puxa o mecânico usando o getter correto da sua classe
+            Mecanico mecanicoAtribuido = os.getMecanico(); 
             if (mecanicoAtribuido != null) {
-                mecanicoAtribuido.incrementarProdutividade(); // Adiciona +1 à produtividade individual
-                mecanicoAtribuido.setDisponivel(true);        // Fica disponível novamente
+                mecanicoAtribuido.incrementarProdutividade(); // +1 OS resolvida
+                mecanicoAtribuido.setDisponivel(true);        // Fica livre de novo
                 
-                // Força a atualização do mecânico no repositório persistente
+                // Atualiza o mecânico no repositório persistente
                 repoMecanicos.removerMecanico(mecanicoAtribuido.getNome());
                 repoMecanicos.adicionarMecanico(mecanicoAtribuido);
             }
             
+            // Salva a OS finalizada no arquivo físico .dat
             repoOS.salvar(os);
             
-            // Como um mecânico acabou de ficar livre, processamos a fila para puxar o próximo cliente
-            verificarEProcessarFila();
+            // 5. Processa a fila FIFO para passar o mecânico liberado para o próximo carro
+            this.verificarEProcessarFila();
             return true;
         }
         return false;

@@ -1,31 +1,28 @@
 package br.ufrpe.autodrive.gui;
 
-import br.ufrpe.autodrive.negocio.IGerenciadorRelatorio;
-import br.ufrpe.autodrive.negocio.Relatorio;
-import br.ufrpe.autodrive.negocio.beans.Venda;
-import br.ufrpe.autodrive.negocio.beans.OrdemServico;
-import br.ufrpe.autodrive.negocio.beans.Vendedor;
-import br.ufrpe.autodrive.dados.RepositorioVendedoresArray;
-
-import javafx.fxml.FXML;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextInputDialog;
-import javafx.scene.layout.VBox;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.DateCell;
-import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
-import javafx.scene.control.ComboBox;
-import javafx.geometry.Insets;
-
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import br.ufrpe.autodrive.dados.RepositorioVendedoresArray;
+import br.ufrpe.autodrive.negocio.IGerenciadorRelatorio;
+import br.ufrpe.autodrive.negocio.Relatorio;
+import br.ufrpe.autodrive.negocio.beans.OrdemServico;
+import br.ufrpe.autodrive.negocio.beans.Venda;
+import br.ufrpe.autodrive.negocio.beans.Vendedor;
+import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DateCell;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 
 public class TelaRelatorio {
 
@@ -215,6 +212,7 @@ public class TelaRelatorio {
 
             for (OrdemServico os : dados.getListaOs()) {
                 sb.append("OS Nº: ").append(os.getNumero())
+                        .append(" | Data: ").append(os.getDataAbertura()) // <--- Usando a data aqui!
                         .append(" | Cliente: ").append(os.getCliente().getNome())
                         .append(" | Status: ").append(os.getStatus()).append("\n");
             }

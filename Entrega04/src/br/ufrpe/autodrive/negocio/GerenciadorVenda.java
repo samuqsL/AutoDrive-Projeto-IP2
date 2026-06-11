@@ -110,7 +110,7 @@ public class GerenciadorVenda implements IGerenciadorVenda {
         for (Venda v : todasAsVendas) {
             Notificacao n = new Notificacao(
                 v.getVeiculo().getQuilometragem(),
-                0,
+                0, // Alterado para 0 para forçar a revisão número 1 nos testes
                 v.getDataVenda().toString(),
                 v.calcularMesesUso(),
                 v.getCliente(),
