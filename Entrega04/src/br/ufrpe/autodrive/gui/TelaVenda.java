@@ -200,13 +200,28 @@ public class TelaVenda {
     public void botaoVerificarAlertas() {
         txtAreaAlertas.clear(); 
         List<Notificacao> alertas = control.listarAlertasRevisao(); 
+        
         if (alertas == null || alertas.isEmpty()) {
-            txtAreaAlertas.setText("Nenhum veículo precisa de revisão no momento.");
+            txtAreaAlertas.setText("✅ Nenhum veículo precisa de revisão no momento.");
         } else {
             StringBuilder sb = new StringBuilder();
-            sb.append("--- ALERTAS DE REVISÃO ---\n\n");
+            // 29 caracteres (exatamente o seu limite de '=')
+            sb.append("=============================\n");
+            sb.append(" ⚠️ ALERTAS DE REVISÃO ATIVOS \n");
+            sb.append("=============================\n\n");
+            
             for (Notificacao n : alertas) {
-                sb.append("[!] ").append(n.getCliente().getNome()).append(" | ").append(n.getVeiculo().getModelo()).append("\n");
+                sb.append("👤 CLIENTE: ").append(n.getCliente().getNome()).append("\n");
+                sb.append("   └─ CPF: ").append(n.getCliente().getCpf()).append("\n");
+                if (n.getCliente().getEmail() != null && !n.getCliente().getEmail().isBlank()) {
+                    sb.append("   └─ E-mail: ").append(n.getCliente().getEmail()).append("\n");
+                }
+                
+                sb.append("🚗 VEÍCULO: ").append(n.getVeiculo().getModelo()).append("\n");
+                sb.append("   └─ Chassi: ").append(n.getVeiculo().getChassi()).append("\n");
+                sb.append("   └─ Km Atual: ").append(n.getQuilometragem()).append(" km\n");
+                // 50 caracteres (exatamente o seu limite de '-')
+                sb.append("--------------------------------------------------\n\n");
             }
             txtAreaAlertas.setText(sb.toString());
         }
