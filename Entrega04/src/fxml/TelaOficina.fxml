@@ -27,9 +27,27 @@
                            </font>
                         </Label>
                         
-                        <ComboBox fx:id="cbCliente" prefWidth="350.0" promptText="Selecione o Cliente" />
+                        <VBox alignment="CENTER_LEFT" spacing="3.0">
+                           <children>
+                              <Label text="Selecione o Cliente:" textFill="#555555">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Label>
+                              <ComboBox fx:id="cbCliente" prefWidth="350.0" promptText="Selecione o Cliente" />
+                           </children>
+                        </VBox>
                         
-                        <ComboBox fx:id="cbVeiculo" prefWidth="350.0" promptText="Selecione o Veículo" />
+                        <VBox alignment="CENTER_LEFT" spacing="3.0">
+                           <children>
+                              <Label text="Selecione o Veículo:" textFill="#555555">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Label>
+                              <ComboBox fx:id="cbVeiculo" prefWidth="350.0" promptText="Selecione o Veículo" />
+                           </children>
+                        </VBox>
                         
                         <Button mnemonicParsing="false" onAction="#botaoAbrirOS" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #27ae60; -fx-text-fill: white;" text="Abrir OS" />
                         
@@ -45,7 +63,16 @@
                            </font>
                         </Label>
                         
-                        <ComboBox fx:id="cbFinalizarOS" prefWidth="350.0" promptText="Selecione a OS em Manutenção" />
+                        <VBox alignment="CENTER_LEFT" spacing="3.0">
+                           <children>
+                              <Label text="Ordem em Andamento:" textFill="#555555">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Label>
+                              <ComboBox fx:id="cbFinalizarOS" prefWidth="350.0" promptText="Selecione a OS em Manutenção" />
+                           </children>
+                        </VBox>
                         
                         <Button mnemonicParsing="false" onAction="#botaoFinalizarOS" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #2980b9; -fx-text-fill: white;" text="Finalizar Serviço" />
                         
