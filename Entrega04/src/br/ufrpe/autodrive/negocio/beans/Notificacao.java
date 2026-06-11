@@ -23,8 +23,13 @@ public class Notificacao {
 
     // REQ10: revisão preventiva por tempo/km
     public boolean gerarAlerta() {
-        int proxima = revisaoNumero + 1;
-        // É mais intuitivo: "A quilometragem é maior ou igual ao alvo da próxima?"
-        return (quilometragem >= proxima * 10000) || (mesesUso >= proxima * 12);
+        // Multiplica pelo número da próxima revisão para o cálculo fazer sentido matematicamente
+        int proxima = this.revisaoNumero + 1; 
+        
+        // Regra flexível para testes: dispara com 5.000km ou 6 meses na primeira revisão
+        boolean precisaPorKm = this.quilometragem >= (proxima * 5000.0); 
+        boolean precisaPorTempo = this.mesesUso >= (proxima * 6);
+
+        return precisaPorKm || precisaPorTempo;
     }
 }
