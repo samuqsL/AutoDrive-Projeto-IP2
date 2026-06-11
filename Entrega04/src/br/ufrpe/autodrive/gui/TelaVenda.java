@@ -46,12 +46,11 @@ public class TelaVenda {
     @FXML private TableColumn<Venda, Cliente> colCliente;
     @FXML private TableColumn<Venda, Veiculo> colVeiculo;
     @FXML private TableColumn<Venda, Double> colTotal;
-    @FXML private TableColumn<Venda, LocalDateTime> colData; // Nova coluna adicionada
+    @FXML private TableColumn<Venda, LocalDateTime> colData;
 
     private ObservableList<Venda> dadosTabelaVendas = FXCollections.observableArrayList();
     private IGerenciadorVenda control;
 
-    // 🟢 VOLTOU AO NOME ORIGINAL: Mantém compatibilidade exata com a linha 63 do seu ScreenManager
     public void injetarGerenciador(IGerenciadorVenda gV) {
         this.control = gV;
         atualizarTabela(control.listarTodasVendas());
@@ -59,16 +58,13 @@ public class TelaVenda {
 
     @FXML
     public void initialize() {
-        // Vincula os atributos básicos às colunas existentes
         colNumero.setCellValueFactory(new PropertyValueFactory<>("numero"));
         colCliente.setCellValueFactory(new PropertyValueFactory<>("cliente"));
         colVeiculo.setCellValueFactory(new PropertyValueFactory<>("veiculo"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("valorTotal"));
         
-        // Mapeamento e formatação da nova coluna de data
         colData.setCellValueFactory(new PropertyValueFactory<>("dataVenda"));
         
-        // Customiza a exibição para formatar LocalDateTime como (dd/MM/yyyy HH:mm)
         colData.setCellFactory(column -> new TableCell<Venda, LocalDateTime>() {
             private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
             @Override
@@ -105,6 +101,10 @@ public class TelaVenda {
             if (sucesso) {
                 lblStatus.setText("Venda realizada e registrada com sucesso!");
                 lblStatus.setStyle("-fx-text-fill: green;");
+                
+                // 1ª MODIFICAÇÃO: Atualiza o ComboBox tirando o veículo que acabou de ser vendido!
+                carregarComboVeiculosDisponiveis();
+                
                 limparCamposFormulario();
                 atualizarTabela(control.listarTodasVendas());
             } else {
@@ -119,16 +119,17 @@ public class TelaVenda {
 
     @FXML
     public void acaoFiltrarPorPeriodo() {
-        LocalDate inicio = dpFiltroInicio.getValue();
-        LocalDate fim = dpFiltroFim.getValue();
+        LocalDate inicioSel = dpFiltroInicio.getValue();
+        LocalDate fimSel = dpFiltroFim.getValue();
 
-        if (inicio == null || fim == null) {
-            lblStatus.setText("Selecione ambas as datas para aplicar o filtro por período.");
-            lblStatus.setStyle("-fx-text-fill: orange;");
+        if (inicioSel == null && fimSel == null) {
+            atualizarTabela(control.listarTodasVendas());
+            lblStatus.setText("Exibindo todas as vendas (sem filtro).");
+            lblStatus.setStyle("-fx-text-fill: black;");
             return;
         }
 
-        if (inicio.isAfter(fim)) {
+        if (inicioSel != null && fimSel != null && inicioSel.isAfter(fimSel)) {
             lblStatus.setText("A data de início não pode ser posterior à data de término.");
             lblStatus.setStyle("-fx-text-fill: red;");
             return;
@@ -140,16 +141,25 @@ public class TelaVenda {
         for (Venda v : todas) {
             if (v.getDataVenda() != null) {
                 LocalDate dataV = v.getDataVenda().toLocalDate();
-                if ((dataV.isEqual(inicio) || dataV.isAfter(inicio)) && 
-                    (dataV.isEqual(fim) || dataV.isBefore(fim))) {
+                
+                boolean atendeInicio = (inicioSel == null) || (dataV.compareTo(inicioSel) >= 0);
+                boolean atendeFim = (fimSel == null) || (dataV.compareTo(fimSel) <= 0);
+
+                if (atendeInicio && atendeFim) {
                     filtradas.add(v);
                 }
             }
         }
 
         atualizarTabela(filtradas);
-        lblStatus.setText("Filtro aplicado! Exibindo período selecionado.");
-        lblStatus.setStyle("-fx-text-fill: blue;");
+        
+        if (filtradas.isEmpty()) {
+            lblStatus.setText("Nenhuma venda encontrada no período selecionado.");
+            lblStatus.setStyle("-fx-text-fill: orange;");
+        } else {
+            lblStatus.setText("Filtro applied! Exibindo " + filtradas.size() + " venda(s).");
+            lblStatus.setStyle("-fx-text-fill: blue;");
+        }
     }
 
     @FXML
@@ -164,11 +174,27 @@ public class TelaVenda {
     }
 
     private void atualizarTabela(List<Venda> lista) {
-        dadosTabelaVendas.clear();
         if (lista != null) {
-            dadosTabelaVendas.addAll(lista);
+            dadosTabelaVendas = FXCollections.observableArrayList(lista);
+        } else {
+            dadosTabelaVendas = FXCollections.observableArrayList();
         }
-        tabelaVendas.refresh();
+        tabelaVendas.setItems(dadosTabelaVendas);
+    }
+    
+    //NOVA MÉTODO: Filtra Veiculos que aparecem como opção na ComboBox ("Selecione Veículo") NA AREA DE VENDAS!
+    //Melhoria: A seleção de Veiculo para venda agora só aparece Veiculos nos estados DISPONIVEL OU ESTOQUE.
+    //>Aparecer os já VENDIDOS, atrapalha na EFEFETUAÇÃO DE NOVAS VENDAS e OCUPA ESPACO -- AGORA É FILTRADO -
+    private void carregarComboVeiculosDisponiveis() {
+        if (comboVeiculo != null && control != null) {
+            // Filtra mantendo quem está em ESTOQUE OU DISPONÍVEL
+            List<Veiculo> disponiveis = control.listarTodosVeiculos().stream()
+                .filter(v -> v.getStatus() == br.ufrpe.autodrive.negocio.beans.StatusVeiculo.ESTOQUE || 
+                             v.getStatus() == br.ufrpe.autodrive.negocio.beans.StatusVeiculo.DISPONIVEL)
+                .toList();
+            
+            comboVeiculo.setItems(FXCollections.observableArrayList(disponiveis));
+        }
     }
 
     @FXML
@@ -181,8 +207,10 @@ public class TelaVenda {
 
         if (control != null) {
             comboCliente.setItems(FXCollections.observableArrayList(control.listarTodosClientes()));
-            comboVeiculo.setItems(FXCollections.observableArrayList(control.listarTodosVeiculos()));
             comboVendedor.setItems(FXCollections.observableArrayList(control.listarTodosVendedores()));
+            
+            // 2ª MODIFICAÇÃO: Carrega a caixinha filtrando apenas os carros DISPONÍVEIS
+            carregarComboVeiculosDisponiveis();
         }
     }
 
@@ -205,7 +233,6 @@ public class TelaVenda {
             txtAreaAlertas.setText("✅ Nenhum veículo precisa de revisão no momento.");
         } else {
             StringBuilder sb = new StringBuilder();
-            // 29 caracteres (exatamente o seu limite de '=')
             sb.append("=============================\n");
             sb.append(" ⚠️ ALERTAS DE REVISÃO ATIVOS \n");
             sb.append("=============================\n\n");
@@ -220,7 +247,6 @@ public class TelaVenda {
                 sb.append("🚗 VEÍCULO: ").append(n.getVeiculo().getModelo()).append("\n");
                 sb.append("   └─ Chassi: ").append(n.getVeiculo().getChassi()).append("\n");
                 sb.append("   └─ Km Atual: ").append(n.getQuilometragem()).append(" km\n");
-                // 50 caracteres (exatamente o seu limite de '-')
                 sb.append("--------------------------------------------------\n\n");
             }
             txtAreaAlertas.setText(sb.toString());
