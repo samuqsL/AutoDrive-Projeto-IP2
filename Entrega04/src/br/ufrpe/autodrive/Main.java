@@ -27,6 +27,7 @@ import br.ufrpe.autodrive.negocio.IGerenciadorTestDrive;
 import br.ufrpe.autodrive.negocio.IGerenciadorVenda;
 import br.ufrpe.autodrive.negocio.beans.Cliente;
 import br.ufrpe.autodrive.negocio.beans.Mecanico;
+import br.ufrpe.autodrive.negocio.beans.Notificacao; // IMPORT ADICIONADO PARA CORRIGIR O ERRO
 import br.ufrpe.autodrive.negocio.beans.OrdemServico;
 import br.ufrpe.autodrive.negocio.beans.VeiculoNovo;
 import br.ufrpe.autodrive.negocio.beans.VeiculoSeminovo;
@@ -42,15 +43,12 @@ public class Main extends Application {
         // 🟢 Passo 1: Inicialização dos Repositórios (Singleton + Persistência)
         // =========================================================================
         
-        // REPO DA PARTE DE VENDAS (Já atualizados com Singleton e salvamento automático)
         IRepositorioVendas repoVendas = RepositorioVendasArray.getInstance();
         IRepositorioClientes repoClientes = RepositorioClientesArray.getInstance();
         IRepositorioVeiculos repoVeiculos = RepositorioVeiculosArray.getInstance();
         IRepositorioVendedores repoVendedores = RepositorioVendedoresArray.getInstance();
         IRepositorioOS repoOS = RepositorioOsArray.getInstance();
         IRepositorioTD repoTestDrive = RepositorioTestDriveArray.getInstance();
-        
-        // 🟢 REPO DOS MECÂNICOS
         IRepositorioMecanicos repoMecanicos = RepositorioMecanicosArray.getInstance();
         
         // Instanciação e inserção dos mecânicos Mario e Luigi no banco de dados da oficina
@@ -64,12 +62,8 @@ public class Main extends Application {
         // =========================================================================
         // 🟢 Passo 2: Instanciar os Gerenciadores Primeiro
         // =========================================================================
-        // Correção de assinatura: repoVeiculos e repoVendedores invertidos para compilar
         IGerenciadorVenda gVenda = new GerenciadorVenda(repoVendas, repoClientes, repoVendedores, repoVeiculos);
-        
-        // Correção de assinatura: Usando o repoMecanicos em vez dos objetos mecânicos diretos
         IGerenciadorOficina gOficina = new GerenciadorOficina(repoOS, repoClientes, repoVeiculos, repoMecanicos);
-        
         IGerenciadorRelatorio gRelatorio = new GerenciadorRelatorio(repoVendas, repoOS);
         IGerenciadorTestDrive gTestDrive = new GerenciadorTestDrive(repoTestDrive, repoClientes, repoVeiculos);
         
@@ -82,7 +76,6 @@ public class Main extends Application {
         Cliente c2 = new Cliente("Maria Souza", "987.654.321-11", "CNH54321", "maria@email.com", "(81) 98888-8888");
         Cliente c3 = new Cliente("Yuri Neves", "321.122.567-12", "CNH1567", "yuri@gmail.com", "(81)9199-1919");
                 
-        // Evita duplicar registros se os dados já tiverem sido carregados do arquivo .dat
         if (repoClientes.procurarCliente("123.456.789-00") == null) {
             repoClientes.adicionarCliente(c1);
         }
@@ -134,23 +127,18 @@ public class Main extends Application {
         if (repoVeiculos.procurarVeiculo("CHASSIREP2") == null) repoVeiculos.adicionarVeiculo(carRelatorio2);
         if (repoVeiculos.procurarVeiculo("CHASSIREP3") == null) repoVeiculos.adicionarVeiculo(carRelatorio3);
         
-        // 🟢 [HISTÓRICO ATUALIZADO]: 3 Vendas com datas diferentes para testar filtros na tabela
-        if (repoVendas.listarTodasVendas().isEmpty()) {
-            // Venda 1: Realizada em Abril de 2026
-            gVenda.efetuarVenda(0, "123.456.789-00", "CHASSIREP1", "Artur M.", 20000.00, 
-                LocalDateTime.of(2026, 4, 15, 14, 30));
-                
-            // Venda 2: Realizada em Maio de 2026
-            gVenda.efetuarVenda(0, "987.654.321-11", "CHASSIREP2", "Otavio R.", 35000.00, 
-                LocalDateTime.of(2026, 5, 10, 10, 15));
-                
-            // Venda 3: Realizada em Junho de 2026 (Mês Atual)
-            gVenda.efetuarVenda(0, "321.122.567-12", "CHASSIREP3", "Artur M.", 15000.00, 
-                LocalDateTime.of(2026, 6, 02, 16, 45));
+        // 💾 Trava Cirúrgica individual por Chassi (Evita que duplique as vendas de Relatório)
+        if (repoVendas.listarTodasVendas().stream().noneMatch(v -> v.getVeiculo().getChassi().equals("CHASSIREP1"))) {
+            gVenda.efetuarVenda(0, "123.456.789-00", "CHASSIREP1", "Artur M.", 20000.00, LocalDateTime.of(2026, 4, 15, 14, 30));
+        }
+        if (repoVendas.listarTodasVendas().stream().noneMatch(v -> v.getVeiculo().getChassi().equals("CHASSIREP2"))) {
+            gVenda.efetuarVenda(0, "987.654.321-11", "CHASSIREP2", "Otavio R.", 35000.00, LocalDateTime.of(2026, 5, 10, 10, 15));
+        }
+        if (repoVendas.listarTodasVendas().stream().noneMatch(v -> v.getVeiculo().getChassi().equals("CHASSIREP3"))) {
+            gVenda.efetuarVenda(0, "321.122.567-12", "CHASSIREP3", "Artur M.", 15000.00, LocalDateTime.of(2026, 6, 02, 16, 45));
         }
         
-     // --- 3.4. MASSA DE TESTES EXCLUSIVA PARA A OFICINA (YURI) ---
-        // Garante que temos carros extras cadastrados usando a classe correta (VeiculoSeminovo)
+        // --- 3.4. MASSA DE TESTES EXCLUSIVA PARA A OFICINA (YURI) ---
         if (repoVeiculos.procurarVeiculo("CHASSI_FILA_1") == null) {
             repoVeiculos.adicionarVeiculo(new VeiculoSeminovo("CHASSI_FILA_1", "AAA1111", "Fiat Uno", 2015, 25000.0, 80000.0));
         }
@@ -161,23 +149,17 @@ public class Main extends Application {
             repoVeiculos.adicionarVeiculo(new VeiculoSeminovo("CHASSI_FILA_3", "CCC3333", "Chevrolet Onix", 2020, 55000.0, 30000.0));
         }
 
-        // Executa a massa de testes de fila se o repositório estiver limpo
         if (repoOS.listarTodas().isEmpty()) {
             System.out.println("\n--- [TESTE YURI] Iniciando Simulação Automatizada de Fila ---");
-
-            // 1. Ocupa o primeiro mecânico (Mario) abrindo a OS 1
             System.out.println("-> Abrindo OS 1 para o Veículo 1...");
             gOficina.abrirOS(c1.getCpf(), "CHASSI_FILA_1"); 
 
-            // 2. Ocupa o segundo mecânico (Luigi) abrindo a OS 2
             System.out.println("-> Abrindo OS 2 para o Veículo 2...");
             gOficina.abrirOS(c1.getCpf(), "CHASSI_FILA_2"); 
 
-            // 3. Tenta abrir a OS 3. Como Mario e Luigi estão ocupados, ela DEVE ir para a Fila (Status ABERTA)
             System.out.println("-> Abrindo OS 3 para o Veículo 3 (Não há mecânicos livres)...");
             gOficina.abrirOS(c1.getCpf(), "CHASSI_FILA_3"); 
 
-            // Vamos listar para conferir o status em que elas nasceram em memória
             System.out.println("\n--- ESTADO DAS ORDENS LOGO APÓS ABERTURA ---");
             for (OrdemServico os : repoOS.listarTodas()) {
                 System.out.println("OS Nº: " + os.getNumero() + 
@@ -186,9 +168,7 @@ public class Main extends Application {
             }
         }
 
-        // 🟢 BLINDAGEM CONTRA EXCEPTION: Só executa o gatilho se a lista de OS possuir elementos gravados!
         if (repoOS.listarTodas() != null && !repoOS.listarTodas().isEmpty()) {
-            
             System.out.println("\n--- SIMULAÇÃO DE GATILHO DA OFICINA ---");
             int numeroOS1 = repoOS.listarTodas().get(0).getNumero();
             
@@ -206,6 +186,43 @@ public class Main extends Application {
             System.out.println("\n-> [Aviso Fila] Nenhuma OS em histórico para processar o gatilho automático.");
         }
 
+        // =========================================================================
+        // 🟢 Passo 3.5: MASSA DE TESTES EXCLUSIVA PARA ALERTAS DE REVISÃO (REQ10)
+        // =========================================================================
+        System.out.println("\n--- [TESTE REQ10] Simulação do Sistema de Alertas de Revisão ---");
+
+        if (repoVeiculos.procurarVeiculo("CHASSIALERTA2") == null) {
+            repoVeiculos.adicionarVeiculo(new VeiculoSeminovo("CHASSIALERTA2", "RENAVAM555", "Jeep Compass", 2023, 120000.00, 8500.0));
+        }
+
+        // 💾 Trava individual para as vendas de Alerta (Não misturam com os dados do Relatório!)
+        if (repoVendas.listarTodasVendas().stream().noneMatch(v -> v.getVeiculo().getChassi().equals("CHASSIALERTA"))) {
+            gVenda.efetuarVenda(0, c2.getCpf(), "CHASSIALERTA", "Artur M.", 90000.00, LocalDateTime.now().minusMonths(8)); 
+        }
+        if (repoVendas.listarTodasVendas().stream().noneMatch(v -> v.getVeiculo().getChassi().equals("CHASSIALERTA2"))) {
+            gVenda.efetuarVenda(0, c3.getCpf(), "CHASSIALERTA2", "Artur M.", 120000.00, LocalDateTime.now().minusMonths(1));
+        }
+        if (repoVendas.listarTodasVendas().stream().noneMatch(v -> v.getVeiculo().getChassi().equals("CHASSILIMPO"))) {
+            gVenda.efetuarVenda(0, c1.getCpf(), "CHASSILIMPO", "Otavio R.", 30000.00, LocalDateTime.now().minusMonths(2)); 
+        }
+
+        System.out.println("\n--- ALERTAS DE REVISÃO PREVENTIVA GERADOS ---");
+        int alertasDisparados = 0;
+        
+        for (Notificacao n : gVenda.listarAlertasRevisao()) {
+            alertasDisparados++;
+            System.out.printf("⚠️ [ALERTA] Cliente: %s | Veículo: %s (%s) | Km: %.1f km\n", 
+                n.getCliente().getNome(), 
+                n.getVeiculo().getModelo(), 
+                n.getVeiculo().getChassi(),
+                n.getQuilometragem());
+        }
+
+        if (alertasDisparados == 0) {
+            System.out.println("✅ Nenhum veículo necessita de revisão preventiva no momento.");
+        }
+        System.out.println("-------------------------------------------------------------\n");
+        
         VeiculoNovo vOficinaDisponivel = new VeiculoNovo("CHASSIOFICINA", "RENOF001", "Volkswagen Polo", 2026, 89000.00);
         if (repoVeiculos.procurarVeiculo("CHASSIOFICINA") == null) {
             repoVeiculos.adicionarVeiculo(vOficinaDisponivel);
