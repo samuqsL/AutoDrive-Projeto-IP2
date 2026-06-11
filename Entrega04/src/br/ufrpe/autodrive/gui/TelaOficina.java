@@ -204,7 +204,7 @@ public class TelaOficina {
 
     private void atualizarTabelas() {
         try {
-            // 🟢 Adicionado: Mantém os ComboBoxes de Clientes/Veículos sincronizados com os repositórios
+            // Mantém os ComboBoxes de Clientes/Veículos sincronizados com os repositórios
             carregarComboBoxes(); 
 
             List<OrdemServico> todasOS = RepositorioOsArray.getInstance().listarTodas();
@@ -212,19 +212,22 @@ public class TelaOficina {
 
             LocalDate dataFiltro = (dpFiltroData != null) ? dpFiltroData.getValue() : null;
 
-            // 1. Exibe estritamente as ordens em espera (ABERTA)
+            // =====================================================================
+            // CORREÇÃO DO FILTRO: Agora exibe na tabela superior tanto quem está 
+            // na fila de espera (ABERTA) quanto quem já está na oficina (PROCESSO_MANUTENCAO)
+            // =====================================================================
             List<OrdemServico> filaAtiva = todasOS.stream()
-                .filter(os -> os.getStatus() == StatusOS.ABERTA)
+                .filter(os -> os.getStatus() == StatusOS.ABERTA || os.getStatus() == StatusOS.PROCESSO_MANUTENCAO)
                 .filter(os -> verificaDataFiltro(os.getDataAbertura(), dataFiltro))
                 .collect(Collectors.toList());
 
-            // 2. Atualiza Histórico (PAGA/FINALIZADA)
+            // 2. Atualiza Histórico (FINALIZADA / PAGA)
             List<OrdemServico> historicoConcluido = todasOS.stream()
-                .filter(os -> os.getStatus() != StatusOS.ABERTA && os.getStatus() != StatusOS.PROCESSO_MANUTENCAO)
+                .filter(os -> os.getStatus() == StatusOS.FINALIZADA || os.getStatus() == StatusOS.PAGA)
                 .filter(os -> verificaDataFiltro(os.getDataFechamento(), dataFiltro))
                 .collect(Collectors.toList());
 
-            // 3. Atualiza o ComboBox de Finalizar (APENAS PROCESSO_MANUTENCAO)
+            // 3. Atualiza o ComboBox de Finalizar (APENAS ordens ativas em manutenção)
             List<String> opcoesFinalizar = todasOS.stream()
                 .filter(os -> os.getStatus() == StatusOS.PROCESSO_MANUTENCAO)
                 .map(os -> {
@@ -233,6 +236,7 @@ public class TelaOficina {
                 })
                 .collect(Collectors.toList());
 
+            // Seta e atualiza os componentes gráficos com segurança
             if (tbFila != null) {
                 tbFila.setItems(FXCollections.observableArrayList(filaAtiva));
                 tbFila.refresh();
@@ -288,15 +292,26 @@ public class TelaOficina {
         ScreenManager.getInstance().showMenuPrincipal();
     }
 
-    private void limparCamposCadastro() {
-        if (cbCliente != null) cbCliente.getSelectionModel().clearSelection();
-        if (cbVeiculo != null) cbVeiculo.getSelectionModel().clearSelection();
+   private void limparCamposCadastro() {
+        if (cbCliente != null) {
+            cbCliente.setValue(null); // 🟢 Reseta o valor interno
+            cbCliente.getSelectionModel().clearSelection(); // Limpa a seleção ativa
+        }
+        if (cbVeiculo != null) {
+            cbVeiculo.setValue(null); // 🟢 Reseta o valor interno
+            cbVeiculo.getSelectionModel().clearSelection(); // Limpa a seleção ativa
+        }
     }
 
     private void limparTudo() {
         limparCamposCadastro();      
-        if (dpFiltroData != null) dpFiltroData.setValue(null);
-        if (cbFinalizarOS != null) cbFinalizarOS.getSelectionModel().clearSelection();     
+        if (dpFiltroData != null) {
+            dpFiltroData.setValue(null);
+        }
+        if (cbFinalizarOS != null) {
+            cbFinalizarOS.setValue(null); // 🟢 Garante o promptText da OS em manutenção também!
+            cbFinalizarOS.getSelectionModel().clearSelection();
+        }     
         if (lblMensagem != null) {
             lblMensagem.setText("Pronto para operar"); 
             lblMensagem.setStyle("-fx-text-fill: black;"); 
