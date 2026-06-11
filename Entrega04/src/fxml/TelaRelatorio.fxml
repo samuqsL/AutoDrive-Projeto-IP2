@@ -14,18 +14,18 @@
             <VBox fx:id="painelMenuRelatorios" alignment="TOP_CENTER" spacing="10.0">
                <children>
                   <Label style="-fx-font-weight: bold;" text="Área de Relatorios" />
-                  <Button mnemonicParsing="false" onAction="#carregarVendasGerais" prefWidth="250.0" text="Vendas Gerais" />
-                  <Button mnemonicParsing="false" onAction="#carregarVendasPorVendedor" prefWidth="250.0" text="Vendas por Vendedor" />
-                  <Button mnemonicParsing="false" onAction="#carregarVendasPorPeriodo" prefWidth="250.0" text="Vendas por Período" />
-                  <Button mnemonicParsing="false" onAction="#carregarGeralOficina" prefWidth="250.0" text="Geral da Oficina (OS)" />
-                  <Button mnemonicParsing="false" onAction="#carregarLucratividade" prefWidth="250.0" text="Lucratividade (Peças/Serviços)" />
+                  <Button mnemonicParsing="false" onAction="#carregarVendasGerais" prefWidth="250.0" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;" text="Vendas Gerais" />
+                  <Button mnemonicParsing="false" onAction="#carregarVendasPorVendedor" prefWidth="250.0" style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;" text="Vendas por Vendedor" />
+                  <Button mnemonicParsing="false" onAction="#carregarVendasPorPeriodo" prefWidth="250.0" style="-fx-background-color: #a39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;" text="Vendas por Período" />
+                  <Button mnemonicParsing="false" onAction="#carregarGeralOficina" prefWidth="250.0" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;" text="Geral da Oficina (OS)" />
+                  <Button mnemonicParsing="false" onAction="#carregarLucratividade" prefWidth="250.0" style="-fx-background-color: #d35400; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;" text="Lucratividade (Peças/Serviços)" />
                   <VBox alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="ALWAYS">
                      <children>
                         <Label text="Alertas do Sistema:" />
                         <TextArea fx:id="txtAreaConsole" editable="false" prefHeight="200.0" prefWidth="380.0" promptText="Nenhum alerta verificado." VBox.vgrow="ALWAYS" />
                      </children>
                   </VBox>
-                  <Button mnemonicParsing="false" onAction="#voltarParaMenu" prefWidth="150.0" text="Sair" />
+                  <Button mnemonicParsing="false" onAction="#voltarParaMenu" prefWidth="150.0" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: hand;" text="Voltar ao Menu" />
                </children>
             </VBox>
 
