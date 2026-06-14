@@ -6,6 +6,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -15,80 +17,106 @@ public class TelaEstoquePecas {
 
     @FXML
     private TableView<Pecas> tabelaPecas;
+    
     @FXML
     private TableColumn<Pecas, String> colunaCodigo;
+    
     @FXML
     private TableColumn<Pecas, String> colunaNome;
+    
     @FXML
     private TableColumn<Pecas, Integer> colunaQuantidade;
+
     @FXML
-    private TableColumn<Pecas, Double> colunaPreco;
+    private ComboBox<Pecas> cbPecas;
 
     @FXML
     private TextField txtQuantidadeReposicao;
 
     private IGerenciadorEstoquePecas gerenciadorEstoque;
-    private ObservableList<Pecas> pecasObservable;
+    private ObservableList<Pecas> observablePecas;
 
-    // Método que deve ser chamado pelo ScreenManager para injetar a dependência antes de mostrar a tela
     public void setGerenciador(IGerenciadorEstoquePecas gerenciadorEstoque) {
         this.gerenciadorEstoque = gerenciadorEstoque;
-        carregarTabela();
+        carregarDados();
     }
 
     @FXML
     public void initialize() {
-        // Vincula as colunas da tabela aos atributos do Bean "Pecas"
+        // Configura as colunas da tabela
         colunaCodigo.setCellValueFactory(new PropertyValueFactory<>("codigo"));
         colunaNome.setCellValueFactory(new PropertyValueFactory<>("nome"));
         colunaQuantidade.setCellValueFactory(new PropertyValueFactory<>("quantidade"));
-        colunaPreco.setCellValueFactory(new PropertyValueFactory<>("preco"));
+
+        // Configura o ComboBox para exibir o nome da peça em vez da referência do objeto
+        cbPecas.setCellFactory(param -> new ListCell<Pecas>() {
+            @Override
+            protected void updateItem(Pecas item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getNome());
+                }
+            }
+        });
+        
+        cbPecas.setButtonCell(new ListCell<Pecas>() {
+            @Override
+            protected void updateItem(Pecas item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getNome());
+                }
+            }
+        });
     }
 
-    private void carregarTabela() {
+    private void carregarDados() {
         if (gerenciadorEstoque != null) {
-            pecasObservable = FXCollections.observableArrayList(gerenciadorEstoque.listarPecas());
-            tabelaPecas.setItems(pecasObservable);
+            observablePecas = FXCollections.observableArrayList(gerenciadorEstoque.listarPecas());
+            tabelaPecas.setItems(observablePecas);
+            cbPecas.setItems(observablePecas);
         }
     }
 
     @FXML
-    public void reporPeca() {
-        Pecas pecaSelecionada = tabelaPecas.getSelectionModel().getSelectedItem();
-        
-        if (pecaSelecionada == null) {
-            exibirAlerta("Seleção Inválida", "Por favor, selecione uma peça na tabela antes de realizar a reposição.");
-            return;
-        }
+    public void confirmarReposicao() {
+        // A seleção agora vem exclusivamente do ComboBox
+        Pecas pecaSelecionada = cbPecas.getValue();
 
-        String qtdTexto = txtQuantidadeReposicao.getText();
-        if (qtdTexto == null || qtdTexto.trim().isEmpty()) {
-            exibirAlerta("Campo Vazio", "Digite a quantidade que deseja repor no estoque.");
+        if (pecaSelecionada == null) {
+            mostrarAlerta("Aviso", "Selecione uma peça no menu para repor.");
             return;
         }
 
         try {
-            int qtdAdicional = Integer.parseInt(qtdTexto.trim());
+            int quantidade = Integer.parseInt(txtQuantidadeReposicao.getText());
             
-            // Chama o gerenciador para somar a quantidade
-            gerenciadorEstoque.reporEstoque(pecaSelecionada.getCodigo(), qtdAdicional);
+            // Repassa para a regra de negócio
+            gerenciadorEstoque.reporEstoque(pecaSelecionada.getCodigo(), quantidade);
             
+            // Limpa os campos e atualiza visualmente
             txtQuantidadeReposicao.clear();
-            carregarTabela(); // Atualiza a tabela na tela com o novo valor
-            tabelaPecas.refresh();
+            cbPecas.getSelectionModel().clearSelection();
+            carregarDados(); 
+            
+            mostrarAlerta("Sucesso", "Estoque da peça atualizado com sucesso!");
             
         } catch (NumberFormatException e) {
-            exibirAlerta("Valor Inválido", "A quantidade de reposição deve ser um número inteiro válido.");
+            mostrarAlerta("Erro", "Por favor, digite apenas números inteiros na quantidade.");
         } catch (Exception e) {
-            exibirAlerta("Erro na Reposição", e.getMessage());
+            mostrarAlerta("Erro", e.getMessage()); // Exibe a mensagem de quantidade <= 0
         }
     }
 
-    private void exibirAlerta(String titulo, String mensagem) {
-        Alert alerta = new Alert(Alert.AlertType.WARNING);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensagem);
-        alerta.showAndWait();
+    private void mostrarAlerta(String titulo, String mensagem) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(titulo);
+        alert.setHeaderText(null);
+        alert.setContentText(mensagem);
+        alert.showAndWait();
     }
 }
