@@ -18,6 +18,7 @@ public class ScreenManager {
     private Scene cenaRelatorio;
     private Scene cenaTestDrive;
     private Scene cenaCadastro; // <-- NOVO: cena da Tela de Cadastro!
+    private Scene cenaEstoquePecas; // 💡 NOVO: Cena para o estoque de peças
     
     // 2. OS CONTROLLERS
     private MenuPrincipal controllerMenu;
@@ -26,6 +27,7 @@ public class ScreenManager {
     private TelaRelatorio controllerRelatorio;
     private TelaTestDrive controllerTestDrive;
     private TelaCadastro controllerCadastro; // <-- NOVO: ScreenManager agora possui atributo da TelaCadastro[controller]!
+    private TelaEstoquePecas controllerEstoquePecas; // 💡 NOVO: Controller para o estoque de peças
 
     // Padrão Singleton
     public static ScreenManager getInstance() {
@@ -69,6 +71,11 @@ public class ScreenManager {
             this.cenaCadastro = new Scene(loaderCadastro.load());
             this.controllerCadastro = loaderCadastro.getController();
             
+            // G. Carrega a Tela de Estoque de Peças do Yuri
+            FXMLLoader loaderEstoque = new FXMLLoader(getClass().getResource("/fxml/TelaEstoquePecas.fxml"));
+            this.cenaEstoquePecas = new Scene(loaderEstoque.load());
+            this.controllerEstoquePecas = loaderEstoque.getController();
+            
         } catch (IOException e) {
             System.out.println("❌ [ScreenManager] Erro crítico ao carregar arquivos FXML. Verifique caminhos ou nomes!");
             e.printStackTrace();
@@ -82,17 +89,12 @@ public class ScreenManager {
         this.mainStage.setResizable(false); 
         this.mainStage.setTitle("AutoDrive - Sistema de Gerenciamento de Concessionária");
     }
-
-
-	/**
-     * Esse método distribui os gerenciadores criados na sua Main 
-     * para cada controller da tela de destino correspondente.
-     */
+    
     //NOVO: Metodo de Injeção de Gerenciadores possui novo parametro --> "IGerenciadorCadastro gC"!
-    public void injetarGerenciadores(IGerenciadorVenda gV, IGerenciadorOficina gO, IGerenciadorRelatorio gR, IGerenciadorTestDrive gT, IGerenciadorCadastro gC) {
+    public void injetarGerenciadores(IGerenciadorVenda gV, IGerenciadorOficina gO, IGerenciadorRelatorio gR, IGerenciadorTestDrive gT, IGerenciadorCadastro gC, IGerenciadorEstoquePecas gEstoque) {
         // Injeta no Menu Principal
         if (this.controllerMenu != null) {
-            this.controllerMenu.injetarGerenciadores(gV, gO, gR, gT, gC);
+            this.controllerMenu.injetarGerenciadores(gV, gO, gR, gT, gC, gEstoque);
         }
         // Injeta direto na tela de vendas do Samuel
         if (this.controllerVenda != null) {
@@ -116,7 +118,12 @@ public class ScreenManager {
             this.controllerCadastro.injetarGerenciador(gC);
         }
         
-        System.out.println("-> [ScreenManager] Gerenciadores injetados com sucesso nos Controllers!");
+        // 💡 NOVO: Injeta o gerenciador de estoque diretamente na tela correspondente
+        if (this.controllerEstoquePecas != null) {
+            this.controllerEstoquePecas.injetarGerenciador(gEstoque);
+        }
+        
+        System.out.println("-> [ScreenManager] Gerenciadores injetados com sucesso nos Controllers!(Incluindo ESTOQUE");
     }
     
     // 3. MÉTODOS DE TRANSIÇÃO
@@ -148,11 +155,18 @@ public class ScreenManager {
     
     // NOVO: Ativado o método de transição para que o Menu Principal consiga chamá-lo (TelaCadastro)*
     public void showTelaCadastro() {
-		// Antes de mudar a cena, avisa ao controller para se atualizar!
+    	// Antes de mudar a cena, avisa ao controller para se atualizar!
         if (this.controllerCadastro != null) {
             this.controllerCadastro.aoExibirTela();
         }
+        
         this.mainStage.setScene(this.cenaCadastro);
+        this.mainStage.show();
+    }
+    
+    // 💡 NOVO: Ativa a transição para exibir a tela de gerenciamento de estoque de peças
+    public void showTelaEstoquePecas() {
+        this.mainStage.setScene(this.cenaEstoquePecas);
         this.mainStage.show();
     }
 }
