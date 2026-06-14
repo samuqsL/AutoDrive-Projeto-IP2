@@ -45,7 +45,6 @@ public class TelaEstoquePecas {
         colunaQuantidade.setCellValueFactory(new PropertyValueFactory<>("quantidade"));
         tabelaReposicao.setItems(listaItensReposicao);
 
-        // CORRIGIDO: Removido o getPercent() inexistente
         cbPecas.setCellFactory(param -> new ListCell<Pecas>() {
             @Override
             protected void updateItem(Pecas item, boolean empty) {
@@ -132,8 +131,13 @@ public class TelaEstoquePecas {
             carregarComboBox();
 
         } catch (Exception e) {
-            mostrarAlerta("Erro", e.getMessage());
+            mostrarAlerta("Erro", "Falha ao processar reposição: " + e.getMessage());
         }
+    }
+
+    @FXML
+    public void voltarAoMenu() {
+        ScreenManager.getInstance().showMenuPrincipal();
     }
 
     private void mostrarAlerta(String titulo, String mensagem) {
