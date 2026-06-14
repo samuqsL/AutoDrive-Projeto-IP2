@@ -34,7 +34,7 @@ public class TelaEstoquePecas {
     
     private ObservableList<Pecas> listaItensReposicao = FXCollections.observableArrayList();
 
-    public void setGerenciador(IGerenciadorEstoquePecas gerenciadorEstoque) {
+    public void injetarGerenciador(IGerenciadorEstoquePecas gerenciadorEstoque) {
         this.gerenciadorEstoque = gerenciadorEstoque;
         carregarComboBox();
     }
