@@ -4,7 +4,8 @@ import br.ufrpe.autodrive.negocio.IGerenciadorOficina;
 import br.ufrpe.autodrive.negocio.IGerenciadorRelatorio;
 import br.ufrpe.autodrive.negocio.IGerenciadorTestDrive;
 import br.ufrpe.autodrive.negocio.IGerenciadorVenda;
-import br.ufrpe.autodrive.negocio.IGerenciadorCadastro; // <-- CORRIGIDO: Importação adicionada
+import br.ufrpe.autodrive.negocio.IGerenciadorCadastro; 
+import br.ufrpe.autodrive.negocio.IGerenciadorEstoquePecas; // 💡 NOVO: Importação adicionada
 import javafx.fxml.FXML;
 
 public class MenuPrincipal {
@@ -14,20 +15,24 @@ public class MenuPrincipal {
     private IGerenciadorOficina gOficina;
     private IGerenciadorRelatorio gRelatorio;
     private IGerenciadorTestDrive gTestDrive;
-    private IGerenciadorCadastro gCadastro; // <-- NOVO: Atributo adicionado!
+    private IGerenciadorCadastro gCadastro; 
+    private IGerenciadorEstoquePecas gEstoquePecas; // 💡 NOVO: Atributo adicionado!
 
     // 2. CONSTRUTOR PADRÃO VAZIO
     public MenuPrincipal() {
     }
 
-    // 3. MÉTODO DE INJEÇÃO
-    public void injetarGerenciadores(IGerenciadorVenda gV, IGerenciadorOficina gO, IGerenciadorRelatorio gR, IGerenciadorTestDrive gT, IGerenciadorCadastro gC) {
+    // 3. MÉTODO DE INJEÇÃO ATUALIZADO
+    public void injetarGerenciadores(IGerenciadorVenda gV, IGerenciadorOficina gO, 
+                                     IGerenciadorRelatorio gR, IGerenciadorTestDrive gT, 
+                                     IGerenciadorCadastro gC, IGerenciadorEstoquePecas gEstoque) { // 💡 Adicionado
         this.gVenda = gV;
         this.gOficina = gO;
         this.gRelatorio = gR;
         this.gTestDrive = gT;
-        this.gCadastro = gC; //Novo: Injetado GerenciadorCadastro no MenuPrincipal!
-        System.out.println("-> [MenuPrincipal] Gerenciadores deA negócio injetados com sucesso!");
+        this.gCadastro = gC;
+        this.gEstoquePecas = gEstoque; // 💡 Vincula localmente o estoque
+        System.out.println("-> [MenuPrincipal] Gerenciadores de negócio (incluindo Estoque) injetados com sucesso!");
     }
 
     // 4. MÉTODOS DOS BOTÕES (@FXML)
@@ -56,11 +61,17 @@ public class MenuPrincipal {
         ScreenManager.getInstance().showTelaRelatorio();
     }
     
-    // NOVO: Método do botão "Cadastros Gerais" do MenuPrincipal -> Quando clicado transiciona para Area de Cadastros!
     @FXML
     public void tratarBotaoCadastro() {
         System.out.println("-> [MenuPrincipal] Botão Tela de Cadastros Gerais clicado!");
         ScreenManager.getInstance().showTelaCadastro(); 
+    }
+    
+    // 💡 NOVO: Método disparado pelo botão de Estoque no FXML do MenuPrincipal
+    @FXML
+    public void tratarBotaoEstoque() {
+        System.out.println("-> [MenuPrincipal] Botão Tela de Estoque de Peças clicado!");
+        ScreenManager.getInstance().showTelaEstoquePecas();
     }
     
     @FXML
