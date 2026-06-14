@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="400.0" style="-fx-background-color: #f4f4f9;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.MenuPrincipal">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="400.0" style="-fx-background-color: #f4f4f9;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.MenuPrincipal">
    <top>
       <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="80.0" prefWidth="400.0" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="AutoDrive - Menu Principal" BorderPane.alignment="CENTER">
          <font>
@@ -43,6 +43,11 @@
                      </font>
                   </Button>
                   <Button mnemonicParsing="false" onAction="#tratarBotaoRelatorio" prefHeight="45.0" prefWidth="220.0" style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;" text="Tela de Relatorios">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#tratarBotaoCadastro" prefHeight="45.0" prefWidth="220.0" style="-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;" text="Cadastros Gerais">
                      <font>
                         <Font size="14.0" />
                      </font>
