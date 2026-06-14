@@ -16,39 +16,39 @@ import javafx.scene.control.cell.PropertyValueFactory;
 public class TelaEstoquePecas {
 
     @FXML
-    private TableView<Pecas> tabelaPecas;
-    
-    @FXML
-    private TableColumn<Pecas, String> colunaCodigo;
-    
-    @FXML
-    private TableColumn<Pecas, String> colunaNome;
-    
-    @FXML
-    private TableColumn<Pecas, Integer> colunaQuantidade;
-
-    @FXML
     private ComboBox<Pecas> cbPecas;
 
     @FXML
     private TextField txtQuantidadeReposicao;
 
-    private IGerenciadorEstoquePecas gerenciadorEstoque;
-    private ObservableList<Pecas> observablePecas;
+    @FXML
+    private TableView<Pecas> tabelaReposicao;
 
+    @FXML
+    private TableColumn<Pecas, String> colunaNome;
+
+    @FXML
+    private TableColumn<Pecas, Integer> colunaQuantidade;
+
+    private IGerenciadorEstoquePecas gerenciadorEstoque;
+    
+    // Lista observável que armazena os itens que o gerente adicionou para repor juntos
+    private ObservableList<Pecas> listaItensReposicao = FXCollections.observableArrayList();
+
+    // Método que o seu ScreenManager chamará para injetar o gerenciador
     public void setGerenciador(IGerenciadorEstoquePecas gerenciadorEstoque) {
         this.gerenciadorEstoque = gerenciadorEstoque;
-        carregarDados();
+        carregarComboBox();
     }
 
     @FXML
     public void initialize() {
-        // Configura as colunas da tabela
-        colunaCodigo.setCellValueFactory(new PropertyValueFactory<>("codigo"));
+        // Configura as colunas da tabela de lote temporário
         colunaNome.setCellValueFactory(new PropertyValueFactory<>("nome"));
         colunaQuantidade.setCellValueFactory(new PropertyValueFactory<>("quantidade"));
+        tabelaReposicao.setItems(listaItensReposicao);
 
-        // Configura o ComboBox para exibir o nome da peça em vez da referência do objeto
+        // Customiza o ComboBox para mostrar o Nome da peça e o Estoque Atual ao mesmo tempo
         cbPecas.setCellFactory(param -> new ListCell<Pecas>() {
             @Override
             protected void updateItem(Pecas item, boolean empty) {
@@ -56,11 +56,11 @@ public class TelaEstoquePecas {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(item.getNome());
+                    setText(item.getPercent() + item.getNome() + " (Estoque Atual: " + item.getQuantidade() + ")");
                 }
             }
         });
-        
+
         cbPecas.setButtonCell(new ListCell<Pecas>() {
             @Override
             protected void updateItem(Pecas item, boolean empty) {
@@ -68,47 +68,79 @@ public class TelaEstoquePecas {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(item.getNome());
+                    setText(item.getNome() + " (Estoque Atual: " + item.getQuantidade() + ")");
                 }
             }
         });
     }
 
-    private void carregarDados() {
+    private void carregarComboBox() {
         if (gerenciadorEstoque != null) {
-            observablePecas = FXCollections.observableArrayList(gerenciadorEstoque.listarPecas());
-            tabelaPecas.setItems(observablePecas);
-            cbPecas.setItems(observablePecas);
+            cbPecas.setItems(FXCollections.observableArrayList(gerenciadorEstoque.listarPecas()));
         }
     }
 
     @FXML
-    public void confirmarReposicao() {
-        // A seleção agora vem exclusivamente do ComboBox
+    public void adicionarNaLista() {
         Pecas pecaSelecionada = cbPecas.getValue();
 
         if (pecaSelecionada == null) {
-            mostrarAlerta("Aviso", "Selecione uma peça no menu para repor.");
+            mostrarAlerta("Aviso", "Por favor, selecione uma peça no menu.");
             return;
         }
 
         try {
             int quantidade = Integer.parseInt(txtQuantidadeReposicao.getText());
             
-            // Repassa para a regra de negócio
-            gerenciadorEstoque.reporEstoque(pecaSelecionada.getCodigo(), quantidade);
-            
-            // Limpa os campos e atualiza visualmente
+            if (quantidade <= 0) {
+                mostrarAlerta("Erro", "A quantidade para repor deve ser maior que zero.");
+                return;
+            }
+
+            // Se o gerente adicionar a mesma peça de novo, apenas soma a quantidade na tabela
+            for (Pecas p : listaItensReposicao) {
+                if (p.getCodigo().equals(pecaSelecionada.getCodigo())) {
+                    p.setQuantidade(p.getQuantidade() + quantidade);
+                    tabelaReposicao.refresh();
+                    txtQuantidadeReposicao.clear();
+                    return;
+                }
+            }
+
+            // Cria um objeto cópia temporário para listar na tabela com a quantidade informada
+            Pecas itemLote = new Pecas(pecaSelecionada.getNome(), pecaSelecionada.getCodigo(), pecaSelecionada.getPreco(), quantidade);
+            listaItensReposicao.add(itemLote);
+
+            // Limpa o campo de texto para a próxima inserção
             txtQuantidadeReposicao.clear();
-            cbPecas.getSelectionModel().clearSelection();
-            carregarDados(); 
-            
-            mostrarAlerta("Sucesso", "Estoque da peça atualizado com sucesso!");
-            
+
         } catch (NumberFormatException e) {
-            mostrarAlerta("Erro", "Por favor, digite apenas números inteiros na quantidade.");
+            mostrarAlerta("Erro", "Por favor, digite apenas números inteiros válidos.");
+        }
+    }
+
+    @FXML
+    public void confirmarReposicaoTotal() {
+        if (listaItensReposicao.isEmpty()) {
+            mostrarAlerta("Aviso", "Nenhuma peça foi adicionada ao lote de reposição.");
+            return;
+        }
+
+        try {
+            // Varre toda a lista/tabela temporária atualizando o repositório peça por peça
+            for (Pecas item : listaItensReposicao) {
+                gerenciadorEstoque.reporEstoque(item.getCodigo(), item.getQuantidade());
+            }
+
+            mostrarAlerta("Sucesso", "Estoque de todas as peças atualizado com sucesso!");
+            
+            // Limpa as seleções e a tabela após salvar tudo
+            listaItensReposicao.clear();
+            cbPecas.getSelectionModel().clearSelection();
+            carregarComboBox(); // Recarrega o ComboBox com os novos valores de estoque salvos
+
         } catch (Exception e) {
-            mostrarAlerta("Erro", e.getMessage()); // Exibe a mensagem de quantidade <= 0
+            mostrarAlerta("Erro", e.getMessage());
         }
     }
 
