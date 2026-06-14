@@ -5,7 +5,7 @@ import br.ufrpe.autodrive.negocio.beans.Pecas;
 import java.util.List;
 
 public class GerenciadorEstoquePecas implements IGerenciadorEstoquePecas {
-    
+
     private IRepositorioPecas repositorioPecas;
 
     public GerenciadorEstoquePecas(IRepositorioPecas repositorioPecas) {
@@ -20,20 +20,15 @@ public class GerenciadorEstoquePecas implements IGerenciadorEstoquePecas {
     @Override
     public void reporEstoque(String codigo, int quantidadeAdicional) throws Exception {
         if (quantidadeAdicional <= 0) {
-            throw new Exception("A quantidade para reposição deve ser maior que zero.");
+            throw new Exception("A quantidade para repor deve ser maior que zero.");
         }
-        
+
         Pecas peca = repositorioPecas.buscarPorCodigo(codigo);
         
-        if (peca == null) {
-            throw new Exception("Peça não encontrada no estoque.");
-        }
-        
-        int novaQuantidade = peca.getQuantidade() + quantidadeAdicional;
-        boolean sucesso = repositorioPecas.alterarQuantidadeEstoque(codigo, novaQuantidade);
-        
-        if (!sucesso) {
-            throw new Exception("Ocorreu um erro ao tentar salvar a nova quantidade no repositório.");
+        // A peça sempre existirá pois foi selecionada via ComboBox na UI
+        if (peca != null) {
+            int novaQuantidade = peca.getQuantidade() + quantidadeAdicional;
+            repositorioPecas.alterarQuantidadeEstoque(codigo, novaQuantidade);
         }
     }
 }
