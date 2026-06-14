@@ -19,28 +19,30 @@ import br.ufrpe.autodrive.dados.RepositorioVeiculosArray;
 import br.ufrpe.autodrive.dados.RepositorioVendasArray;
 import br.ufrpe.autodrive.dados.RepositorioVendedoresArray;
 import br.ufrpe.autodrive.gui.ScreenManager;
+import br.ufrpe.autodrive.negocio.GerenciadorCadastro;
+import br.ufrpe.autodrive.negocio.GerenciadorEstoquePecas;
 import br.ufrpe.autodrive.negocio.GerenciadorOficina;
 import br.ufrpe.autodrive.negocio.GerenciadorRelatorio;
 import br.ufrpe.autodrive.negocio.GerenciadorTestDrive;
 import br.ufrpe.autodrive.negocio.GerenciadorVenda;
-import br.ufrpe.autodrive.negocio.GerenciadorCadastro;
+import br.ufrpe.autodrive.negocio.IGerenciadorCadastro;
+import br.ufrpe.autodrive.negocio.IGerenciadorEstoquePecas;
 import br.ufrpe.autodrive.negocio.IGerenciadorOficina;
 import br.ufrpe.autodrive.negocio.IGerenciadorRelatorio;
 import br.ufrpe.autodrive.negocio.IGerenciadorTestDrive;
 import br.ufrpe.autodrive.negocio.IGerenciadorVenda;
-import br.ufrpe.autodrive.negocio.IGerenciadorCadastro;
 import br.ufrpe.autodrive.negocio.beans.Cliente;
+import br.ufrpe.autodrive.negocio.beans.MaoDeObra;
 import br.ufrpe.autodrive.negocio.beans.Mecanico;
 import br.ufrpe.autodrive.negocio.beans.Notificacao;
 import br.ufrpe.autodrive.negocio.beans.OrdemServico;
+import br.ufrpe.autodrive.negocio.beans.Pecas;
 import br.ufrpe.autodrive.negocio.beans.StatusOS;
-import br.ufrpe.autodrive.negocio.beans.VeiculoNovo;
-import br.ufrpe.autodrive.negocio.beans.VeiculoSeminovo;
 import br.ufrpe.autodrive.negocio.beans.StatusVeiculo;
 import br.ufrpe.autodrive.negocio.beans.Veiculo;
+import br.ufrpe.autodrive.negocio.beans.VeiculoNovo;
+import br.ufrpe.autodrive.negocio.beans.VeiculoSeminovo;
 import br.ufrpe.autodrive.negocio.beans.Vendedor;
-import br.ufrpe.autodrive.negocio.beans.Pecas;
-import br.ufrpe.autodrive.negocio.beans.MaoDeObra;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
@@ -89,6 +91,7 @@ public class Main extends Application {
         IGerenciadorRelatorio gRelatorio = new GerenciadorRelatorio(repoVendas, repoOS);
         IGerenciadorTestDrive gTestDrive = new GerenciadorTestDrive(repoTestDrive, repoClientes, repoVeiculos);
         IGerenciadorCadastro gCadastro = new GerenciadorCadastro(repoClientes, repoVeiculos);
+        IGerenciadorEstoquePecas gEstoque = new GerenciadorEstoquePecas(repoPecas);
         
         // =========================================================================
         // 🟢 Passo 3: Casos de Teste Blocados (Vendas, Alertas e Relatórios)
@@ -401,7 +404,7 @@ public class Main extends Application {
         ScreenManager.getInstance().setMainStage(primaryStage);
         
         // 🛠️ CORRIGIDO CIRURGICAMENTE: Nome do método ajustado para casar com o ScreenManager
-        ScreenManager.getInstance().injetarGerenciadores(gVenda, gOficina, gRelatorio, gTestDrive, gCadastro); 
+        ScreenManager.getInstance().injetarGerenciadores(gVenda, gOficina, gRelatorio, gTestDrive, gCadastro, gEstoque); 
         
         ScreenManager.getInstance().showMenuPrincipal();
     }
