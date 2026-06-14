@@ -21,10 +21,12 @@ import br.ufrpe.autodrive.negocio.GerenciadorOficina;
 import br.ufrpe.autodrive.negocio.GerenciadorRelatorio;
 import br.ufrpe.autodrive.negocio.GerenciadorTestDrive;
 import br.ufrpe.autodrive.negocio.GerenciadorVenda;
+import br.ufrpe.autodrive.negocio.GerenciadorCadastro;
 import br.ufrpe.autodrive.negocio.IGerenciadorOficina;
 import br.ufrpe.autodrive.negocio.IGerenciadorRelatorio;
 import br.ufrpe.autodrive.negocio.IGerenciadorTestDrive;
 import br.ufrpe.autodrive.negocio.IGerenciadorVenda;
+import br.ufrpe.autodrive.negocio.IGerenciadorCadastro;
 import br.ufrpe.autodrive.negocio.beans.Cliente;
 import br.ufrpe.autodrive.negocio.beans.Mecanico;
 import br.ufrpe.autodrive.negocio.beans.Notificacao;
@@ -71,6 +73,7 @@ public class Main extends Application {
         IGerenciadorOficina gOficina = new GerenciadorOficina(repoOS, repoClientes, repoVeiculos, repoMecanicos);
         IGerenciadorRelatorio gRelatorio = new GerenciadorRelatorio(repoVendas, repoOS);
         IGerenciadorTestDrive gTestDrive = new GerenciadorTestDrive(repoTestDrive, repoClientes, repoVeiculos);
+        IGerenciadorCadastro gCadastro = new GerenciadorCadastro(repoClientes, repoVeiculos);
         
         // =========================================================================
         // 🟢 Passo 3: Casos de Teste Blocados (Vendas, Alertas e Relatórios)
@@ -319,7 +322,6 @@ public class Main extends Application {
         System.out.println("🚗 [EXTRA] INJETANDO VEÍCULOS LIVRES PARA USO NAS TELAS...");
 
         // --- 5 VEÍCULOS DESTINADOS A NOVAS VENDAS (Status: DISPONIVEL) ---
-        // Construtor VeiculoNovo: (chassi, renavam, modelo, ano, preco)
         VeiculoNovo vVenda1 = new VeiculoNovo("CHASSI_V_1", "AAA0A01", "Jeep Compass", 2026, 185000.00);
         VeiculoSeminovo vVenda2 = new VeiculoSeminovo("CHASSI_V_2", "BBB0B02", "Honda Civic", 2023, 140000.00, 28000.0);
         VeiculoNovo vVenda3 = new VeiculoNovo("CHASSI_V_3", "CCC0C03", "Fiat Toro", 2026, 150000.00);
@@ -333,7 +335,6 @@ public class Main extends Application {
         vVenda5.setStatus(StatusVeiculo.DISPONIVEL);
 
         // --- 5 VEÍCULOS DESTINADOS A ABRIR NOVAS ORDENS DE SERVIÇO (Status: DISPONIVEL) ---
-        // Construtor VeiculoSeminovo: (chassi, renavam, modelo, ano, preco, quilometragem)
         VeiculoSeminovo vOficina3 = new VeiculoSeminovo("CHASSI_M_3", "FFF0F06", "Ford Ka", 2019, 48000.00, 82000.0);
         VeiculoSeminovo vOficina4 = new VeiculoSeminovo("CHASSI_M_4", "GGG0G07", "Renault Sandero", 2020, 52000.00, 71000.0);
         VeiculoSeminovo vOficina5 = new VeiculoSeminovo("CHASSI_M_5", "HHH0H08", "Toyota Hilux", 2021, 210000.00, 95000.0);
@@ -377,13 +378,16 @@ public class Main extends Application {
             repoVeiculos.adicionarVeiculo(vOficinaDisponivel);
         }
         
-        System.out.println("-> [Main] Todos os erros corrigidos! Casos de teste integrados e persistência ativa.");
+        System.out.println("-> [Main] Todos os erros corrigidos! Casos de teste integrados e persistência activa.");
         
         // =========================================================================
         // 🟢 Passo 4: Configurar o palco principal e abrir a aplicação
         // =========================================================================
         ScreenManager.getInstance().setMainStage(primaryStage);
-        ScreenManager.getInstance().injetarGerenciadoresNasTelas(gVenda, gOficina, gRelatorio, gTestDrive); 
+        
+        // 🛠️ CORRIGIDO CIRURGICAMENTE: Nome do método ajustado para casar com o ScreenManager
+        ScreenManager.getInstance().injetarGerenciadores(gVenda, gOficina, gRelatorio, gTestDrive, gCadastro); 
+        
         ScreenManager.getInstance().showMenuPrincipal();
     }
     
