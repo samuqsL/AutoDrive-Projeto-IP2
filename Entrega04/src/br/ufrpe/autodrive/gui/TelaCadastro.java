@@ -70,7 +70,17 @@ public class TelaCadastro {
         colClienteCpf.setCellValueFactory(new PropertyValueFactory<>("cpf"));
         colClienteCnh.setCellValueFactory(new PropertyValueFactory<>("cnh"));
 
-        colVeiculoModelo.setCellValueFactory(new PropertyValueFactory<>("modelo"));
+        // colVeiculoModelo.setCellValueFactory(new PropertyValueFactory<>("modelo")); -- Antes mostrava só o modelo!
+        //NOVO: Mostra: "Modelo (+chassi+)"
+        colVeiculoModelo.setCellValueFactory(cellData -> {
+            Veiculo v = cellData.getValue();
+            if (v != null) {
+                // Monta a String combinando: Modelo (Chassi)
+                String exibicao = v.getModelo() + " (" + v.getChassi() + ")";
+                return new javafx.beans.property.SimpleStringProperty(exibicao);
+            }
+            return new javafx.beans.property.SimpleStringProperty("");
+        });
         colVeiculoAno.setCellValueFactory(new PropertyValueFactory<>("ano"));
         colVeiculoPreco.setCellValueFactory(new PropertyValueFactory<>("preco"));
         colVeiculoKm.setCellValueFactory(new PropertyValueFactory<>("quilometragem")); // Vincula com getQuilometragem() ou mude para "km" se for o nome exato no Bean
