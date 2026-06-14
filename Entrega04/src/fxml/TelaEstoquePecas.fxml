@@ -11,11 +11,11 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="TOP_CENTER" prefHeight="500.0" prefWidth="600.0" spacing="15.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.TelaEstoquePecas">
+<VBox alignment="TOP_CENTER" prefHeight="550.0" prefWidth="650.0" spacing="15.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.TelaEstoquePecas">
    <children>
       <Label text="Reposição de Estoque de Peças">
          <font>
-            <Font name="System Bold" size="20.0" />
+            <Font name="System Bold" size="22.0" />
          </font>
          <VBox.margin>
             <Insets bottom="10.0" />
@@ -25,7 +25,7 @@
       <HBox alignment="CENTER" spacing="10.0">
          <children>
             <Label text="Selecionar Peça:" />
-            <ComboBox fx:id="cbPecas" prefWidth="300.0" promptText="Clique para ver as peças..." />
+            <ComboBox fx:id="cbPecas" prefWidth="350.0" promptText="Clique para ver as peças..." />
          </children>
       </HBox>
       
@@ -48,20 +48,21 @@
       
       <TableView fx:id="tabelaReposicao" prefHeight="220.0" prefWidth="520.0">
         <columns>
-          <TableColumn fx:id="colunaNome" prefWidth="370.0" text="Nome da Peça" />
-          <TableColumn fx:id="colunaQuantidade" prefWidth="145.0" text="Qtd. Informada" />
+          <TableColumn fx:id="colunaNome" prefWidth="380.0" text="Nome da Peça" />
+          <TableColumn fx:id="colunaQuantidade" prefWidth="150.0" text="Qtd. Informada" />
         </columns>
          <VBox.margin>
             <Insets left="40.0" right="40.0" />
          </VBox.margin>
       </TableView>
       
-      <HBox alignment="CENTER">
+      <HBox alignment="CENTER" spacing="20.0">
          <children>
-            <Button mnemonicParsing="false" onAction="#confirmarReposicaoTotal" prefHeight="40.0" prefWidth="260.0" style="-fx-font-weight: bold; -fx-font-size: 13px;" text="Confirmar Reposição do Lote" />
+            <Button mnemonicParsing="false" onAction="#confirmarReposicaoTotal" prefHeight="45.0" prefWidth="250.0" style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-background-color: #2b5797; -fx-text-fill: white;" text="Confirmar Reposição" />
+            <Button mnemonicParsing="false" onAction="#voltarAoMenu" prefHeight="45.0" prefWidth="180.0" style="-fx-font-size: 14px;" text="Voltar ao Menu" />
          </children>
          <VBox.margin>
-            <Insets top="10.0" />
+            <Insets top="15.0" />
          </VBox.margin>
       </HBox>
    </children>
