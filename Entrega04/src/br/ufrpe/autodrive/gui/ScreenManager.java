@@ -148,6 +148,10 @@ public class ScreenManager {
     
     // NOVO: Ativado o método de transição para que o Menu Principal consiga chamá-lo (TelaCadastro)*
     public void showTelaCadastro() {
+		// Antes de mudar a cena, avisa ao controller para se atualizar!
+        if (this.controllerCadastro != null) {
+            this.controllerCadastro.aoExibirTela();
+        }
         this.mainStage.setScene(this.cenaCadastro);
         this.mainStage.show();
     }
