@@ -255,6 +255,23 @@ public class TelaCadastro {
         }
     }
 
+    /**
+     * Método chamado pelo ScreenManager toda vez que esta tela 
+     * é trazida para o primeiro plano. Garanete dados novos e filtros resetados.
+     */
+    public void aoExibirTela() {
+        // 1. Reseta o filtro para o padrão (TODOS) se quiser forçar o reset do filtro
+        if (comboFiltroStatus != null) {
+            comboFiltroStatus.getSelectionModel().select("TODOS");
+        }
+        
+        // 2. Força a atualização puxando os dados novinhos do gerenciador
+        atualizarTabelas();
+        
+        // 3. Garante que ela comece no Hub de botões (e não dentro de um formulário aberto)
+        voltarParaHubPrincipal(); 
+    }
+
     private void limparCamposCliente() {
         txtNome.clear();
         txtCpf.clear();
