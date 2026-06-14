@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import br.ufrpe.autodrive.dados.IRepositorioClientes;
 import br.ufrpe.autodrive.dados.IRepositorioMecanicos;
 import br.ufrpe.autodrive.dados.IRepositorioOS;
+import br.ufrpe.autodrive.dados.IRepositorioPecas;
 import br.ufrpe.autodrive.dados.IRepositorioTD;
 import br.ufrpe.autodrive.dados.IRepositorioVeiculos;
 import br.ufrpe.autodrive.dados.IRepositorioVendas;
@@ -12,6 +13,7 @@ import br.ufrpe.autodrive.dados.IRepositorioVendedores;
 import br.ufrpe.autodrive.dados.RepositorioClientesArray;
 import br.ufrpe.autodrive.dados.RepositorioMecanicosArray;
 import br.ufrpe.autodrive.dados.RepositorioOsArray;
+import br.ufrpe.autodrive.dados.RepositorioPecasArray;
 import br.ufrpe.autodrive.dados.RepositorioTestDriveArray;
 import br.ufrpe.autodrive.dados.RepositorioVeiculosArray;
 import br.ufrpe.autodrive.dados.RepositorioVendasArray;
@@ -57,6 +59,7 @@ public class Main extends Application {
         IRepositorioOS repoOS = RepositorioOsArray.getInstance();
         IRepositorioTD repoTestDrive = RepositorioTestDriveArray.getInstance();
         IRepositorioMecanicos repoMecanicos = RepositorioMecanicosArray.getInstance();
+        IRepositorioPecas repoPecas = RepositorioPecasArray.getInstance();
         
         // Instanciação e inserção dos mecânicos Mario e Luigi no banco de dados da oficina
         if (repoMecanicos.procurarMecanico("Mario") == null) {
@@ -65,6 +68,18 @@ public class Main extends Application {
         if (repoMecanicos.procurarMecanico("Luigi") == null) {
             repoMecanicos.adicionarMecanico(new Mecanico("Luigi", true));
         }
+
+        // Instanciação de 10 peças (com óleo) possuindo 10 unidades cada
+        if (repoPecas.buscarPorCodigo("EST-001") == null) repoPecas.salvar(new Pecas("Óleo de Motor Sintético 5W30", "EST-001", 45.00, 10));
+        if (repoPecas.buscarPorCodigo("EST-002") == null) repoPecas.salvar(new Pecas("Filtro de Óleo", "EST-002", 25.00, 10));
+        if (repoPecas.buscarPorCodigo("EST-003") == null) repoPecas.salvar(new Pecas("Filtro de Ar", "EST-003", 30.00, 10));
+        if (repoPecas.buscarPorCodigo("EST-004") == null) repoPecas.salvar(new Pecas("Filtro de Combustível", "EST-004", 40.00, 10));
+        if (repoPecas.buscarPorCodigo("EST-005") == null) repoPecas.salvar(new Pecas("Jogo de Velas de Ignição", "EST-005", 60.00, 10));
+        if (repoPecas.buscarPorCodigo("EST-006") == null) repoPecas.salvar(new Pecas("Pastilha de Freio", "EST-006", 80.00, 10));
+        if (repoPecas.buscarPorCodigo("EST-007") == null) repoPecas.salvar(new Pecas("Disco de Freio", "EST-007", 120.00, 10));
+        if (repoPecas.buscarPorCodigo("EST-008") == null) repoPecas.salvar(new Pecas("Correia Dentada", "EST-008", 90.00, 10));
+        if (repoPecas.buscarPorCodigo("EST-009") == null) repoPecas.salvar(new Pecas("Bateria 60Ah", "EST-009", 350.00, 10));
+        if (repoPecas.buscarPorCodigo("EST-010") == null) repoPecas.salvar(new Pecas("Fluido de Radiador", "EST-010", 35.00, 10));
         
         // =========================================================================
         // 🟢 Passo 2: Instanciar os Gerenciadores Primeiro
