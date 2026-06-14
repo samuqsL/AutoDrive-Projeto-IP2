@@ -16,6 +16,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
@@ -78,6 +79,26 @@ public class TelaVenda {
             }
         });
 
+        // 🟢 TRAVA INTELIGENTE DE DATAS (Estilo TelaRelatorio):
+        // Bloqueia dinamicamente o calendário final baseado no dia inicial escolhido
+        dpFiltroInicio.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                dpFiltroFim.setDayCellFactory(picker -> new DateCell() {
+                    @Override
+                    public void updateItem(LocalDate date, boolean empty) {
+                        super.updateItem(date, empty);
+                        // Desabilita dias anteriores à data de início
+                        setDisable(empty || date.isBefore(newValue));
+                    }
+                });
+                
+                // Se o usuário mudar o início e a data fim já escolhida ficou menor, ajusta automaticamente
+                if (dpFiltroFim.getValue() != null && dpFiltroFim.getValue().isBefore(newValue)) {
+                    dpFiltroFim.setValue(newValue);
+                }
+            }
+        });
+
         tabelaVendas.setItems(dadosTabelaVendas);
     }
 
@@ -102,9 +123,7 @@ public class TelaVenda {
                 lblStatus.setText("Venda realizada e registrada com sucesso!");
                 lblStatus.setStyle("-fx-text-fill: green;");
                 
-                // 1ª MODIFICAÇÃO: Atualiza o ComboBox tirando o veículo que acabou de ser vendido!
                 carregarComboVeiculosDisponiveis();
-                
                 limparCamposFormulario();
                 atualizarTabela(control.listarTodasVendas());
             } else {
@@ -129,8 +148,9 @@ public class TelaVenda {
             return;
         }
 
-        if (inicioSel != null && fimSel != null && inicioSel.isAfter(fimSel)) {
-            lblStatus.setText("A data de início não pode ser posterior à data de término.");
+        // Caso o usuário preencha apenas uma das duas pontas da data, evitamos comportamentos inesperados
+        if (inicioSel == null || fimSel == null) {
+            lblStatus.setText("Por favor, selecione ambas as datas (De / Até) para filtrar.");
             lblStatus.setStyle("-fx-text-fill: red;");
             return;
         }
@@ -140,12 +160,15 @@ public class TelaVenda {
 
         for (Venda v : todas) {
             if (v.getDataVenda() != null) {
+                // 🟢 SOLUÇÃO DO PROBLEMA DE HORÁRIOS: Convertemos o LocalDateTime para LocalDate puro.
+                // Assim comparamos apenas o Dia/Mês/Ano, pegando os registros desde o primeiro minuto (00:00) do dia inicial.
                 LocalDate dataV = v.getDataVenda().toLocalDate();
                 
-                boolean atendeInicio = (inicioSel == null) || (dataV.compareTo(inicioSel) >= 0);
-                boolean atendeFim = (fimSel == null) || (dataV.compareTo(fimSel) <= 0);
+                // Verifica se a data da venda está dentro ou nas extremidades exatas do período desejado
+                boolean noIntervalo = (dataV.isAfter(inicioSel) || dataV.isEqual(inicioSel)) && 
+                                      (dataV.isBefore(fimSel) || dataV.isEqual(fimSel));
 
-                if (atendeInicio && atendeFim) {
+                if (noIntervalo) {
                     filtradas.add(v);
                 }
             }
@@ -157,7 +180,7 @@ public class TelaVenda {
             lblStatus.setText("Nenhuma venda encontrada no período selecionado.");
             lblStatus.setStyle("-fx-text-fill: orange;");
         } else {
-            lblStatus.setText("Filtro applied! Exibindo " + filtradas.size() + " venda(s).");
+            lblStatus.setText("Filtro aplicado! Exibindo " + filtradas.size() + " venda(s).");
             lblStatus.setStyle("-fx-text-fill: blue;");
         }
     }
@@ -166,6 +189,9 @@ public class TelaVenda {
     public void acaoLimparFiltro() {
         dpFiltroInicio.setValue(null);
         dpFiltroFim.setValue(null);
+        // Reseta o gerenciador de células de data bloqueadas ao limpar
+        dpFiltroFim.setDayCellFactory(null);
+        
         if (control != null) {
             atualizarTabela(control.listarTodasVendas());
         }
@@ -182,12 +208,8 @@ public class TelaVenda {
         tabelaVendas.setItems(dadosTabelaVendas);
     }
     
-    //NOVA MÉTODO: Filtra Veiculos que aparecem como opção na ComboBox ("Selecione Veículo") NA AREA DE VENDAS!
-    //Melhoria: A seleção de Veiculo para venda agora só aparece Veiculos nos estados DISPONIVEL OU ESTOQUE.
-    //>Aparecer os já VENDIDOS, atrapalha na EFEFETUAÇÃO DE NOVAS VENDAS e OCUPA ESPACO -- AGORA É FILTRADO -
     private void carregarComboVeiculosDisponiveis() {
         if (comboVeiculo != null && control != null) {
-            // Filtra mantendo quem está em ESTOQUE OU DISPONÍVEL
             List<Veiculo> disponiveis = control.listarTodosVeiculos().stream()
                 .filter(v -> v.getStatus() == br.ufrpe.autodrive.negocio.beans.StatusVeiculo.ESTOQUE || 
                              v.getStatus() == br.ufrpe.autodrive.negocio.beans.StatusVeiculo.DISPONIVEL)
@@ -206,10 +228,8 @@ public class TelaVenda {
         lblStatus.setText("");
 
         if (control != null) {
-            comboCliente.setItems(FXCollections.observableArrayList(control.listarTodosClientes()));
-            comboVendedor.setItems(FXCollections.observableArrayList(control.listarTodosVendedores()));
-            
-            // 2ª MODIFICAÇÃO: Carrega a caixinha filtrando apenas os carros DISPONÍVEIS
+        	
+        	// 2ª MODIFICAÇÃO: Carrega a caixinha filtrando apenas os carros DISPONÍVEIS
             carregarComboVeiculosDisponiveis();
         }
     }
