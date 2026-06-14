@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="400.0" style="-fx-background-color: #f4f4f9;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.MenuPrincipal">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="400.0" style="-fx-background-color: #f4f4f9;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.MenuPrincipal">
    <top>
       <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="80.0" prefWidth="400.0" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="AutoDrive - Menu Principal" BorderPane.alignment="CENTER">
          <font>
@@ -23,9 +23,9 @@
       <VBox prefHeight="277.0" prefWidth="80.0" BorderPane.alignment="CENTER" />
    </right>
    <center>
-      <AnchorPane prefHeight="250.0" prefWidth="159.0" BorderPane.alignment="CENTER">
+      <AnchorPane prefHeight="290.0" prefWidth="159.0" BorderPane.alignment="CENTER">
          <children>
-            <VBox alignment="CENTER" layoutX="12.0" layoutY="10.0" spacing="15.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="10.0">
+            <VBox alignment="CENTER" layoutX="12.0" layoutY="10.0" spacing="12.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="10.0">
                <children>
                   <Button mnemonicParsing="false" onAction="#tratarBotaoVenda" prefHeight="45.0" prefWidth="220.0" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;" text="Tela de Venda">
                      <font>
@@ -48,6 +48,11 @@
                      </font>
                   </Button>
                   <Button mnemonicParsing="false" onAction="#tratarBotaoCadastro" prefHeight="45.0" prefWidth="220.0" style="-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;" text="Cadastros Gerais">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#tratarBotaoEstoque" prefHeight="45.0" prefWidth="220.0" style="-fx-background-color: #16a085; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;" text="Estoque de Peças">
                      <font>
                         <Font size="14.0" />
                      </font>
