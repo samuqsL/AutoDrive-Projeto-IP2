@@ -16,9 +16,28 @@ public class GerenciadorTestDrive implements IGerenciadorTestDrive {
         this.repoV = repoV;
     }
 
+    /**
+     * 💾 MÉTODO AUXILIAR: Remove a instância antiga e readiciona o veículo com o estado atualizado.
+     * Como os métodos nativos do repositório já chamam salvarArquivo() internamente, o arquivo
+     * veiculos.dat será atualizado no disco respeitando o encapsulamento privado do sistema.
+    */
+    private void sincronizarRepositorioVeiculo(String chassi) {
+        if (this.repoV != null && chassi != null) {
+            // 1. Procura o veículo na memória (que já teve o Status modificado pelo agendar() ou cancelar())
+            Veiculo veiculoAtualizado = this.repoV.procurarVeiculo(chassi);
+            
+            if (veiculoAtualizado != null) {
+                // 2. Remove o registro desatualizado da lista e do disco
+                this.repoV.removerVeiculo(chassi);
+                
+                // 3. Adiciona de volta o veículo com as alterações salvas em disco
+                this.repoV.adicionarVeiculo(veiculoAtualizado);
+            }
+        }
+    }
+
     @Override
     public boolean agendarTestDrive(String cpf, String chassi) {
-        // 🟢 Reaproveita a lógica de baixo passando o horário atual
         return agendarTestDrive(cpf, chassi, LocalDateTime.now());
     }
     
@@ -37,22 +56,24 @@ public class GerenciadorTestDrive implements IGerenciadorTestDrive {
                 dataDigitada = LocalDateTime.now();
             }
             
-            // NOVA TRAVA: Se houver conflito de agenda para o carro ou cliente, barra aqui
+            // TRAVA: Se houver conflito de agenda para o carro ou cliente, barra aqui
             if (horarioConflitante(cpf, chassi, dataDigitada)) {
                 return false; 
             }
             
-            // Usa o novo construtor passando a data capturada
             TestDrive novoTD = new TestDrive(c, v, dataDigitada); 
-            if (novoTD.agendar()) {
+            if (novoTD.agendar()) { // Altera o status do veículo para TEST_DRIVE internamente
                 this.repoTD.adicionarTestDrive(novoTD);
+                
+                // 💾 CORRIGIDO: Passando o chassi para sincronizar e salvar no arquivo veiculos.dat o novo status!
+                this.sincronizarRepositorioVeiculo(chassi);
+                
                 return true;
             }
         }
         return false;
     }
     
-    // metodos novos
     @Override
     public List<Cliente> listarTodosClientes() {
         return this.repoC.listarClientes();
@@ -65,25 +86,30 @@ public class GerenciadorTestDrive implements IGerenciadorTestDrive {
 
     @Override
     public boolean cancelarTestDrive(String id) {
-        // 1. Acha o agendamento
         TestDrive td = repoTD.procurarTestDrivePorID(id);
         
         if (td != null) {
-            // 2. Libera o carro para voltar a ser vendido/agendado!
-            td.getVeiculo().setStatus(StatusVeiculo.DISPONIVEL);
+            String chassiCarro = null;
             
-            // 3. Remove do repositório de Test Drives
+            // Libera o carro voltando o status para DISPONIVEL
+            if (td.getVeiculo() != null) {
+                td.getVeiculo().setStatus(StatusVeiculo.DISPONIVEL);
+                chassiCarro = td.getVeiculo().getChassi(); // Captura o chassi antes da remoção do agendamento
+            }
+            
+            // Remove do repositório de Test Drives e salva o arquivo test_drives.dat
             repoTD.removerTestDrivePorID(id);
+            
+            // 💾 CORRIGIDO: Se encontramos um carro válido, sincroniza passando o chassi para salvar como DISPONIVEL no disco!
+            if (chassiCarro != null) {
+                this.sincronizarRepositorioVeiculo(chassiCarro);
+            }
+            
             return true;
         }
-        return false; // Não achou o ID
+        return false; 
     }
 
-    /**
-     * Método Auxiliar de Validação
-     * Varre a lista de test-drives agendados para checar conflitos.
-     * Considera uma janela de tolerância/duração de 1 hora para o evento.
-     */
     private boolean horarioConflitante(String cpf, String chassi, LocalDateTime novaData) {
         if (this.repoTD == null) return false;
         
@@ -92,14 +118,12 @@ public class GerenciadorTestDrive implements IGerenciadorTestDrive {
 
         for (TestDrive td : agendamentosExistentes) {
             LocalDateTime inicioExistente = td.getDataTestDrive();
-            LocalDateTime fimExistente = inicioExistente.plusHours(1); // O test-drive dura 1 hora
+            LocalDateTime fimExistente = inicioExistente.plusHours(1); 
             
-            // 🟢 CORREÇÃO DA CONDIÇÃO: Verifica se a nova data sobrepõe o intervalo de 1 hora da antiga
             boolean conflitoHorario = (novaData.isEqual(inicioExistente) || novaData.isAfter(inicioExistente)) 
                                       && novaData.isBefore(fimExistente);
 
             if (conflitoHorario) {
-                // Se for no mesmo intervalo, bloqueia se for o mesmo carro OU o mesmo cliente
                 if (td.getVeiculo().getChassi().equalsIgnoreCase(chassi)) {
                     return true;
                 }
