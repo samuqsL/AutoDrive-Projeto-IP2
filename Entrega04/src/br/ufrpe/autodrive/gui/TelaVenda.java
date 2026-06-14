@@ -228,9 +228,10 @@ public class TelaVenda {
         lblStatus.setText("");
 
         if (control != null) {
-        	
-        	// 2ª MODIFICAÇÃO: Carrega a caixinha filtrando apenas os carros DISPONÍVEIS
+            // 🟢 CORREÇÃO CIRÚRGICA: Alimenta todas as ComboBoxes ao abrir o formulário
             carregarComboVeiculosDisponiveis();
+            comboCliente.setItems(FXCollections.observableArrayList(control.listarTodosClientes()));
+            comboVendedor.setItems(FXCollections.observableArrayList(control.listarTodosVendedores()));
         }
     }
 
