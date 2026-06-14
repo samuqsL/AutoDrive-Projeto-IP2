@@ -56,12 +56,11 @@ public class TelaCadastro {
     @FXML private TableColumn<Veiculo, String> colVeiculoModelo;
     @FXML private TableColumn<Veiculo, Integer> colVeiculoAno;
     @FXML private TableColumn<Veiculo, Double> colVeiculoPreco;
-    @FXML private TableColumn<Veiculo, Double> colVeiculoKm; // Nova Coluna
+    @FXML private TableColumn<Veiculo, Double> colVeiculoKm; 
     @FXML private TableColumn<Veiculo, Object> colVeiculoStatus;
 
     /**
      * Método automático do JavaFX executado após o FXML carregar.
-     * Usado para amarrar as colunas das tabelas e os ouvintes (listeners).
      */
     @FXML
     public void initialize() {
@@ -70,12 +69,9 @@ public class TelaCadastro {
         colClienteCpf.setCellValueFactory(new PropertyValueFactory<>("cpf"));
         colClienteCnh.setCellValueFactory(new PropertyValueFactory<>("cnh"));
 
-        // colVeiculoModelo.setCellValueFactory(new PropertyValueFactory<>("modelo")); -- Antes mostrava só o modelo!
-        //NOVO: Mostra: "Modelo (+chassi+)"
         colVeiculoModelo.setCellValueFactory(cellData -> {
             Veiculo v = cellData.getValue();
             if (v != null) {
-                // Monta a String combinando: Modelo (Chassi)
                 String exibicao = v.getModelo() + " (" + v.getChassi() + ")";
                 return new javafx.beans.property.SimpleStringProperty(exibicao);
             }
@@ -83,7 +79,7 @@ public class TelaCadastro {
         });
         colVeiculoAno.setCellValueFactory(new PropertyValueFactory<>("ano"));
         colVeiculoPreco.setCellValueFactory(new PropertyValueFactory<>("preco"));
-        colVeiculoKm.setCellValueFactory(new PropertyValueFactory<>("quilometragem")); // Vincula com getQuilometragem() ou mude para "km" se for o nome exato no Bean
+        colVeiculoKm.setCellValueFactory(new PropertyValueFactory<>("quilometragem")); 
         colVeiculoStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         // Inicializa a ComboBox com os valores do ENUM StatusVeiculo + Opção de Limpar Filtro
@@ -95,14 +91,19 @@ public class TelaCadastro {
         comboFiltroStatus.setItems(FXCollections.observableArrayList(opcoesFiltro));
         comboFiltroStatus.getSelectionModel().selectFirst(); // Começa marcado em "TODOS"
 
+        // 🟢 CORREÇÃO CRÍTICA: Vincula um Listener definitivo no ComboBox para escutar qualquer mudança posterior
+        comboFiltroStatus.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            atualizarTabelas();
+        });
+
         // LISTENER INTELIGENTE: Liga/Desliga o campo KM baseado no tipo do veículo selecionado
         grupoTipoVeiculo.selectedToggleProperty().addListener((observable, oldToggle, newToggle) -> {
             if (newToggle == radioSeminovo) {
                 txtKm.setDisable(false);
-                txtKm.requestFocus(); // Dá foco direto no campo de quilometragem
+                txtKm.requestFocus(); 
             } else {
                 txtKm.setDisable(true);
-                txtKm.clear(); // Limpa se digitou algo por engano
+                txtKm.clear(); 
             }
         });
     }
@@ -112,7 +113,7 @@ public class TelaCadastro {
      */
     public void injetarGerenciador(IGerenciadorCadastro gC) {
         this.gCadastro = gC;
-        atualizarTabelas(); // Popula as tabelas na inicialização do app
+        atualizarTabelas(); 
     }
 
     // =========================================================================
@@ -147,13 +148,10 @@ public class TelaCadastro {
 
     @FXML
     public void tratarBotaoVoltarMenuPrincipal() {
-        voltarParaHubPrincipal(); // Garante o reset visual
+        voltarParaHubPrincipal(); 
         ScreenManager.getInstance().showMenuPrincipal();
     }
 
-    /**
-     * Controla quais nós participam do cálculo do layout e estão visíveis
-     */
     private void chavearPainel(boolean hub, boolean cliente, boolean veiculo) {
         panelHubBotoes.setVisible(hub);
         panelHubBotoes.setManaged(hub);
@@ -244,11 +242,14 @@ public class TelaCadastro {
         if (gCadastro != null) {
             tabelaClientes.setItems(FXCollections.observableArrayList(gCadastro.listarClientes()));
             
-            // Lógica do Filtro por Status da ComboBox
             List<Veiculo> todosVeiculos = gCadastro.listarVeiculos();
-            String statusSelecionado = comboFiltroStatus.getSelectionModel().getSelectedItem();
             
-            if (statusSelecionado == null || statusSelecionado.equals("TODOS")) {
+            // 🟢 PROTEÇÃO EXTRA: Garante que se o combo não tiver nada selecionado, aja como "TODOS"
+            String statusSelecionado = (comboFiltroStatus.getSelectionModel().getSelectedItem() != null) 
+                    ? comboFiltroStatus.getSelectionModel().getSelectedItem() 
+                    : "TODOS";
+            
+            if (statusSelecionado.equals("TODOS")) {
                 tabelaVeiculos.setItems(FXCollections.observableArrayList(todosVeiculos));
             } else {
                 List<Veiculo> filtrados = new ArrayList<>();
@@ -264,24 +265,20 @@ public class TelaCadastro {
             tabelaVeiculos.refresh();
         }
     }
-
+    
     /**
      * Método chamado pelo ScreenManager toda vez que esta tela 
-     * é trazida para o primeiro plano. Garanete dados novos e filtros resetados.
+     * é trazida para o primeiro plano.
      */
     public void aoExibirTela() {
-        // 1. Reseta o filtro para o padrão (TODOS) se quiser forçar o reset do filtro
         if (comboFiltroStatus != null) {
             comboFiltroStatus.getSelectionModel().select("TODOS");
         }
         
-        // 2. Força a atualização puxando os dados novinhos do gerenciador
         atualizarTabelas();
-        
-        // 3. Garante que ela comece no Hub de botões (e não dentro de um formulário aberto)
         voltarParaHubPrincipal(); 
     }
-
+    
     private void limparCamposCliente() {
         txtNome.clear();
         txtCpf.clear();
