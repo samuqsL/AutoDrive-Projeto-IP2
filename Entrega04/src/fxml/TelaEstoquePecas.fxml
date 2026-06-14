@@ -44,7 +44,6 @@
          <font>
             <Font name="System Italic" size="13.0" />
          </font>
-         <alignment>LEFT</alignment>
       </Label>
       
       <TableView fx:id="tabelaReposicao" prefHeight="220.0" prefWidth="520.0">
@@ -59,7 +58,7 @@
       
       <HBox alignment="CENTER">
          <children>
-            <Button mnemonicParsing="false" onAction="#confirmarReposicaoTotal" prefHeight="40.0" prefWidth="260.0" text="Confirmar Reposição do Lote" style="-fx-font-weight: bold; -fx-font-size: 13px;" />
+            <Button mnemonicParsing="false" onAction="#confirmarReposicaoTotal" prefHeight="40.0" prefWidth="260.0" style="-fx-font-weight: bold; -fx-font-size: 13px;" text="Confirmar Reposição do Lote" />
          </children>
          <VBox.margin>
             <Insets top="10.0" />
