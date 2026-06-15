@@ -5,7 +5,8 @@ import br.ufrpe.autodrive.negocio.beans.Pecas;
 
 public interface IGerenciadorOficina {
     
-    boolean abrirOS(String cpfCliente, String chassiVeiculo, String codigoPeca, int quantidadePeca, String descricaoMaoDeObra, double valorMaoDeObra);
+    // FUNÇÃO LOCALIZADA: Assinatura modificada para suportar criação automatizada
+    boolean abrirOS(String cpfCliente, String chassiVeiculo);
     
     boolean registrarPecaNaOS(int numeroOS, Pecas peca, int quantidade);
     boolean registrarServicoNaOS(int numeroOS, MaoDeObra servico);
