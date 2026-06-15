@@ -43,6 +43,8 @@ public class TelaRelatorio {
         if (control != null) {
             Relatorio dados = control.gerarDadosRelatorio();
             exibirVendasNoTexto(dados.getListaVendas(), "GERAL");
+            RelatorioPdfService.exportarVendas(dados.getListaVendas(), "Geral");
+
         }
     }
 
@@ -105,7 +107,9 @@ public class TelaRelatorio {
         resultado.ifPresent(nome -> {
             if (nome != null && !nome.trim().isEmpty()) {
                 Relatorio dados = control.gerarDadosRelatorio();
-                exibirVendasNoTexto(dados.filtrarPorVendedor(nome), "VENDEDOR: " + nome);
+                List<Venda> filtradas = dados.filtrarPorVendedor(nome);
+                exibirVendasNoTexto(filtradas, "VENDEDOR: " + nome);
+                RelatorioPdfService.exportarVendas(filtradas, "Vendedor_" + nome);
             }
         });
     }
@@ -195,7 +199,9 @@ public class TelaRelatorio {
 
             if (ini != null && fim != null) {
                 Relatorio dados = control.gerarDadosRelatorio();
-                exibirVendasNoTexto(dados.filtrarPorPeriodo(ini, fim), "PERÍODO");
+                List<Venda> filtradas = dados.filtrarPorPeriodo(ini, fim);
+                exibirVendasNoTexto(filtradas, "PERÍODO");
+                RelatorioPdfService.exportarVendas(filtradas, "Periodo_" + ini.format(DateTimeFormatter.ofPattern("yyyyMMdd")));
             } else {
                 txtAreaConsole.setText("❌ Erro: Ambas as datas precisam ser selecionadas!");
             }
@@ -217,6 +223,8 @@ public class TelaRelatorio {
                         .append(" | Status: ").append(os.getStatus()).append("\n");
             }
             txtAreaConsole.setText(sb.toString());
+
+            RelatorioPdfService.exportarOficina(dados.getListaOs());
         }
     }
 
@@ -232,6 +240,7 @@ public class TelaRelatorio {
                     lucros[0], lucros[1], (lucros[0] + lucros[1])
             );
             txtAreaConsole.setText(resumo);
+            RelatorioPdfService.exportarLucratividade(lucros);
         }
     }
 
