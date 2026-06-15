@@ -10,24 +10,22 @@ public class MaoDeObra implements Serializable {
 	
     private String descricao;
     private double valor;
-    private double horas;
     private Mecanico mecanico;
 
     public MaoDeObra() {}
 
-    public MaoDeObra(String descricao, double valor, double horas, Mecanico mecanico) {
-        //AJUSTE(REQ20): checa se mecanico tá ocupado, ou disponivel!
-        if (!mecanico.isDisponivel()) {
+    public MaoDeObra(String descricao, double valor, Mecanico mecanico) {
+        //AJUSTE(REQ20): checa se mecanico tá ocupado, ou disponivel! (Ajustado para evitar null point caso não haja mecânico)
+        if (mecanico != null && !mecanico.isDisponivel()) {
             throw new IllegalArgumentException("Mecânico ocupado!");
         }
         this.descricao = descricao;
         this.valor = valor;
-        this.horas = horas;
         this.mecanico = mecanico;
     }
 
     public double calcularCusto() {
-        return valor * horas;
+        return valor; // Cálculo modificado para usar apenas o valor fixo digitado pelo gerente
     }
 
     public String getDescricao() {
@@ -44,14 +42,6 @@ public class MaoDeObra implements Serializable {
 
     public void setValor(double valor) {
         this.valor = valor;
-    }
-
-    public double getHoras() {
-        return horas;
-    }
-
-    public void setHoras(double horas) {
-        this.horas = horas;
     }
 
     public Mecanico getMecanico() {
