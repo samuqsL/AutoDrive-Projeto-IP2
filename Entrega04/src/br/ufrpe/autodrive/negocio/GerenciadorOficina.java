@@ -1,23 +1,25 @@
 package br.ufrpe.autodrive.negocio;
-rt br.ufrpe.autodrive.dados.*;
+import br.ufrpe.autodrive.dados.*;
 import br.ufrpe.autodrive.negocio.beans.*;
 import java.util.List;
 import java.util.ArrayList;
 
 
-impopublic class GerenciadorOficina implements IGerenciadorOficina {
+public class GerenciadorOficina implements IGerenciadorOficina {
 
     private IRepositorioOS repoOS;
     private IRepositorioClientes repoClientes; 
     private IRepositorioVeiculos repoVeiculos; 
     private IRepositorioMecanicos repoMecanicos; // 🟢 CORREÇÃO: Substitui as instâncias fixas pela arquitetura correta
+    private IRepositorioPecas repoPecas; // 🟢 ADIÇÃO: Repositório de peças para checar o estoque do Óleo e Peças da Tela
 
-    // Construtor atualizado recebendo os repositórios, incluindo o de mecânicos
-    public GerenciadorOficina(IRepositorioOS repoOS, IRepositorioClientes repoClientes, IRepositorioVeiculos repoVeiculos, IRepositorioMecanicos repoMecanicos) {
+    // Construtor atualizado recebendo os repositórios, incluindo o de mecânicos e peças
+    public GerenciadorOficina(IRepositorioOS repoOS, IRepositorioClientes repoClientes, IRepositorioVeiculos repoVeiculos, IRepositorioMecanicos repoMecanicos, IRepositorioPecas repoPecas) {
         this.repoOS = repoOS;
         this.repoClientes = repoClientes;
         this.repoVeiculos = repoVeiculos;
         this.repoMecanicos = repoMecanicos;
+        this.repoPecas = repoPecas;
         
         // Sempre que o sistema inicia, ele roda uma verificação automática caso existam OS salvas
         verificarEProcessarFila();
@@ -25,25 +27,30 @@ impopublic class GerenciadorOficina implements IGerenciadorOficina {
 
     // =========================================================================
     // CORREÇÃO: Fluxo de abertura usando a assinatura real '.salvar(novaOS)'
+    // Este foi mantido para retrocompatibilidade com os testes do Main.java!
     // =========================================================================
     @Override
     public boolean abrirOS(String cpfCliente, String chassiVeiculo) {
+        // Redireciona para a nova versão passando parâmetros nulos de peça, usando um serviço padrão
+        return abrirOSCompleta(cpfCliente, chassiVeiculo, null, 0, "Serviço Padrão de Fila", 0.0);
+    }
+
+    // =========================================================================
+    // 🟢 NOVO FLUXO COMPLETO PARA A TELA FXML (Lida com o Óleo, Peças e Mão de Obra)
+    // =========================================================================
+    public boolean abrirOSCompleta(String cpfCliente, String chassiVeiculo, Pecas peca, int qtd, String descServico, double valorServico) {
         Cliente cliente = repoClientes.procurarCliente(cpfCliente);
         Veiculo veiculo = repoVeiculos.procurarVeiculo(chassiVeiculo);
 
         if (cliente != null && veiculo != null) {
             
-            // =========================================================================
             // 🛑 TRAVA DE SEGURANÇA COMPLEMENTAR: impede duplicidade de veículo na oficina
-            // =========================================================================
             List<OrdemServico> todasOS = repoOS.listarTodas();
             if (todasOS != null) {
                 for (OrdemServico os : todasOS) {
-                    // Se a OS pertence ao mesmo veículo...
                     if (os.getVeiculo() != null && os.getVeiculo().getChassi().equals(chassiVeiculo)) {
-                        // ...E a OS não foi fechada/paga ainda (está ativamente na oficina)
                         if (os.getStatus() == StatusOS.ABERTA || os.getStatus() == StatusOS.PROCESSO_MANUTENCAO) {
-                            System.out.println("[Aviso] Abertura negada: Veículo já possui uma OS ativa na oficina!");
+                            // Prints removidos para focar na resposta da UI FXML
                             return false; // 🚫 Rejeita na hora e não cria duplicata
                         }
                     }
@@ -51,7 +58,6 @@ impopublic class GerenciadorOficina implements IGerenciadorOficina {
             }
             
             // 🔥 AJUSTE INTELIGENTE: Só passa para EM_MANUTENCAO se o veículo for de estoque/disponível da loja.
-            // Se ele já estiver VENDIDO (pós-venda), mantém VENDIDO para não quebrar o histórico!
             if (veiculo.getStatus() == br.ufrpe.autodrive.negocio.beans.StatusVeiculo.ESTOQUE || 
                 veiculo.getStatus() == br.ufrpe.autodrive.negocio.beans.StatusVeiculo.DISPONIVEL) {
                 veiculo.setStatus(br.ufrpe.autodrive.negocio.beans.StatusVeiculo.EM_MANUTENCAO);
@@ -60,6 +66,30 @@ impopublic class GerenciadorOficina implements IGerenciadorOficina {
             OrdemServico novaOS = new OrdemServico();
             novaOS.setCliente(cliente);
             novaOS.setVeiculo(veiculo);
+
+            // =========================================================
+            // 🟢 DESCONTO OBRIGATÓRIO E AUTOMÁTICO DO ÓLEO DE MOTOR
+            // =========================================================
+            Pecas oleo = repoPecas.buscarPorCodigo("EST-001");
+            if (oleo != null && oleo.getQuantidade() >= 1) {
+                oleo.retirarDoEstoque(1); // Desconta 1 do estoque
+                repoPecas.salvar(oleo); // Salva fisicamente
+                // Adiciona a peça com a quantidade vinculada àquela OS
+                novaOS.adicionarPeca(new Pecas(oleo.getNome(), oleo.getCodigo(), oleo.getPreco(), 1), 1);
+            } else {
+                return false; // Bloqueia abertura por falta de óleo
+            }
+
+            // =========================================================
+            // 🟢 ADIÇÃO DA PEÇA EXTRA ESCOLHIDA NA TELA FXML (Se houver)
+            // =========================================================
+            if (peca != null && qtd > 0) {
+                Pecas pecaEstoque = repoPecas.buscarPorCodigo(peca.getCodigo());
+                if (pecaEstoque != null && pecaEstoque.retirarDoEstoque(qtd)) {
+                    repoPecas.salvar(pecaEstoque);
+                    novaOS.adicionarPeca(new Pecas(pecaEstoque.getNome(), pecaEstoque.getCodigo(), pecaEstoque.getPreco(), qtd), qtd);
+                }
+            }
             
             // Procura se existe algum mecânico totalmente disponível na oficina
             Mecanico mecanicoLivre = null;
@@ -70,12 +100,19 @@ impopublic class GerenciadorOficina implements IGerenciadorOficina {
                 }
             }
 
+            // Prepara o serviço com o preço estipulado pelo gerente
+            MaoDeObra servico = new MaoDeObra();
+            servico.setDescricao(descServico);
+            servico.setValor(valorServico);
+
             // Se achou mecânico livre, vincula imediatamente e muda o status da OS
             if (mecanicoLivre != null) {
                 mecanicoLivre.setDisponivel(false); // Ocupa o mecânico
                 novaOS.setMecanico(mecanicoLivre);
                 novaOS.setStatus(StatusOS.PROCESSO_MANUTENCAO);
                 
+                servico.setMecanico(mecanicoLivre);
+
                 // Atualiza o estado do mecânico no repositório persistente sem duplicar
                 repoMecanicos.removerMecanico(mecanicoLivre.getNome());
                 repoMecanicos.adicionarMecanico(mecanicoLivre);
@@ -84,6 +121,9 @@ impopublic class GerenciadorOficina implements IGerenciadorOficina {
                 novaOS.setStatus(StatusOS.ABERTA);
                 novaOS.setMecanico(null);
             }
+
+            novaOS.getListaServicos().add(servico);
+            novaOS.calcularTotal(); // Garante o cálculo do óleo, peças e mão de obra
 
             // Usando a assinatura correta do seu repositório: '.salvar' adiciona e grava no arquivo .dat de uma vez só
             repoOS.salvar(novaOS);
@@ -159,8 +199,8 @@ impopublic class GerenciadorOficina implements IGerenciadorOficina {
             // 1. CORREÇÃO DAS ASSINATURA: Usando os métodos reais existentes na sua OS
             double somaItens = os.getValorPecas() + os.getValorMaoDeObra();
             
-            // 2. REQUISITO OBRIGATÓRIO: Injeta os R$ 120.00 fixos do óleo padrão da oficina
-            os.setValorTotal(somaItens + 120.0);
+            // 2. CORREÇÃO DA MENSAGEM: Valor fixado de óleo removido daqui, pois agora é contabilizado oficialmente e dinâmico na abertura da OS.
+            os.setValorTotal(somaItens);
             
             // 3. Modifica os status de fechamento
             os.setStatus(StatusOS.FINALIZADA);
