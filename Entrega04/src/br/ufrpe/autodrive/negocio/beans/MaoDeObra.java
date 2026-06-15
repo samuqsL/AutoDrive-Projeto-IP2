@@ -3,36 +3,49 @@ package br.ufrpe.autodrive.negocio.beans;
 import java.io.Serializable;
 
 public class MaoDeObra implements Serializable {
-	
-	private static final long serialVersionUID = 1L;
-	
+    
+    private static final long serialVersionUID = 1L;
+    
     private String descricao;
     private double valor;
+    private Mecanico mecanico;
 
     public MaoDeObra() {}
 
-    public MaoDeObra(String descricao, double valor) {
+    public MaoDeObra(String descricao, double valor, Mecanico mecanico) {
+        if (!mecanico.isDisponivel()) {
+            throw new IllegalArgumentException("Mecânico ocupado!");
+        }
         this.descricao = descricao;
         this.valor = valor;
+        this.mecanico = mecanico;
     }
 
     public double calcularCusto() {
         return this.valor;
     }
 
-    public String getDescricao() { 
-        return descricao; 
-    }
-    
-    public void setDescricao(String descricao) { 
-        this.descricao = descricao; 
+    public String getDescricao() {
+        return descricao;
     }
 
-    public double getValor() { 
-        return valor; 
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
     }
-    
-    public void setValor(double valor) { 
-        this.valor = valor; 
+
+    public double getValor() {
+        return valor;
+    }
+
+    public void setValor(double valor) {
+        this.valor = valor;
+    }
+
+    public Mecanico getMecanico() {
+        return mecanico;
+    }
+
+    public void setMecanico(Mecanico mecanico) {
+        this.mecanico = mecanico;
     }
 }
