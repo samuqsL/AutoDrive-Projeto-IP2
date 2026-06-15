@@ -272,6 +272,9 @@ public class TelaVenda {
             }
             txtAreaAlertas.setText(sb.toString());
         }
+        
+        // 🟢 APENAS ESTA LINHA ADICIONADA: Dispara a geração automatizada do PDF de alertas!
+        AlertasPdfService.exportarAlertasRevisao(alertas);
     }
     
     @FXML

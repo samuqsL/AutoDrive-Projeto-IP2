@@ -1,17 +1,18 @@
 package br.ufrpe.autodrive.gui;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfWriter;
-import br.ufrpe.autodrive.negocio.beans.OrdemServico;
-import br.ufrpe.autodrive.negocio.beans.Venda;
-
 import java.awt.Desktop;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
+
+import br.ufrpe.autodrive.negocio.beans.OrdemServico;
+import br.ufrpe.autodrive.negocio.beans.Venda;
 
 public class RelatorioPdfService {
 

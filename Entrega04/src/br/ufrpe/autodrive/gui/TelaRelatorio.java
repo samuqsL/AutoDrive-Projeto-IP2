@@ -275,5 +275,6 @@ public class TelaRelatorio {
      */
     private void limparCamposConsole() {
         txtAreaConsole.clear();
-
     }
+
+  }

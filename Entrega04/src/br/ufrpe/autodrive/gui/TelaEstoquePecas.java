@@ -98,7 +98,7 @@ public class TelaEstoquePecas {
 
             for (Pecas p : listaItensReposicao) {
                 if (p.getCodigo().equals(pecaSelecionada.getCodigo())) {
-                    p.setQuantidade(p.getQuantidade() + quantity);
+                    p.setQuantidade(p.getQuantidade() + quantidade);
                     tabelaReposicao.refresh();
                     txtQuantidadeReposicao.clear();
                     return;

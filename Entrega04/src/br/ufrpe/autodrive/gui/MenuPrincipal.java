@@ -1,11 +1,11 @@
 package br.ufrpe.autodrive.gui;
 
+import br.ufrpe.autodrive.negocio.IGerenciadorCadastro;
+import br.ufrpe.autodrive.negocio.IGerenciadorEstoquePecas; // 💡 NOVO: Importação adicionada
 import br.ufrpe.autodrive.negocio.IGerenciadorOficina;
 import br.ufrpe.autodrive.negocio.IGerenciadorRelatorio;
 import br.ufrpe.autodrive.negocio.IGerenciadorTestDrive;
 import br.ufrpe.autodrive.negocio.IGerenciadorVenda;
-import br.ufrpe.autodrive.negocio.IGerenciadorCadastro; 
-import br.ufrpe.autodrive.negocio.IGerenciadorEstoquePecas; // 💡 NOVO: Importação adicionada
 import javafx.fxml.FXML;
 
 public class MenuPrincipal {
