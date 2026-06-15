@@ -217,9 +217,16 @@ public class TelaRelatorio {
             if (dados.getListaOs().isEmpty()) sb.append("Nenhuma OS encontrada.\n");
 
             for (OrdemServico os : dados.getListaOs()) {
-                sb.append("OS Nº: ").append(os.getNumero())
-                        .append(" | Data: ").append(os.getDataAbertura()) // <--- Usando a data aqui!
-                        .append(" | Cliente: ").append(os.getCliente().getNome())
+
+                // Deixa cada informação com tamanho fixo para não empurrar as barras
+                String numOsFixo = String.format("%-12d", os.getNumero());
+                String dataOsFixa = String.format("%-10s", os.getDataAbertura());
+                String clienteOsFixo = String.format("%-15s", os.getCliente().getNome());
+
+
+                sb.append("OS Nº: ").append(numOsFixo)
+                        .append(" | Data: ").append(dataOsFixa) // <--- Usando a data aqui!
+                        .append(" | Cliente: ").append(clienteOsFixo)
                         .append(" | Status: ").append(os.getStatus()).append("\n");
             }
             txtAreaConsole.setText(sb.toString());
@@ -259,12 +266,22 @@ public class TelaRelatorio {
         } else {
             for (Venda v : lista) {
                 String dataFormatada = (v.getDataVenda() != null) ? v.getDataVenda().format(fmt) : "Sem Data";
-                sb.append("Nº: ").append(v.getNumero())
-                        .append(" | Data: ").append(dataFormatada)
-                        .append(" | Vendedor: ").append(v.getVendedor().getNome())
-                        .append(" | Cliente: ").append(v.getCliente().getNome())
-                        .append(" | Veiculo: ").append(v.getVeiculo().getModelo())
-                        .append(" | Entrada: ").append(v.getEntrada())
+
+                // Deixa cada informação com tamanho fixo para não empurrar as barras
+                String numFixo = String.format("%-12d", v.getNumero());
+                String dataFixa = String.format("%-10s", dataFormatada);
+                String vendedorFixo = String.format("%-15s", v.getVendedor().getNome());
+                String clienteFixo = String.format("%-15s", v.getCliente().getNome());
+                String veiculoFixo = String.format("%-20s", v.getVeiculo().getModelo());
+                String entradaFixa = String.format("%-12s", v.getEntrada());
+
+
+                sb.append("Nº: ").append(numFixo)
+                        .append(" | Data: ").append(dataFixa)
+                        .append(" | Vendedor: ").append(vendedorFixo)
+                        .append(" | Cliente: ").append(clienteFixo)
+                        .append(" | Veiculo: ").append(veiculoFixo)
+                        .append(" | Entrada: ").append(entradaFixa)
                         .append(" | Total: R$ ").append(v.getValorTotal()).append("\n");
             }
         }
@@ -275,6 +292,6 @@ public class TelaRelatorio {
      */
     private void limparCamposConsole() {
         txtAreaConsole.clear();
-    }
 
-  }
+    }
+}
