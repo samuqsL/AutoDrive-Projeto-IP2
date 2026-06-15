@@ -69,7 +69,7 @@ public class TelaEstoquePecas {
             }
         });
 
-        // Recarrega os dados atualizados do repositório sempre que o usuário clicar para abrir o ComboBox
+        // Garante que o ComboBox se atualize com dados novos sempre que for aberto visualmente
         cbPecas.setOnShowing(event -> carregarComboBox());
     }
 
@@ -98,7 +98,7 @@ public class TelaEstoquePecas {
 
             for (Pecas p : listaItensReposicao) {
                 if (p.getCodigo().equals(pecaSelecionada.getCodigo())) {
-                    p.setQuantidade(p.getQuantidade() + quantidade);
+                    p.setQuantidade(p.getQuantidade() + quantity);
                     tabelaReposicao.refresh();
                     txtQuantidadeReposicao.clear();
                     return;
