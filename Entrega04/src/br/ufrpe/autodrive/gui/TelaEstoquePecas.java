@@ -30,12 +30,12 @@ public class TelaEstoquePecas {
     @FXML
     private TableColumn<Pecas, Integer> colunaQuantidade;
 
-    private IGerenciadorEstoquePecas gerenciadorEstoque;
+    private IGerenciadorEstoquePecas control;
     
     private ObservableList<Pecas> listaItensReposicao = FXCollections.observableArrayList();
 
     public void injetarGerenciador(IGerenciadorEstoquePecas gerenciadorEstoque) {
-        this.gerenciadorEstoque = gerenciadorEstoque;
+        this.control = gerenciadorEstoque;
         carregarComboBox();
     }
 
@@ -74,8 +74,8 @@ public class TelaEstoquePecas {
     }
 
     private void carregarComboBox() {
-        if (gerenciadorEstoque != null) {
-            cbPecas.setItems(FXCollections.observableArrayList(gerenciadorEstoque.listarPecas()));
+        if (control != null) {
+            cbPecas.setItems(FXCollections.observableArrayList(control.listarPecas()));
         }
     }
 
@@ -124,7 +124,7 @@ public class TelaEstoquePecas {
 
         try {
             for (Pecas item : listaItensReposicao) {
-                gerenciadorEstoque.reporEstoque(item.getCodigo(), item.getQuantidade());
+                control.reporEstoque(item.getCodigo(), item.getQuantidade());
             }
 
             mostrarAlerta("Sucesso", "Estoque de todas as peças updated com sucesso!");
