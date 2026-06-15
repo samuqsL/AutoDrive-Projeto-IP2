@@ -1,3 +1,4 @@
+// ... [MANTENHA TODOS OS IMPORTS E PACOTES ORIGINAIS AQUI] ...
 package br.ufrpe.autodrive;
 
 import java.time.LocalDateTime;
@@ -84,10 +85,10 @@ public class Main extends Application {
         if (repoPecas.buscarPorCodigo("EST-010") == null) repoPecas.salvar(new Pecas("Fluido de Radiador", "EST-010", 35.00, 10));
         
         // =========================================================================
-        // 🟢 Passo 2: Instanciar os Gerenciadores Primeiro
+        // 🟢 Passo 2: Instanciar os Gerenciadores Primeiro (Injetado Repositorio Pecas)
         // =========================================================================
         IGerenciadorVenda gVenda = new GerenciadorVenda(repoVendas, repoClientes, repoVendedores, repoVeiculos);
-        IGerenciadorOficina gOficina = new GerenciadorOficina(repoOS, repoClientes, repoVeiculos, repoMecanicos);
+        IGerenciadorOficina gOficina = new GerenciadorOficina(repoOS, repoClientes, repoVeiculos, repoMecanicos, repoPecas);
         IGerenciadorRelatorio gRelatorio = new GerenciadorRelatorio(repoVendas, repoOS);
         IGerenciadorTestDrive gTestDrive = new GerenciadorTestDrive(repoTestDrive, repoClientes, repoVeiculos);
         IGerenciadorCadastro gCadastro = new GerenciadorCadastro(repoClientes, repoVeiculos);
@@ -295,11 +296,11 @@ public class Main extends Application {
             os1.getListaPecas().add(new Pecas("Kit Filtros e Óleo Sintético", "PC-001", 250.00, 1));
             os1.getListaPecas().add(new Pecas("Jogo de Velas Iridium", "PC-002", 180.00, 1));
             
-            // Construtor MaoDeObra: (descricao, valor, horas, mecanico)
-            os1.getListaServicos().add(new MaoDeObra("Mão de Obra Revisão Periódica", 100.00, 2.0, mec1));
+            // Construtor MaoDeObra modificado SEM as horas: (descricao, valor, mecanico)
+            os1.getListaServicos().add(new MaoDeObra("Mão de Obra Revisão Periódica", 100.00, mec1));
             
             os1.setStatus(StatusOS.FINALIZADA);
-            os1.setValorTotal(250.00 + 180.00 + (100.00 * 2.0));
+            os1.setValorTotal(250.00 + 180.00 + 100.00); // Horas foram desconsideradas no cálculo
             
             repoOS.salvar(os1);
             System.out.println("✅ OS Nº " + os1.getNumero() + " (Onix) injetada com sucesso!");
@@ -318,11 +319,11 @@ public class Main extends Application {
             // Construtor Pecas: (nome, codigo, preco, quantidade)
             os2.getListaPecas().add(new Pecas("Par de Discos de Freio Ventilados", "PC-003", 450.00, 1));
             os2.getListaPecas().add(new Pecas("Jogo de Pastilhas de Freio Cerâmica", "PC-004", 220.00, 1));
-            // Construtor MaoDeObra: (descricao, valor, horas, mecanico)
-            os2.getListaServicos().add(new MaoDeObra("Alinhamento, Balanceamento e Freios", 75.00, 2.0, mec2));
+            // Construtor MaoDeObra modificado SEM as horas: (descricao, valor, mecanico)
+            os2.getListaServicos().add(new MaoDeObra("Alinhamento, Balanceamento e Freios", 75.00, mec2));
             
             os2.setStatus(StatusOS.FINALIZADA);
-            os2.setValorTotal(450.00 + 220.00 + (75.00 * 2.0));
+            os2.setValorTotal(450.00 + 220.00 + 75.00); // Horas foram desconsideradas no cálculo
             
             repoOS.salvar(os2);
             System.out.println("✅ OS Nº " + os2.getNumero() + " (Corolla) injetada com sucesso!");
