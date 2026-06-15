@@ -25,7 +25,7 @@ public class MaoDeObra implements Serializable {
     }
 
     public double calcularCusto() {
-        // Como o atributo horas foi removido, o custo agora é diretamente o valor estipulado
+        // Como o atributo horas foi removido, o custo é o próprio valor da mão de obra
         return valor;
     }
 
