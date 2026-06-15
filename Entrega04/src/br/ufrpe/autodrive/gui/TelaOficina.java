@@ -115,7 +115,6 @@ public class TelaOficina {
             });
         }
 
-        // Conversor para formatar o nome no ComboBox de peças e exibir o estoque na tela
         if (cbPecas != null) {
             cbPecas.setConverter(new StringConverter<Pecas>() {
                 @Override
@@ -126,8 +125,8 @@ public class TelaOficina {
                 @Override
                 public Pecas fromString(String string) { return null; }
             });
-            
-            // Sincroniza também a tela de Oficina caso novos reabastecimentos tenham sido feitos na tela de estoque
+
+            // Força a atualização dos dados do estoque centralizado quando abrir a lista suspensa
             cbPecas.setOnShowing(event -> carregarComboBoxes());
         }
 
@@ -145,7 +144,6 @@ public class TelaOficina {
         atualizarTabelas();
     }
 
-    // Carrega os dados dos repositórios diretamente para os ComboBoxes
     private void carregarComboBoxes() {
         try {
             List<Cliente> clientes = RepositorioClientesArray.getInstance().listarClientes();
