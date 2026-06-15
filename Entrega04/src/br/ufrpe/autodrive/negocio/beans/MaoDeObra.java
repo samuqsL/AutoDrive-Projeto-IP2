@@ -2,10 +2,12 @@ package br.ufrpe.autodrive.negocio.beans;
 
 import java.io.Serializable;
 
+//Serialização da classe (Serialization/Persistence)*
 public class MaoDeObra implements Serializable {
-    
-    private static final long serialVersionUID = 1L;
-    
+	
+	// É uma excelente prática de POO colocar essa constante de controle (Serialization/Persistence)*
+	private static final long serialVersionUID = 1L;
+	
     private String descricao;
     private double valor;
     private Mecanico mecanico;
@@ -13,6 +15,7 @@ public class MaoDeObra implements Serializable {
     public MaoDeObra() {}
 
     public MaoDeObra(String descricao, double valor, Mecanico mecanico) {
+        //AJUSTE(REQ20): checa se mecanico tá ocupado, ou disponivel!
         if (!mecanico.isDisponivel()) {
             throw new IllegalArgumentException("Mecânico ocupado!");
         }
@@ -22,7 +25,8 @@ public class MaoDeObra implements Serializable {
     }
 
     public double calcularCusto() {
-        return this.valor;
+        // Como o atributo horas foi removido, o custo agora é diretamente o valor estipulado
+        return valor;
     }
 
     public String getDescricao() {
