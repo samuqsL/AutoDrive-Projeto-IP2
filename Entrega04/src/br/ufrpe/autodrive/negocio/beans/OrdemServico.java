@@ -19,6 +19,8 @@ public class OrdemServico implements Serializable {
 
     private Cliente cliente;
     private Veiculo veiculo;
+    
+    // FUNÇÃO LOCALIZADA: Atributo para vincular o mecânico individual responsável
     private Mecanico mecanico; 
 
     private List<Pecas> listaPecas;
@@ -27,25 +29,31 @@ public class OrdemServico implements Serializable {
     public OrdemServico() {
         this.listaPecas = new ArrayList<>();
         this.listaServicos = new ArrayList<>();
-        this.status = StatusOS.ABERTA; 
+        this.status = StatusOS.ABERTA; // Toda OS nasce por padrão na fila (ABERTA)
         this.valorTotal = 0.0;
+
+        // FUNÇÃO LOCALIZADA: Gerador automático de código aleatório para a OS (5 dígitos)
         this.numero = 10000 + new Random().nextInt(90000);
 
+        // FUNÇÃO LOCALIZADA: Captura automática da data do sistema
         LocalDateTime agora = LocalDateTime.now();
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         this.dataAbertura = agora.format(formatador);
     }
 
+    // FUNÇÃO LOCALIZADA: Construtor simplificado (sem número e data manuais)
     public OrdemServico(Cliente cliente, Veiculo veiculo) {
         this();
         this.cliente = cliente;
         this.veiculo = veiculo;
     }
 
+    // FUNÇÃO LOCALIZADA: Validador boolean para identificar se a OS possui mecânico alocado
     public boolean possuiMecanico() {
         return this.mecanico != null;
     }
 
+    // Métodos utilitários e regras mantidos do projeto original
     public boolean adicionarPeca(Pecas peca, int quantidade) {
         if (peca != null && quantidade > 0) {
             peca.setQuantidade(quantidade);
@@ -61,9 +69,11 @@ public class OrdemServico implements Serializable {
 
     public void calcularTotal() {
         double total = 0;
+        // Soma as peças
         for (Pecas p : listaPecas) {
             total += p.getPreco() * p.getQuantidade();
         }
+        // Soma a mão de obra (serviços)
         for (MaoDeObra m : listaServicos) {
             total += m.getValor();
         }
@@ -78,6 +88,7 @@ public class OrdemServico implements Serializable {
         return true;
     }
 
+    // 🟢 CORREÇÃO: Métodos solicitados pela classe Relatorio para compilar corretamente
     public Double getValorPecas() {
         double totalPecas = 0.0;
         for (Pecas p : listaPecas) {
@@ -94,6 +105,7 @@ public class OrdemServico implements Serializable {
         return totalMaoDeObra;
     }
 
+    // Getters e Setters
     public int getNumero() { return numero; }
     public void setNumero(int numero) { this.numero = numero; }
 
@@ -128,4 +140,5 @@ public class OrdemServico implements Serializable {
     public String toString() {
         return "OS #" + this.numero + " - " + (this.cliente != null ? this.cliente.getNome() : "Sem Cliente");
     }
+    
 }
