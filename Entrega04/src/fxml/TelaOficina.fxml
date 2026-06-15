@@ -8,6 +8,7 @@
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -30,9 +31,7 @@
                         <VBox alignment="CENTER_LEFT" spacing="3.0">
                            <children>
                               <Label text="Selecione o Cliente:" textFill="#555555">
-                                 <font>
-                                    <Font name="System Bold" size="12.0" />
-                                 </font>
+                                  <font><Font name="System Bold" size="12.0" /></font>
                               </Label>
                               <ComboBox fx:id="cbCliente" prefWidth="350.0" promptText="Selecione o Cliente" />
                            </children>
@@ -40,12 +39,46 @@
                         
                         <VBox alignment="CENTER_LEFT" spacing="3.0">
                            <children>
-                              <Label text="Selecione o Veículo:" textFill="#555555">
-                                 <font>
-                                    <Font name="System Bold" size="12.0" />
-                                 </font>
-                              </Label>
+                               <Label text="Selecione o Veículo:" textFill="#555555">
+                                 <font><Font name="System Bold" size="12.0" /></font>
+                               </Label>
                               <ComboBox fx:id="cbVeiculo" prefWidth="350.0" promptText="Selecione o Veículo" />
+                            </children>
+                        </VBox>
+
+                        <VBox alignment="CENTER_LEFT" spacing="3.0">
+                           <children>
+                              <Label text="Descrição da Mão de Obra:" textFill="#555555">
+                                 <font><Font name="System Bold" size="12.0" /></font>
+                              </Label>
+                              <TextField fx:id="txtDescricaoMaoObra" promptText="Ex: Troca de pastilhas" />
+                           </children>
+                        </VBox>
+
+                        <VBox alignment="CENTER_LEFT" spacing="3.0">
+                           <children>
+                              <Label text="Selecione a Peça (Estoque):" textFill="#555555">
+                                 <font><Font name="System Bold" size="12.0" /></font>
+                              </Label>
+                              <ComboBox fx:id="cbPecas" prefWidth="350.0" promptText="Selecione a Peça (Opcional)" />
+                           </children>
+                        </VBox>
+
+                        <VBox alignment="CENTER_LEFT" spacing="3.0">
+                           <children>
+                              <Label text="Quantidade de Peças:" textFill="#555555">
+                                 <font><Font name="System Bold" size="12.0" /></font>
+                              </Label>
+                              <TextField fx:id="txtQtdPecas" promptText="Informe a Qtd" />
+                           </children>
+                        </VBox>
+
+                        <VBox alignment="CENTER_LEFT" spacing="3.0">
+                           <children>
+                              <Label text="Valor Mão de Obra (R$):" textFill="#555555">
+                                 <font><Font name="System Bold" size="12.0" /></font>
+                              </Label>
+                              <TextField fx:id="txtValorMaoObra" promptText="0.00" />
                            </children>
                         </VBox>
                         
@@ -53,25 +86,21 @@
                         
                         <AnchorPane prefHeight="20.0" prefWidth="200.0">
                            <children>
-                              <Label layoutX="10.0" layoutY="2.0" style="-fx-border-color: #bdc3c7; -fx-border-width: 0 0 1 0;" text="                                                                     " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                               <Label layoutX="10.0" layoutY="2.0" style="-fx-border-color: #bdc3c7; -fx-border-width: 0 0 1 0;" text="                                                                     " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                            </children>
                         </AnchorPane>
                         
                         <Label text="Finalizar OS">
-                           <font>
-                               <Font name="System Bold" size="18.0" />
-                           </font>
+                            <font><Font name="System Bold" size="18.0" /></font>
                         </Label>
-                        
+                         
                         <VBox alignment="CENTER_LEFT" spacing="3.0">
                            <children>
                               <Label text="Ordem em Andamento:" textFill="#555555">
-                                 <font>
-                                    <Font name="System Bold" size="12.0" />
-                                 </font>
+                                 <font><Font name="System Bold" size="12.0" /></font>
                               </Label>
                               <ComboBox fx:id="cbFinalizarOS" prefWidth="350.0" promptText="Selecione a OS em Manutenção" />
-                           </children>
+                            </children>
                         </VBox>
                         
                         <Button mnemonicParsing="false" onAction="#botaoFinalizarOS" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #2980b9; -fx-text-fill: white;" text="Finalizar Serviço" />
@@ -85,7 +114,7 @@
                         </AnchorPane>
                      </children>
                   </VBox>
-               </children>
+                </children>
             </AnchorPane>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                <children>
@@ -94,47 +123,39 @@
                         <HBox alignment="CENTER_LEFT" prefHeight="40.0" prefWidth="200.0" spacing="10.0">
                            <children>
                               <Label text="Filtrar por Data:">
-                                 <font>
-                                    <Font name="System Bold" size="14.0" />
-                                 </font>
+                                  <font><Font name="System Bold" size="14.0" /></font>
                               </Label>
-                              
                               <DatePicker fx:id="dpFiltroData" prefHeight="25.0" prefWidth="200.0" promptText="Escolha a Data" />
                               <Button mnemonicParsing="false" onAction="#limparFiltroData" text="Limpar" />
                            </children>
                         </HBox>
                         
                         <Label text="Fila e Em Manutenção">
-                           <font>
-                              <Font name="System Bold" size="16.0" />
-                           </font>
+                           <font><Font name="System Bold" size="16.0" /></font>
                         </Label>
                         <TableView fx:id="tbFila" prefHeight="300.0" prefWidth="678.0" VBox.vgrow="ALWAYS">
                           <columns>
-                            <TableColumn fx:id="colFilaOS" prefWidth="160.0" text="OS e Cliente" />
+                             <TableColumn fx:id="colFilaOS" prefWidth="160.0" text="OS e Cliente" />
                             <TableColumn fx:id="colFilaVeiculo" prefWidth="200.0" text="Veículo (Modelo e Chassi)" />
                             <TableColumn fx:id="colFilaStatus" minWidth="0.0" prefWidth="140.0" text="Status" />
-                            <TableColumn fx:id="colFilaData" prefWidth="140.0" text="Data Abertura" />
+                             <TableColumn fx:id="colFilaData" prefWidth="140.0" text="Data Abertura" />
                           </columns>
                            <columnResizePolicy>
-                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                               <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                            </columnResizePolicy>
                         </TableView>
                         
-                        <Label text="Histórico (Finalizadas / Pagas)">
-                           <font>
-                               <Font name="System Bold" size="16.0" />
-                           </font>
-                           <VBox.margin>
-                               <Insets top="10.0" />
-                           </VBox.margin>
-                        </Label>
+                          <Label text="Histórico (Finalizadas / Pagas)">
+                           <font><Font name="System Bold" size="16.0" /></font>
+                           <VBox.margin><Insets top="10.0" /></VBox.margin>
+                          </Label>
                         <TableView fx:id="tbHistorico" prefHeight="250.0" prefWidth="678.0" VBox.vgrow="ALWAYS">
                            <columns>
                               <TableColumn fx:id="colHistOS" prefWidth="160.0" text="OS e Cliente" />
-                              <TableColumn fx:id="colHistVeiculo" prefWidth="200.0" text="Veículo (Modelo e Chassi)" />
-                              <TableColumn fx:id="colHistStatus" minWidth="0.0" prefWidth="140.0" text="Status" />
+                              <TableColumn fx:id="colHistVeiculo" prefWidth="170.0" text="Veículo (Modelo e Chassi)" />
+                              <TableColumn fx:id="colHistStatus" minWidth="0.0" prefWidth="110.0" text="Status" />
                               <TableColumn fx:id="colHistData" prefWidth="140.0" text="Data Fechamento" />
+                              <TableColumn fx:id="colHistValorTotal" prefWidth="120.0" text="Valor Pago (R$)" /> 
                            </columns>
                            <columnResizePolicy>
                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -142,7 +163,7 @@
                         </TableView>
                      </children>
                    </VBox>
-               </children>
+                </children>
             </AnchorPane>
         </items>
       </SplitPane>
