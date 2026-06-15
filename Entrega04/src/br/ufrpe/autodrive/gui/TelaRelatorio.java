@@ -273,6 +273,7 @@ public class TelaRelatorio {
                 String vendedorFixo = String.format("%-15s", v.getVendedor().getNome());
                 String clienteFixo = String.format("%-15s", v.getCliente().getNome());
                 String veiculoFixo = String.format("%-20s", v.getVeiculo().getModelo());
+                String chassiFixo = String.format("%-15s", v.getVeiculo().getChassi());
                 String entradaFixa = String.format("%-12s", v.getEntrada());
 
 
@@ -281,7 +282,8 @@ public class TelaRelatorio {
                         .append(" | Vendedor: ").append(vendedorFixo)
                         .append(" | Cliente: ").append(clienteFixo)
                         .append(" | Veiculo: ").append(veiculoFixo)
-                        .append(" | Entrada: ").append(entradaFixa)
+                        .append(" | Chassi: ").append(chassiFixo)
+                        .append(" | Entrada: R$ ").append(entradaFixa)
                         .append(" | Total: R$ ").append(v.getValorTotal()).append("\n");
             }
         }
