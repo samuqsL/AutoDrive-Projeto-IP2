@@ -149,6 +149,11 @@ public class ScreenManager {
     }
 
     public void showTelaTestDrive() {
+        // para se comunicar com o novo metodo do TelaTestdrive.java
+    	if (this.controllerTestDrive != null) {
+            this.controllerTestDrive.atualizarComboBoxes();
+        }
+        
         this.mainStage.setScene(this.cenaTestDrive);
         this.mainStage.show();
     }
