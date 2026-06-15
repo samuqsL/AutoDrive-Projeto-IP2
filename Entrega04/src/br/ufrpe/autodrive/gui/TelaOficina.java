@@ -126,6 +126,9 @@ public class TelaOficina {
                 @Override
                 public Pecas fromString(String string) { return null; }
             });
+            
+            // Sincroniza também a tela de Oficina caso novos reabastecimentos tenham sido feitos na tela de estoque
+            cbPecas.setOnShowing(event -> carregarComboBoxes());
         }
 
         // Efeito Cascata do DatePicker: Atualiza tabelas instantaneamente ao selecionar uma data
