@@ -55,8 +55,12 @@ public class TelaTestDrive {
         configurarTabela();
         carregarTabelaCompleta();
         
-        // 🟢 CORREÇÃO CRÍTICA: Mapeamento de itens movido para dentro da checagem 'if'
+        // CORREÇÃO CRÍTICA: Mapeamento de itens movido para dentro da checagem 'if'
         // Evita que o sistema lance um NullPointerException caso o gerenciador gT falhe ao carregar.
+        atualizarComboBoxes();
+    }
+// novo metodo
+    public void atualizarComboBoxes() {
         if (this.control != null) {
             List<Cliente> clientes = control.listarTodosClientes();
             List<Veiculo> veiculos = control.listarTodosVeiculos();
