@@ -258,8 +258,13 @@ public class TelaRelatorio {
             sb.append("Nenhum registro encontrado.\n");
         } else {
             for (Venda v : lista) {
+                String dataFormatada = (v.getDataVenda() != null) ? v.getDataVenda().format(fmt) : "Sem Data";
                 sb.append("Nº: ").append(v.getNumero())
+                        .append(" | Data: ").append(dataFormatada)
                         .append(" | Vendedor: ").append(v.getVendedor().getNome())
+                        .append(" | Cliente: ").append(v.getCliente().getNome())
+                        .append(" | Veiculo: ").append(v.getVeiculo().getModelo())
+                        .append(" | Entrada: ").append(v.getEntrada())
                         .append(" | Total: R$ ").append(v.getValorTotal()).append("\n");
             }
         }
@@ -272,4 +277,3 @@ public class TelaRelatorio {
         txtAreaConsole.clear();
 
     }
-}
