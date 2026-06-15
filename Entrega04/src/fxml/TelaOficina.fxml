@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.ufrpe.autodrive.gui.TelaOficina">
+   <children>
+      <SplitPane dividerPositions="0.35" layoutX="14.0" layoutY="14.0" prefHeight="720.0" prefWidth="1080.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <items>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+               <children>
+                  <VBox alignment="TOP_CENTER" layoutX="14.0" layoutY="14.0" prefHeight="698.0" prefWidth="354.0" spacing="15.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                     <children>
+                        <Label text="Abertura de OS">
+                           <font>
+                               <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
+                        
+                        <VBox alignment="CENTER_LEFT" spacing="3.0">
+                           <children>
+                              <Label text="Selecione o Cliente:" textFill="#555555">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Label>
+                              <ComboBox fx:id="cbCliente" prefWidth="350.0" promptText="Selecione o Cliente" />
+                           </children>
+                        </VBox>
+                        
+                        <VBox alignment="CENTER_LEFT" spacing="3.0">
+                           <children>
+                              <Label text="Selecione o Veículo:" textFill="#555555">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Label>
+                              <ComboBox fx:id="cbVeiculo" prefWidth="350.0" promptText="Selecione o Veículo" />
+                           </children>
+                        </VBox>
+                        
+                        <Button mnemonicParsing="false" onAction="#botaoAbrirOS" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #27ae60; -fx-text-fill: white;" text="Abrir OS" />
+                        
+                        <AnchorPane prefHeight="20.0" prefWidth="200.0">
+                           <children>
+                              <Label layoutX="10.0" layoutY="2.0" style="-fx-border-color: #bdc3c7; -fx-border-width: 0 0 1 0;" text="                                                                     " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                           </children>
+                        </AnchorPane>
+                        
+                        <Label text="Finalizar OS">
+                           <font>
+                               <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
+                        
+                        <VBox alignment="CENTER_LEFT" spacing="3.0">
+                           <children>
+                              <Label text="Ordem em Andamento:" textFill="#555555">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Label>
+                              <ComboBox fx:id="cbFinalizarOS" prefWidth="350.0" promptText="Selecione a OS em Manutenção" />
+                           </children>
+                        </VBox>
+                        
+                        <Button mnemonicParsing="false" onAction="#botaoFinalizarOS" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #2980b9; -fx-text-fill: white;" text="Finalizar Serviço" />
+                        
+                        <Label fx:id="lblMensagem" alignment="CENTER" prefHeight="50.0" prefWidth="334.0" text="Pronto para operar" textAlignment="CENTER" wrapText="true" />
+                        
+                        <AnchorPane prefHeight="120.0" prefWidth="354.0" VBox.vgrow="ALWAYS">
+                           <children>
+                               <Button layoutX="102.0" layoutY="134.0" mnemonicParsing="false" onAction="#botaoVoltar" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" text="Voltar ao Menu" AnchorPane.bottomAnchor="0.0" />
+                           </children>
+                        </AnchorPane>
+                     </children>
+                  </VBox>
+               </children>
+            </AnchorPane>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+               <children>
+                  <VBox layoutX="24.0" layoutY="24.0" prefHeight="718.0" prefWidth="698.0" spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" prefHeight="40.0" prefWidth="200.0" spacing="10.0">
+                           <children>
+                              <Label text="Filtrar por Data:">
+                                 <font>
+                                    <Font name="System Bold" size="14.0" />
+                                 </font>
+                              </Label>
+                              
+                              <DatePicker fx:id="dpFiltroData" prefHeight="25.0" prefWidth="200.0" promptText="Escolha a Data" />
+                              <Button mnemonicParsing="false" onAction="#limparFiltroData" text="Limpar" />
+                           </children>
+                        </HBox>
+                        
+                        <Label text="Fila e Em Manutenção">
+                           <font>
+                              <Font name="System Bold" size="16.0" />
+                           </font>
+                        </Label>
+                        <TableView fx:id="tbFila" prefHeight="300.0" prefWidth="678.0" VBox.vgrow="ALWAYS">
+                          <columns>
+                            <TableColumn fx:id="colFilaOS" prefWidth="160.0" text="OS e Cliente" />
+                            <TableColumn fx:id="colFilaVeiculo" prefWidth="200.0" text="Veículo (Modelo e Chassi)" />
+                            <TableColumn fx:id="colFilaStatus" minWidth="0.0" prefWidth="140.0" text="Status" />
+                            <TableColumn fx:id="colFilaData" prefWidth="140.0" text="Data Abertura" />
+                          </columns>
+                           <columnResizePolicy>
+                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                           </columnResizePolicy>
+                        </TableView>
+                        
+                        <Label text="Histórico (Finalizadas / Pagas)">
+                           <font>
+                               <Font name="System Bold" size="16.0" />
+                           </font>
+                           <VBox.margin>
+                               <Insets top="10.0" />
+                           </VBox.margin>
+                        </Label>
+                        <TableView fx:id="tbHistorico" prefHeight="250.0" prefWidth="678.0" VBox.vgrow="ALWAYS">
+                           <columns>
+                              <TableColumn fx:id="colHistOS" prefWidth="160.0" text="OS e Cliente" />
+                              <TableColumn fx:id="colHistVeiculo" prefWidth="200.0" text="Veículo (Modelo e Chassi)" />
+                              <TableColumn fx:id="colHistStatus" minWidth="0.0" prefWidth="140.0" text="Status" />
+                              <TableColumn fx:id="colHistData" prefWidth="140.0" text="Data Fechamento" />
+                           </columns>
+                           <columnResizePolicy>
+                               <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                           </columnResizePolicy>
+                        </TableView>
+                     </children>
+                   </VBox>
+               </children>
+            </AnchorPane>
+        </items>
+      </SplitPane>
+   </children>
+</AnchorPane>
