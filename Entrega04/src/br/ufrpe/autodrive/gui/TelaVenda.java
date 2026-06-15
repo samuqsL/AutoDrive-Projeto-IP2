@@ -55,6 +55,8 @@ public class TelaVenda {
     public void injetarGerenciador(IGerenciadorVenda gV) {
         this.control = gV;
         atualizarTabela(control.listarTodasVendas());
+        // 🟢 ATUALIZAÇÃO PREVENTIVA: Garante que os dados entrem em cache assim que o ScreenManager focar a tela
+        atualizarTodosComboBoxes();
     }
 
     @FXML
@@ -79,20 +81,17 @@ public class TelaVenda {
             }
         });
 
-        // 🟢 TRAVA INTELIGENTE DE DATAS (Estilo TelaRelatorio):
-        // Bloqueia dinamicamente o calendário final baseado no dia inicial escolhido
+        // 🟢 TRAVA INTELIGENTE DE DATAS:
         dpFiltroInicio.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 dpFiltroFim.setDayCellFactory(picker -> new DateCell() {
                     @Override
                     public void updateItem(LocalDate date, boolean empty) {
                         super.updateItem(date, empty);
-                        // Desabilita dias anteriores à data de início
                         setDisable(empty || date.isBefore(newValue));
                     }
                 });
                 
-                // Se o usuário mudar o início e a data fim já escolhida ficou menor, ajusta automaticamente
                 if (dpFiltroFim.getValue() != null && dpFiltroFim.getValue().isBefore(newValue)) {
                     dpFiltroFim.setValue(newValue);
                 }
@@ -100,6 +99,23 @@ public class TelaVenda {
         });
 
         tabelaVendas.setItems(dadosTabelaVendas);
+    }
+
+    // 🟢 NOVO MÉTODO CENTRALIZADO DE REFRESH: Executado de forma segura em JavaFX
+    public void atualizarTodosComboBoxes() {
+        if (control != null) {
+            carregarComboVeiculosDisponiveis();
+            
+            List<Cliente> clientes = control.listarTodosClientes();
+            if (clientes != null && comboCliente != null) {
+                comboCliente.setItems(FXCollections.observableArrayList(clientes));
+            }
+            
+            List<Vendedor> vendedores = control.listarTodosVendedores();
+            if (vendedores != null && comboVendedor != null) {
+                comboVendedor.setItems(FXCollections.observableArrayList(vendedores));
+            }
+        }
     }
 
     @FXML
@@ -123,8 +139,9 @@ public class TelaVenda {
                 lblStatus.setText("Venda realizada e registrada com sucesso!");
                 lblStatus.setStyle("-fx-text-fill: green;");
                 
-                carregarComboVeiculosDisponiveis();
+                // Limpa o formulário e força a atualização de quem sobrou em estoque
                 limparCamposFormulario();
+                atualizarTodosComboBoxes();
                 atualizarTabela(control.listarTodasVendas());
             } else {
                 lblStatus.setText("Falha: Verifique se o veículo está disponível ou se a entrada atingiu o mínimo de R$ 5.000,00.");
@@ -148,7 +165,6 @@ public class TelaVenda {
             return;
         }
 
-        // Caso o usuário preencha apenas uma das duas pontas da data, evitamos comportamentos inesperados
         if (inicioSel == null || fimSel == null) {
             lblStatus.setText("Por favor, selecione ambas as datas (De / Até) para filtrar.");
             lblStatus.setStyle("-fx-text-fill: red;");
@@ -158,18 +174,15 @@ public class TelaVenda {
         List<Venda> todas = control.listarTodasVendas();
         List<Venda> filtradas = new ArrayList<>();
 
-        for (Venda v : todas) {
-            if (v.getDataVenda() != null) {
-                // 🟢 SOLUÇÃO DO PROBLEMA DE HORÁRIOS: Convertemos o LocalDateTime para LocalDate puro.
-                // Assim comparamos apenas o Dia/Mês/Ano, pegando os registros desde o primeiro minuto (00:00) do dia inicial.
-                LocalDate dataV = v.getDataVenda().toLocalDate();
-                
-                // Verifica se a data da venda está dentro ou nas extremidades exatas do período desejado
-                boolean noIntervalo = (dataV.isAfter(inicioSel) || dataV.isEqual(inicioSel)) && 
-                                      (dataV.isBefore(fimSel) || dataV.isEqual(fimSel));
-
-                if (noIntervalo) {
-                    filtradas.add(v);
+        if (todas != null) {
+            for (Venda v : todas) {
+                if (v.getDataVenda() != null) {
+                    LocalDate dataV = v.getDataVenda().toLocalDate();
+                    boolean noIntervalo = (dataV.isAfter(inicioSel) || dataV.isEqual(inicioSel)) && 
+                                          (dataV.isBefore(fimSel) || dataV.isEqual(fimSel));
+                    if (noIntervalo) {
+                        filtradas.add(v);
+                    }
                 }
             }
         }
@@ -189,7 +202,6 @@ public class TelaVenda {
     public void acaoLimparFiltro() {
         dpFiltroInicio.setValue(null);
         dpFiltroFim.setValue(null);
-        // Reseta o gerenciador de células de data bloqueadas ao limpar
         dpFiltroFim.setDayCellFactory(null);
         
         if (control != null) {
@@ -210,11 +222,17 @@ public class TelaVenda {
     
     private void carregarComboVeiculosDisponiveis() {
         if (comboVeiculo != null && control != null) {
-            List<Veiculo> disponiveis = control.listarTodosVeiculos().stream()
-                .filter(v -> v.getStatus() == br.ufrpe.autodrive.negocio.beans.StatusVeiculo.ESTOQUE || 
-                             v.getStatus() == br.ufrpe.autodrive.negocio.beans.StatusVeiculo.DISPONIVEL)
-                .toList();
+            List<Veiculo> todos = control.listarTodosVeiculos();
+            List<Veiculo> disponiveis = new ArrayList<>();
             
+            if (todos != null) {
+                for (Veiculo v : todos) {
+                    if (v.getStatus() == br.ufrpe.autodrive.negocio.beans.StatusVeiculo.ESTOQUE || 
+                        v.getStatus() == br.ufrpe.autodrive.negocio.beans.StatusVeiculo.DISPONIVEL) {
+                        disponiveis.add(v);
+                    }
+                }
+            }
             comboVeiculo.setItems(FXCollections.observableArrayList(disponiveis));
         }
     }
@@ -227,12 +245,8 @@ public class TelaVenda {
         painelFormulario.setManaged(true);
         lblStatus.setText("");
 
-        if (control != null) {
-            // 🟢 CORREÇÃO CIRÚRGICA: Alimenta todas as ComboBoxes ao abrir o formulário
-            carregarComboVeiculosDisponiveis();
-            comboCliente.setItems(FXCollections.observableArrayList(control.listarTodosClientes()));
-            comboVendedor.setItems(FXCollections.observableArrayList(control.listarTodosVendedores()));
-        }
+        // Atualiza dinamicamente tudo antes de renderizar a troca de painel
+        atualizarTodosComboBoxes();
     }
 
     @FXML
@@ -273,8 +287,12 @@ public class TelaVenda {
             txtAreaAlertas.setText(sb.toString());
         }
         
-        // 🟢 APENAS ESTA LINHA ADICIONADA: Dispara a geração automatizada do PDF de alertas!
-        AlertasPdfService.exportarAlertasRevisao(alertas);
+        // Dispara a exportação de PDF de Alertas coletados
+        try {
+            AlertasPdfService.exportarAlertasRevisao(alertas);
+        } catch (Exception e) {
+            System.err.println("Erro ao gerar PDF de alertas: " + e.getMessage());
+        }
     }
     
     @FXML
@@ -285,17 +303,14 @@ public class TelaVenda {
     private void limparCamposFormulario() {
         if (comboCliente != null) {
             comboCliente.setValue(null);
-            comboCliente.setPromptText("");
             comboCliente.setPromptText("Selecione o Cliente...");
         }
         if (comboVeiculo != null) {
             comboVeiculo.setValue(null);
-            comboVeiculo.setPromptText("");
             comboVeiculo.setPromptText("Selecione o Veículo...");
         }
         if (comboVendedor != null) {
             comboVendedor.setValue(null);
-            comboVendedor.setPromptText("");
             comboVendedor.setPromptText("Selecione o Vendedor...");
         }
         if (txtEntrada != null) {
