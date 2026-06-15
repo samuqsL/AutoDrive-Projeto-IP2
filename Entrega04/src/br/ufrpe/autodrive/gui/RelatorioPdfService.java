@@ -62,8 +62,13 @@ public class RelatorioPdfService {
                 doc.add(new Paragraph("Nenhum registro encontrado.", FONTE_CORPO));
             } else {
                 for (Venda v : lista) {
+                    String dataFormatada = (v.getDataVenda() != null) ? v.getDataVenda().format(fmt) : "Sem Data";
                     String linha = "Nº: " + v.getNumero() +
+                            " | Data: " + dataFormatada +
                             " | Vendedor: " + v.getVendedor().getNome() +
+                            " | Cliente: " + v.getCliente().getNome() +
+                            " | Veiculo: " + v.getVeiculo().getModelo() +
+                            " | Entrada: " + v.getEntrada() +
                             " | Total: R$ " + v.getValorTotal();
                     doc.add(new Paragraph(linha, FONTE_CORPO));
                 }
