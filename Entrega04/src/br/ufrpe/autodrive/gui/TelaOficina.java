@@ -8,11 +8,14 @@ import java.util.stream.Collectors;
 import br.ufrpe.autodrive.dados.RepositorioClientesArray;
 import br.ufrpe.autodrive.dados.RepositorioOsArray;
 import br.ufrpe.autodrive.dados.RepositorioVeiculosArray;
+import br.ufrpe.autodrive.dados.RepositorioPecasArray;
 import br.ufrpe.autodrive.negocio.IGerenciadorOficina;
 import br.ufrpe.autodrive.negocio.beans.Cliente;
 import br.ufrpe.autodrive.negocio.beans.OrdemServico;
 import br.ufrpe.autodrive.negocio.beans.StatusOS;
 import br.ufrpe.autodrive.negocio.beans.Veiculo;
+import br.ufrpe.autodrive.negocio.beans.Pecas;
+import br.ufrpe.autodrive.negocio.beans.MaoDeObra;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
@@ -20,6 +23,8 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 public class TelaOficina {
@@ -29,6 +34,11 @@ public class TelaOficina {
     // --- Componentes do Formulário de Cadastro ---
     @FXML private ComboBox<Cliente> cbCliente;
     @FXML private ComboBox<Veiculo> cbVeiculo;
+    @FXML private TextField txtDescricaoMaoDeObra;
+    @FXML private ComboBox<Pecas> cbPeca;
+    @FXML private Label lblEstoquePeca;
+    @FXML private TextField txtQuantidadePeca;
+    @FXML private TextField txtValorMaoDeObra;
     @FXML private Label lblMensagem;
 
     // --- Componente de Finalização ---
@@ -40,23 +50,22 @@ public class TelaOficina {
     // --- Componentes da Tabela: Fila de Espera / Manutenção ---
     @FXML private TableView<OrdemServico> tbFila;
     @FXML private TableColumn<OrdemServico, String> colFilaOS;
-    @FXML private TableColumn<OrdemServico, String> colFilaVeiculo; // 🟢 NOVA COLUNA DECLARADA
+    @FXML private TableColumn<OrdemServico, String> colFilaVeiculo; 
     @FXML private TableColumn<OrdemServico, StatusOS> colFilaStatus;
     @FXML private TableColumn<OrdemServico, String> colFilaData;
 
     // --- Componentes da Tabela: Histórico ---
     @FXML private TableView<OrdemServico> tbHistorico;
     @FXML private TableColumn<OrdemServico, String> colHistOS;
-    @FXML private TableColumn<OrdemServico, String> colHistVeiculo; // 🟢 NOVA COLUNA DECLARADA
+    @FXML private TableColumn<OrdemServico, String> colHistVeiculo; 
     @FXML private TableColumn<OrdemServico, StatusOS> colHistStatus;
     @FXML private TableColumn<OrdemServico, String> colHistData;
+    @FXML private TableColumn<OrdemServico, String> colHistValorTotal;
     
-
     public TelaOficina() {}
 
     @FXML
     public void initialize() {
-        // Vincula dinamicamente a Fila (OS + Nome)
         if (colFilaOS != null) {
             colFilaOS.setCellValueFactory(data -> {
                 OrdemServico os = data.getValue();
@@ -65,7 +74,6 @@ public class TelaOficina {
             });
         }
         
-        // 🟢 MAPEAMENTO DA NOVA COLUNA DE VEÍCULO (FILA)
         if (colFilaVeiculo != null) {
             colFilaVeiculo.setCellValueFactory(data -> {
                 OrdemServico os = data.getValue();
@@ -78,7 +86,6 @@ public class TelaOficina {
         if (colFilaStatus != null) colFilaStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         if (colFilaData != null) colFilaData.setCellValueFactory(new PropertyValueFactory<>("dataAbertura"));
 
-        // Vincula dinamicamente o Histórico (OS + Nome)
         if (colHistOS != null) {
             colHistOS.setCellValueFactory(data -> {
                 OrdemServico os = data.getValue();
@@ -87,7 +94,6 @@ public class TelaOficina {
             });
         }
         
-        // 🟢 MAPEAMENTO DA NOVA COLUNA DE VEÍCULO (HISTÓRICO)
         if (colHistVeiculo != null) {
             colHistVeiculo.setCellValueFactory(data -> {
                 OrdemServico os = data.getValue();
@@ -100,7 +106,14 @@ public class TelaOficina {
         if (colHistStatus != null) colHistStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         if (colHistData != null) colHistData.setCellValueFactory(new PropertyValueFactory<>("dataFechamento"));
 
-        // Efeito Cascata do DatePicker: Atualiza tabelas instantaneamente ao selecionar uma data
+        if (colHistValorTotal != null) {
+            colHistValorTotal.setCellValueFactory(data -> {
+                OrdemServico os = data.getValue();
+                String valor = (os != null && os.getValorTotal() != null) ? String.format("R$ %.2f", os.getValorTotal()) : "R$ 0,00";
+                return new javafx.beans.property.SimpleStringProperty(valor);
+            });
+        }
+
         if (dpFiltroData != null) {
             dpFiltroData.valueProperty().addListener((observable, oldValue, newValue) -> {
                 atualizarTabelas();
@@ -114,7 +127,6 @@ public class TelaOficina {
         atualizarTabelas();
     }
 
-    // Carrega os dados dos repositórios diretamente para os ComboBoxes
     private void carregarComboBoxes() {
         try {
             List<Cliente> clientes = RepositorioClientesArray.getInstance().listarClientes();
@@ -122,8 +134,36 @@ public class TelaOficina {
 
             List<Veiculo> veiculos = RepositorioVeiculosArray.getInstance().listarTodos();
             if (cbVeiculo != null) cbVeiculo.setItems(FXCollections.observableArrayList(veiculos));
+
+            List<Pecas> pecas = RepositorioPecasArray.getInstance().listarTodas();
+            if (cbPeca != null) {
+                cbPeca.setItems(FXCollections.observableArrayList(pecas));
+                
+                cbPeca.setCellFactory(lv -> new ListCell<Pecas>() {
+                    @Override
+                    protected void updateItem(Pecas item, boolean empty) {
+                        super.updateItem(item, empty);
+                        setText(empty ? "" : item.getNome() + " (R$ " + item.getPreco() + ")");
+                    }
+                });
+                cbPeca.setButtonCell(new ListCell<Pecas>() {
+                    @Override
+                    protected void updateItem(Pecas item, boolean empty) {
+                        super.updateItem(item, empty);
+                        setText(empty ? "" : item.getNome() + " (R$ " + item.getPreco() + ")");
+                    }
+                });
+
+                cbPeca.valueProperty().addListener((obs, oldVal, newVal) -> {
+                    if (newVal != null && lblEstoquePeca != null) {
+                        lblEstoquePeca.setText("Estoque disponível: " + newVal.getQuantidade() + " unidades");
+                    } else if (lblEstoquePeca != null) {
+                        lblEstoquePeca.setText("");
+                    }
+                });
+            }
         } catch (Exception e) {
-            System.err.println("Aviso: Falha ao carregar repositórios nos ComboBoxes.");
+            // Silenciado para evitar impressões em console, guiando para tela apenas
         }
     }
 
@@ -132,18 +172,80 @@ public class TelaOficina {
         try {
             Cliente clienteSelecionado = cbCliente.getValue();
             Veiculo veiculoSelecionado = cbVeiculo.getValue();
+            Pecas pecaSelecionada = cbPeca.getValue();
+            
+            String descMaoObra = txtDescricaoMaoDeObra.getText() != null ? txtDescricaoMaoDeObra.getText().trim() : "";
+            String qtdPecaStr = txtQuantidadePeca.getText() != null ? txtQuantidadePeca.getText().trim() : "0";
+            String valorMaoObraStr = txtValorMaoDeObra.getText() != null ? txtValorMaoDeObra.getText().trim() : "0";
 
-            // Validação direta baseada nas seleções
             if (clienteSelecionado == null || veiculoSelecionado == null) {
                 exibirMensagemErro("Selecione um Cliente e um Veículo para abrir a OS.");
                 return;
             }
 
-            // Extrai as chaves necessárias para o Gerenciador
+            if (descMaoObra.isEmpty() || valorMaoObraStr.isEmpty()) {
+                exibirMensagemErro("A descrição e o valor da Mão de Obra são obrigatórios.");
+                return;
+            }
+
+            int qtdRequisitada = 0;
+            double valorMaoObra = 0.0;
+            try {
+                if (!qtdPecaStr.isEmpty()) qtdRequisitada = Integer.parseInt(qtdPecaStr);
+                valorMaoObra = Double.parseDouble(valorMaoObraStr.replace(",", "."));
+            } catch (NumberFormatException e) {
+                exibirMensagemErro("Digite um número válido para quantidade e valor de mão de obra.");
+                return;
+            }
+
+            if (pecaSelecionada != null && qtdRequisitada > pecaSelecionada.getQuantidade()) {
+                exibirMensagemErro("Estoque insuficiente da peça selecionada! Quantidade atual: " + pecaSelecionada.getQuantidade());
+                return;
+            }
+
+            // OBRIGATORIEDADE DO ÓLEO - Checa a existência e a quantidade do óleo.
+            Pecas oleoPadrao = RepositorioPecasArray.getInstance().buscarPorCodigo("EST-001");
+            if (oleoPadrao == null || oleoPadrao.getQuantidade() < 1) {
+                exibirMensagemErro("Falta óleo em estoque (EST-001)! É obrigatório para o serviço.");
+                return;
+            }
+
             String cpf = clienteSelecionado.getCpf();
             String chassi = veiculoSelecionado.getChassi();
 
             if (control != null && control.abrirOS(cpf, chassi)) {
+                
+                // Resgata a OS recém aberta que está vinculada a esse chassi
+                List<OrdemServico> todasOS = RepositorioOsArray.getInstance().listarTodas();
+                OrdemServico osAberta = null;
+                for (int i = todasOS.size() - 1; i >= 0; i--) {
+                    OrdemServico os = todasOS.get(i);
+                    if (os.getVeiculo().getChassi().equals(chassi) && os.getStatus() != StatusOS.FINALIZADA && os.getStatus() != StatusOS.PAGA) {
+                        osAberta = os;
+                        break;
+                    }
+                }
+
+                if (osAberta != null) {
+                    // Retira a unidade de óleo obrigatório do BD e adiciona cópia da peça à OS
+                    oleoPadrao.retirarDoEstoque(1);
+                    RepositorioPecasArray.getInstance().salvar(oleoPadrao);
+                    osAberta.getListaPecas().add(new Pecas(oleoPadrao.getNome(), oleoPadrao.getCodigo(), oleoPadrao.getPreco(), 1));
+
+                    // Retira a peça selecionada opcional do BD e adiciona cópia da peça à OS
+                    if (pecaSelecionada != null && qtdRequisitada > 0) {
+                        pecaSelecionada.retirarDoEstoque(qtdRequisitada);
+                        RepositorioPecasArray.getInstance().salvar(pecaSelecionada);
+                        osAberta.getListaPecas().add(new Pecas(pecaSelecionada.getNome(), pecaSelecionada.getCodigo(), pecaSelecionada.getPreco(), qtdRequisitada));
+                    }
+
+                    MaoDeObra maoDeObra = new MaoDeObra(descMaoObra, valorMaoObra, osAberta.getMecanico());
+                    osAberta.getListaServicos().add(maoDeObra);
+
+                    osAberta.calcularTotal(); // Atualiza o Total após a injeção
+                    RepositorioOsArray.getInstance().salvar(osAberta); // Atualiza os dados persistidos
+                }
+
                 lblMensagem.setText("✓ Sucesso: Nova Ordem de Serviço inserida na Fila.");
                 lblMensagem.setStyle("-fx-text-fill: green;");
                 limparCamposCadastro();
@@ -162,29 +264,27 @@ public class TelaOficina {
         if (selecionada == null) {
             if (lblMensagem != null) {
                 lblMensagem.setText("Selecione uma OS válida em manutenção para finalizar!");
-                lblMensagem.setStyle("-fx-text-fill: #e74c3c;"); // Vermelho
+                lblMensagem.setStyle("-fx-text-fill: #e74c3c;"); 
             }
             return;
         }
 
         try {
-            // Extrai o número da OS antes do hífen (ex: "12345 - João" vira 12345)
             int numeroOS = Integer.parseInt(selecionada.split(" - ")[0].trim());
             
-            // Chama o método correto do GerenciadorOficina com todas as regras salvas
             boolean sucesso = control.finalizarServico(numeroOS);
             
             if (sucesso) {
                 if (lblMensagem != null) {
                     lblMensagem.setText("OS Nº " + numeroOS + " Paga e Finalizada com sucesso!");
-                    lblMensagem.setStyle("-fx-text-fill: #27ae60;"); // Verde
+                    lblMensagem.setStyle("-fx-text-fill: #27ae60;");
                 }
-                atualizarTabelas(); // Chama a sua função original com o filtro atualizado!
+                atualizarTabelas(); 
                 cbFinalizarOS.getSelectionModel().clearSelection();
             } else {
                 if (lblMensagem != null) {
                     lblMensagem.setText("Falha ao finalizar o serviço da OS.");
-                    lblMensagem.setStyle("-fx-text-fill: #e74c3c;"); // Vermelho
+                    lblMensagem.setStyle("-fx-text-fill: #e74c3c;"); 
                 }
             }
         } catch (Exception e) {
@@ -204,7 +304,6 @@ public class TelaOficina {
 
     private void atualizarTabelas() {
         try {
-            // Mantém os ComboBoxes de Clientes/Veículos sincronizados com os repositórios
             carregarComboBoxes(); 
 
             List<OrdemServico> todasOS = RepositorioOsArray.getInstance().listarTodas();
@@ -212,22 +311,16 @@ public class TelaOficina {
 
             LocalDate dataFiltro = (dpFiltroData != null) ? dpFiltroData.getValue() : null;
 
-            // =====================================================================
-            // CORREÇÃO DO FILTRO: Agora exibe na tabela superior tanto quem está 
-            // na fila de espera (ABERTA) quanto quem já está na oficina (PROCESSO_MANUTENCAO)
-            // =====================================================================
             List<OrdemServico> filaAtiva = todasOS.stream()
                 .filter(os -> os.getStatus() == StatusOS.ABERTA || os.getStatus() == StatusOS.PROCESSO_MANUTENCAO)
                 .filter(os -> verificaDataFiltro(os.getDataAbertura(), dataFiltro))
                 .collect(Collectors.toList());
 
-            // 2. Atualiza Histórico (FINALIZADA / PAGA)
             List<OrdemServico> historicoConcluido = todasOS.stream()
                 .filter(os -> os.getStatus() == StatusOS.FINALIZADA || os.getStatus() == StatusOS.PAGA)
                 .filter(os -> verificaDataFiltro(os.getDataFechamento(), dataFiltro))
                 .collect(Collectors.toList());
 
-            // 3. Atualiza o ComboBox de Finalizar (APENAS ordens ativas em manutenção)
             List<String> opcoesFinalizar = todasOS.stream()
                 .filter(os -> os.getStatus() == StatusOS.PROCESSO_MANUTENCAO)
                 .map(os -> {
@@ -236,7 +329,6 @@ public class TelaOficina {
                 })
                 .collect(Collectors.toList());
 
-            // Seta e atualiza os componentes gráficos com segurança
             if (tbFila != null) {
                 tbFila.setItems(FXCollections.observableArrayList(filaAtiva));
                 tbFila.refresh();
@@ -249,7 +341,7 @@ public class TelaOficina {
                 cbFinalizarOS.setItems(FXCollections.observableArrayList(opcoesFinalizar));
             }
         } catch (Exception e) {
-            System.err.println("Erro crítico ao sincronizar dados: " + e.getMessage());
+            // Silenciado
         }
     }
 
@@ -260,28 +352,23 @@ public class TelaOficina {
         try {
             String dataStr = dataObjeto.toString().trim();
             
-            // Se a data vier no formato "dd/MM/yyyy HH:mm:ss" ou semelhante, isola o início
             if (dataStr.contains(" ")) {
                 dataStr = dataStr.split(" ")[0];
             }
             
-            // Trata formato brasileiro: dd/MM/yyyy
             if (dataStr.matches("\\d{2}/\\d{2}/\\d{4}")) {
                 DateTimeFormatter formatoBR = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                 return LocalDate.parse(dataStr, formatoBR).equals(dataFiltro);
             }
             
-            // Trata formato internacional/banco: yyyy-MM-dd
             if (dataStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
                 return LocalDate.parse(dataStr).equals(dataFiltro);
             }
             
-            // Fallback seguro por texto contido
             String filtroStr = dataFiltro.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
             return dataStr.contains(filtroStr) || dataStr.contains(dataFiltro.toString());
             
         } catch (Exception e) {
-            System.err.println("Aviso no filtro de data: " + e.getMessage());
             return dataObjeto.toString().contains(dataFiltro.toString());
         }
     }
@@ -294,13 +381,21 @@ public class TelaOficina {
 
    private void limparCamposCadastro() {
         if (cbCliente != null) {
-            cbCliente.setValue(null); // 🟢 Reseta o valor interno
-            cbCliente.getSelectionModel().clearSelection(); // Limpa a seleção ativa
+            cbCliente.setValue(null); 
+            cbCliente.getSelectionModel().clearSelection(); 
         }
         if (cbVeiculo != null) {
-            cbVeiculo.setValue(null); // 🟢 Reseta o valor interno
-            cbVeiculo.getSelectionModel().clearSelection(); // Limpa a seleção ativa
+            cbVeiculo.setValue(null); 
+            cbVeiculo.getSelectionModel().clearSelection(); 
         }
+        if (cbPeca != null) {
+            cbPeca.setValue(null); 
+            cbPeca.getSelectionModel().clearSelection(); 
+        }
+        if (txtDescricaoMaoDeObra != null) txtDescricaoMaoDeObra.clear();
+        if (txtQuantidadePeca != null) txtQuantidadePeca.clear();
+        if (txtValorMaoDeObra != null) txtValorMaoDeObra.clear();
+        if (lblEstoquePeca != null) lblEstoquePeca.setText("");
     }
 
     private void limparTudo() {
@@ -309,7 +404,7 @@ public class TelaOficina {
             dpFiltroData.setValue(null);
         }
         if (cbFinalizarOS != null) {
-            cbFinalizarOS.setValue(null); // 🟢 Garante o promptText da OS em manutenção também!
+            cbFinalizarOS.setValue(null); 
             cbFinalizarOS.getSelectionModel().clearSelection();
         }     
         if (lblMensagem != null) {
