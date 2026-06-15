@@ -68,6 +68,9 @@ public class TelaEstoquePecas {
                 }
             }
         });
+
+        // Recarrega os dados atualizados do repositório sempre que o usuário clicar para abrir o ComboBox
+        cbPecas.setOnShowing(event -> carregarComboBox());
     }
 
     private void carregarComboBox() {
@@ -124,7 +127,7 @@ public class TelaEstoquePecas {
                 gerenciadorEstoque.reporEstoque(item.getCodigo(), item.getQuantidade());
             }
 
-            mostrarAlerta("Sucesso", "Estoque de todas as peças atualizado com sucesso!");
+            mostrarAlerta("Sucesso", "Estoque de todas as peças updated com sucesso!");
             
             listaItensReposicao.clear();
             cbPecas.getSelectionModel().clearSelection();
